@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matière · Bientôt Étudiant</title>
+<meta name="description" content="Le contenu de cette matière arrive bientôt sur Bientôt Étudiant.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .soon{text-align:center;max-width:600px;margin:0 auto;padding:20px 0 10px}
+  .soon .badge{display:inline-block;background:var(--ocre);color:var(--ardoise);font-weight:700;
+               font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;padding:7px 16px;border-radius:20px;margin-bottom:24px}
+  .soon .m-emoji{font-size:3.4rem;margin-bottom:16px}
+  .soon h1{font-size:clamp(2rem,4.5vw,2.8rem);margin-bottom:16px}
+  .soon p{font-size:1.1rem;color:var(--encre-2);line-height:1.65;margin-bottom:14px}
+  .soon-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+  .plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-top:48px}
+  .plan-item{background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;padding:22px 18px;text-align:center}
+  .plan-item .pi{font-size:1.6rem;margin-bottom:8px}
+  .plan-item b{display:block;font-family:var(--serif);font-size:1.05rem;color:var(--encre);margin-bottom:4px}
+  .plan-item span{font-size:.82rem;color:var(--encre-2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html">Accueil</a>
+      <a href="filieres.html">Filières</a>
+      <a href="matieres.html">Matières</a>
+      <a href="a-propos.html">À propos</a>
+      <a href="contact.html">Contact</a>
+      <a href="filieres.html" class="cta">Commencer</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow" id="mFiliere">Matière</span>
+    <h1 id="mTitre">Matière</h1>
+    <div class="breadcrumb"><a href="index.html">Accueil</a> › <a href="matieres.html">Matières</a> › <span id="mBread">Matière</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="soon">
+      <span class="badge">En préparation</span>
+      <div class="m-emoji" id="mEmoji">📚</div>
+      <h1>Le contenu arrive bientôt</h1>
+      <p>Nous préparons avec soin les leçons, les quiz et les examens blancs de cette matière. Chaque contenu est vérifié avant d'être publié.</p>
+      <p><strong>Tu veux être prévenu dès l'ouverture ?</strong> Écris-nous, ou contribue si tu as des ressources de qualité à partager.</p>
+      <div class="soon-actions">
+        <a href="contact.html" class="btn btn-dark">Me prévenir <span>→</span></a>
+        <a href="contribuer.html" class="btn btn-primary">Contribuer <span>→</span></a>
+      </div>
+    </div>
+
+    <div class="plan">
+      <div class="plan-item"><div class="pi">📚</div><b>Leçons</b><span>À venir</span></div>
+      <div class="plan-item"><div class="pi">📝</div><b>Résumés</b><span>À venir</span></div>
+      <div class="plan-item"><div class="pi">❓</div><b>Quiz</b><span>À venir</span></div>
+      <div class="plan-item"><div class="pi">🏆</div><b>Examens blancs</b><span>À venir</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
+        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+      </div>
+      <div class="f-col"><h5>Navigation</h5><a href="index.html">Accueil</a><a href="filieres.html">Filières</a><a href="matieres.html">Matières</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a></div>
+      <div class="f-col"><h5>Filières</h5><a href="matieres.html#f1">Médecine &amp; Agro</a><a href="matieres.html#f2">Gestion &amp; Génie</a><a href="matieres.html#f3">Sciences humaines</a><a href="mentions-legales.html">Mentions légales</a></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant</span><span>Conçu par SteFi Services</span></div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/matiere.js"></script>
+</body>
+</html>

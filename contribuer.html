@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contribuer · Bientôt Étudiant</title>
+<meta name="description" content="Partagez vos leçons, résumés ou quiz pour aider les élèves à préparer les concours. Chaque contribution est vérifiée avant publication.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bientôt Étudiant">
+<meta property="og:url" content="https://bientot-etudiant.vercel.app/contribuer.html">
+<meta property="og:image" content="https://bientot-etudiant.vercel.app/img/og-bientot.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .contrib-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:52px;align-items:start}
+  .charte{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:28px 26px}
+  .charte h3{font-size:1.3rem;margin-bottom:16px}
+  .charte ul{list-style:none;padding:0;margin:0}
+  .charte li{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--craie-2);font-size:.95rem;color:var(--encre-2);line-height:1.5}
+  .charte li:last-child{border-bottom:0}
+  .charte li .ck{color:var(--f1);font-weight:700;flex:0 0 auto}
+  .charte .note{margin-top:18px;padding:14px 16px;background:rgba(232,184,75,.12);border-radius:10px;
+                font-size:.88rem;color:var(--encre);line-height:1.55}
+  .form-card{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:32px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:.85rem;font-weight:600;color:var(--encre);margin-bottom:7px}
+  .field .req{color:var(--rouge)}
+  .field input,.field select,.field textarea{width:100%;background:#fff;border:1px solid var(--craie-2);
+    border-radius:10px;padding:12px 14px;font-family:var(--corps);font-size:1rem;color:var(--encre);transition:border-color .2s}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ocre)}
+  .field textarea{min-height:100px;resize:vertical;line-height:1.6}
+  .field .hint{font-size:.82rem;color:var(--encre-2);margin-top:5px}
+  .file-drop{border:2px dashed var(--craie-2);border-radius:12px;padding:22px;text-align:center;
+             background:#fff;transition:border-color .2s;cursor:pointer}
+  .file-drop:hover{border-color:var(--ocre)}
+  .file-drop .fd-ic{font-size:1.8rem;margin-bottom:8px}
+  .file-drop .fd-txt{font-size:.9rem;color:var(--encre-2)}
+  .file-drop .fd-name{font-weight:600;color:var(--f1-d);margin-top:8px}
+  .form-msg{display:none;padding:12px 15px;border-radius:10px;font-size:.92rem;margin-bottom:14px}
+  .form-msg.on{display:block}
+  .form-msg.ok{background:rgba(63,160,106,.12);color:var(--f1-d);border:1px solid rgba(63,160,106,.3)}
+  .form-msg.err{background:rgba(194,91,78,.1);color:var(--rouge);border:1px solid rgba(194,91,78,.3)}
+  @media (max-width:860px){.contrib-grid{grid-template-columns:1fr;gap:32px}}
+  /* Onglets */
+  .tabs{display:flex;gap:8px;margin-bottom:36px;border-bottom:2px solid var(--craie-2)}
+  .tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--encre-2);
+       font-family:var(--serif);font-weight:600;font-size:1.15rem;padding:12px 20px;cursor:pointer;
+       margin-bottom:-2px;transition:color .2s,border-color .2s}
+  .tab:hover{color:var(--encre)}
+  .tab.on{color:var(--ardoise);border-bottom-color:var(--ocre)}
+  .tab-pane{display:none}
+  .tab-pane.on{display:block}
+  /* Nos contributeurs */
+  .contrib-intro{max-width:620px;margin-bottom:36px}
+  .contrib-intro p{font-size:1.08rem;color:var(--encre-2);line-height:1.65}
+  .contributeurs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .ctr{background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;padding:22px;
+       display:flex;align-items:center;gap:16px;transition:transform .2s,box-shadow .2s}
+  .ctr:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(20,52,43,.08)}
+  .ctr .av{width:48px;height:48px;border-radius:50%;background:var(--ardoise);color:var(--ocre);
+           font-family:var(--serif);font-weight:600;font-size:1.3rem;display:flex;align-items:center;
+           justify-content:center;flex:0 0 auto}
+  .ctr .ci b{display:block;font-family:var(--serif);font-size:1.08rem;color:var(--encre)}
+  .ctr .ci span{font-size:.85rem;color:var(--encre-2)}
+  .ctr-vide{text-align:center;color:var(--encre-2);padding:50px 20px;font-style:italic;
+            grid-column:1/-1;background:var(--craie);border:1px dashed var(--craie-2);border-radius:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html">Accueil</a>
+      <a href="filieres.html">Filières</a>
+      <a href="matieres.html">Matières</a>
+      <a href="a-propos.html">À propos</a>
+      <a href="contact.html">Contact</a>
+      <a href="contribuer.html" class="cta">Contribuer</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow">Aide la prochaine génération</span>
+    <h1>Contribuer au projet</h1>
+    <p>Tu es enseignant, étudiant avancé ou passionné ? Partage tes leçons, résumés ou quiz. Ensemble, donnons à chaque élève les moyens de réussir.</p>
+    <div class="breadcrumb"><a href="index.html">Accueil</a> › Contribuer</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab on" data-tab="contribuer">Contribuer</button>
+      <button class="tab" data-tab="contributeurs">Nos contributeurs</button>
+    </div>
+
+  <!-- ONGLET 1 : CONTRIBUER -->
+  <div class="tab-pane on" id="pane-contribuer">
+  <div class="contrib-grid">
+
+    <div class="charte">
+      <h3>Notre engagement de qualité</h3>
+      <ul>
+        <li><span class="ck">✓</span> <span>Chaque contribution est <strong>relue et vérifiée</strong> avant d'être publiée.</span></li>
+        <li><span class="ck">✓</span> <span>Le contenu doit être <strong>exact</strong> et adapté au programme des concours haïtiens.</span></li>
+        <li><span class="ck">✓</span> <span>Merci d'indiquer tes <strong>sources</strong> : manuels, références, ou création personnelle.</span></li>
+        <li><span class="ck">✓</span> <span>Pas de plagiat : partage ce que tu as le droit de partager.</span></li>
+        <li><span class="ck">✓</span> <span>Formats acceptés : <strong>Word, ODT, PDF</strong>.</span></li>
+      </ul>
+      <div class="note">
+        📌 Rappelle-toi : ce contenu servira à de vrais élèves qui préparent leur avenir. La rigueur et l'exactitude sont essentielles.
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="contribForm">
+        <div class="form-msg" id="contribMsg"></div>
+
+        <div class="field">
+          <label>Ton nom <span class="req">*</span></label>
+          <input type="text" id="ctAuteur" name="auteur" placeholder="Nom complet" required>
+        </div>
+
+        <div class="field">
+          <label>WhatsApp ou email <span class="req">*</span></label>
+          <input type="text" id="ctContact" name="contact" placeholder="Pour te recontacter" required>
+        </div>
+
+        <div class="field">
+          <label>Filière concernée</label>
+          <select id="ctFiliere" name="filiere">
+            <option value="">Choisir</option>
+            <option>Médecine, Agronomie &amp; Vétérinaire</option>
+            <option>Sciences administratives, Économie &amp; Génie</option>
+            <option>Sciences humaines et sociales</option>
+            <option>Plusieurs / Transversal</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Matière</label>
+          <input type="text" id="ctMatiere" name="matiere" placeholder="Ex. Mathématiques, Biologie…">
+        </div>
+
+        <div class="field">
+          <label>Type de contenu</label>
+          <select id="ctType" name="type">
+            <option>Leçon</option>
+            <option>Résumé</option>
+            <option>Quiz / Questions</option>
+            <option>Examen blanc</option>
+            <option>Autre</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Tes sources <span class="req">*</span></label>
+          <textarea id="ctSources" name="sources" placeholder="Indique d'où vient ce contenu : manuels, références, ou 'création personnelle'." required></textarea>
+          <div class="hint">La transparence sur les sources garantit la fiabilité du contenu.</div>
+        </div>
+
+        <div class="field">
+          <label>Message (facultatif)</label>
+          <textarea id="ctMessage" name="message" style="min-height:70px" placeholder="Une précision à ajouter ?"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Ton fichier <span class="req">*</span></label>
+          <div class="file-drop" id="fileDrop">
+            <div class="fd-ic">📄</div>
+            <div class="fd-txt">Clique pour choisir un fichier<br>Word, ODT ou PDF · max 10 Mo</div>
+            <div class="fd-name" id="fdName"></div>
+          </div>
+          <input type="file" id="ctFichier" accept=".doc,.docx,.odt,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text" style="display:none">
+        </div>
+
+        <button type="submit" class="btn btn-dark" id="ctSubmit">Envoyer ma contribution <span>→</span></button>
+      </form>
+    </div>
+
+  </div>
+  </div><!-- /pane-contribuer -->
+
+  <!-- ONGLET 2 : NOS CONTRIBUTEURS -->
+  <div class="tab-pane" id="pane-contributeurs">
+    <div class="contrib-intro">
+      <p>Ces personnes ont partagé des ressources pour aider les élèves à préparer leur concours. Chaque contribution affichée ici a été vérifiée et validée. Merci à elles.</p>
+    </div>
+    <div class="contributeurs" id="ctrList">
+      <p class="ctr-vide">Chargement…</p>
+    </div>
+  </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
+        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+      </div>
+      <div class="f-col"><h5>Navigation</h5><a href="index.html">Accueil</a><a href="filieres.html">Filières</a><a href="matieres.html">Matières</a><a href="contact.html">Contact</a></div>
+      <div class="f-col"><h5>Filières</h5><a href="matieres.html#f1">Médecine &amp; Agro</a><a href="matieres.html#f2">Gestion &amp; Génie</a><a href="matieres.html#f3">Sciences humaines</a><a href="mentions-legales.html">Mentions légales</a></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant</span><span>Conçu par SteFi Services</span></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/contribuer.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Bientôt Étudiant</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .adm{padding:56px 0 90px}
+  .login{max-width:420px;margin:40px auto;background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:36px 32px}
+  .login h2{font-size:1.6rem;margin-bottom:6px}
+  .login .sub{color:var(--encre-2);font-size:.92rem;margin-bottom:26px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+  .field input,.field select{width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:12px 14px;font-family:var(--corps);font-size:1rem}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--ocre)}
+  .a-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+  .a-head h1{font-size:1.9rem}
+  .filters{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+  .filter{background:none;border:1px solid var(--craie-2);color:var(--encre-2);font-family:inherit;font-weight:600;font-size:.85rem;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s}
+  .filter:hover{border-color:var(--ocre)}
+  .filter.on{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
+  .contrib{background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;padding:22px 24px;margin-bottom:14px}
+  .c-top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .c-top b{font-size:1.15rem;font-family:var(--serif);color:var(--encre)}
+  .c-badge{font-size:.74rem;font-weight:700;padding:4px 11px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+  .c-badge.a_verifier{background:rgba(232,184,75,.2);color:var(--ocre-d)}
+  .c-badge.valide{background:rgba(63,160,106,.15);color:var(--f1-d)}
+  .c-badge.rejete{background:rgba(194,91,78,.13);color:var(--rouge)}
+  .c-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .c-tag{font-size:.78rem;background:var(--craie-2);color:var(--encre-2);padding:4px 10px;border-radius:6px}
+  .c-row{font-size:.9rem;color:var(--encre-2);margin-bottom:8px;line-height:1.5}
+  .c-row b{color:var(--encre)}
+  .c-sources{background:rgba(232,184,75,.08);border-left:3px solid var(--ocre);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.9rem;color:var(--encre);margin:12px 0}
+  .c-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--craie-2)}
+  .c-act a,.c-act button{font-family:inherit;font-weight:600;font-size:.85rem;padding:9px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--craie-2);background:none;color:var(--encre);transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+  .c-act .dl{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
+  .c-act .ok{border-color:var(--f1);color:var(--f1-d)}
+  .c-act .ok:hover{background:var(--f1);color:#fff}
+  .c-act .no{border-color:var(--rouge);color:var(--rouge)}
+  .c-act .no:hover{background:var(--rouge);color:#fff}
+  .c-act .del:hover{border-color:var(--rouge);color:var(--rouge)}
+  .status-msg{padding:12px 15px;border-radius:10px;font-size:.9rem;margin-bottom:16px;display:none}
+  .status-msg.on{display:block}
+  .status-msg.ok{background:rgba(63,160,106,.12);color:var(--f1-d)}
+  .status-msg.err{background:rgba(194,91,78,.1);color:var(--rouge)}
+  .empty{text-align:center;color:var(--encre-2);padding:50px 0;font-style:italic}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <nav class="menu"><a href="index.html">← Retour au site</a></nav>
+  </div>
+</header>
+
+<section class="adm">
+  <div class="wrap">
+
+    <div id="setupNote" class="login" style="display:none">
+      <h2>Configuration requise</h2>
+      <p class="sub">La connexion Supabase n'est pas disponible.</p>
+    </div>
+
+    <!-- Connexion -->
+    <div id="loginCard" class="login" style="display:none">
+      <h2>Espace administrateur</h2>
+      <p class="sub">Gère les contributions reçues.</p>
+      <form id="loginForm">
+        <div class="status-msg" id="loginStatus"></div>
+        <div class="field"><label>Email</label><input type="email" id="admEmail" placeholder="stefimerv@gmail.com" required></div>
+        <div class="field"><label>Mot de passe</label><input type="password" id="admPass" placeholder="••••••••" required></div>
+        <button type="submit" class="btn btn-dark" style="width:100%;justify-content:center">Se connecter</button>
+      </form>
+    </div>
+
+    <!-- Panneau -->
+    <div id="panel" style="display:none">
+      <div class="a-head">
+        <h1>Contributions reçues</h1>
+        <button class="btn btn-ghost" id="logoutBtn" style="color:var(--encre);border-color:var(--craie-2)">Déconnexion</button>
+      </div>
+      <div class="status-msg" id="admStatus"></div>
+      <div class="filters">
+        <button class="filter on" data-f="a_verifier">À vérifier</button>
+        <button class="filter" data-f="valide">Validées</button>
+        <button class="filter" data-f="rejete">Rejetées</button>
+        <button class="filter" data-f="tous">Toutes</button>
+      </div>
+      <div id="contribList"><p class="empty">Chargement…</p></div>
+    </div>
+
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
