@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bientôt Étudiant — Prépare aujourd'hui. Réussis demain.</title>
+<meta name="description" content="Plateforme de préparation aux concours d'admission des universités haïtiennes. Trois filières, des matières, des quiz et des concours blancs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bientôt Étudiant">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="https://bientot-etudiant.vercel.app/">
+<meta property="og:image" content="https://bientot-etudiant.vercel.app/img/og-bientot.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bientot-etudiant.vercel.app/img/og-bientot.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <img class="mark-img" src="img/logo.png" alt="">
+      <span>Bientôt<span class="accent"> Étudiant</span></span>
+    </a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html" class="on">Accueil</a>
+      <a href="filieres.html">Filières</a>
+      <a href="matieres.html">Matières</a>
+      <a href="a-propos.html">À propos</a>
+      <a href="contact.html">Contact</a>
+      <a href="filieres.html" class="cta">Commencer</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== HERO : le tableau ===== -->
+<section class="hero">
+  <div class="wrap hero-in">
+    <span class="eyebrow">Concours d'entrée à l'université</span>
+    <h1>Prépare <span class="chalk">aujourd'hui</span>.<br>Réussis demain.</h1>
+    <p>La plateforme qui accompagne les élèves haïtiens vers la faculté. Révise par matière, entraîne-toi, et arrive au concours prêt.</p>
+    <div class="hero-actions">
+      <a href="filieres.html" class="btn btn-primary">Commencer maintenant <span>→</span></a>
+      <a href="#comment" class="btn btn-ghost">Comment ça marche</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<div class="stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat"><div class="n">3</div><div class="l">Filières</div></div>
+      <div class="stat"><div class="n">8+</div><div class="l">Matières</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">Gratuit pour démarrer</div></div>
+      <div class="stat"><div class="n">📱</div><div class="l">Sur téléphone &amp; ordinateur</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FILIÈRES ===== -->
+<section class="filieres">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Choisis ta voie</span>
+      <h2>Trois filières, une destination</h2>
+      <p>Chaque filière regroupe les matières du concours que tu prépares. Choisis la tienne et commence à réviser.</p>
+    </div>
+    <div class="fil-grid">
+
+      <a href="matieres.html#f1" class="fil f1 reveal">
+        <span class="num">01</span>
+        <div class="ic">🩺</div>
+        <h3>Médecine, Agronomie &amp; Vétérinaire</h3>
+        <p>Les sciences de la vie et de la santé. Pour ceux qui soigneront, cultiveront et protégeront.</p>
+        <span class="go">Voir les matières →</span>
+      </a>
+
+      <a href="matieres.html#f2" class="fil f2 reveal">
+        <span class="num">02</span>
+        <div class="ic">💼</div>
+        <h3>Sciences administratives, Éco &amp; Génie</h3>
+        <p>Gestion, économie, ingénierie. Pour ceux qui construiront et dirigeront de demain.</p>
+        <span class="go">Voir les matières →</span>
+      </a>
+
+      <a href="matieres.html#f3" class="fil f3 reveal">
+        <span class="num">03</span>
+        <div class="ic">⚖️</div>
+        <h3>Sciences humaines, Droit &amp; Sociales</h3>
+        <p>Droit, psychologie, sociologie, histoire de l'art. Pour ceux qui comprendront et défendront.</p>
+        <span class="go">Voir les matières →</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== COMMENT ÇA MARCHE ===== -->
+<section class="how" id="comment">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="kicker">La méthode</span>
+      <h2>Comment ça marche</h2>
+      <p>Un chemin clair, du premier cours au jour du concours.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="s-n">1</div>
+        <h4>Choisis ta filière</h4>
+        <p>Médecine, gestion, sciences humaines — selon la faculté que tu vises.</p>
+      </div>
+      <div class="step reveal">
+        <div class="s-n">2</div>
+        <h4>Révise les matières</h4>
+        <p>Des leçons claires et des résumés, matière par matière.</p>
+      </div>
+      <div class="step reveal">
+        <div class="s-n">3</div>
+        <h4>Entraîne-toi</h4>
+        <p>Des quiz avec correction pour vérifier ce que tu retiens.</p>
+      </div>
+      <div class="step reveal">
+        <div class="s-n">4</div>
+        <h4>Passe le concours blanc</h4>
+        <p>Simule l'examen réel, chronométré, et mesure tes progrès.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section>
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <h2>Ta place à l'université t'attend</h2>
+      <p>Commence dès aujourd'hui. Chaque révision te rapproche du concours.</p>
+      <a href="filieres.html" class="btn btn-primary">Choisir ma filière <span>→</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
+        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+      </div>
+      <div class="f-col">
+        <h5>Navigation</h5>
+        <a href="index.html">Accueil</a>
+        <a href="filieres.html">Filières</a>
+        <a href="matieres.html">Matières</a>
+        <a href="a-propos.html">À propos</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="f-col">
+        <h5>Filières</h5>
+        <a href="matieres.html#f1">Médecine &amp; Agro</a>
+        <a href="matieres.html#f2">Gestion &amp; Génie</a>
+        <a href="matieres.html#f3">Sciences humaines</a>
+      </div>
+    </div>
+    <div class="f-bot">
+      <span>© 2026 Bientôt Étudiant</span>
+      <span>Conçu par SteFi Services</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

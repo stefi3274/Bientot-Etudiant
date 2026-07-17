@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Bientôt Étudiant</title>
+<meta name="description" content="Une question sur la préparation aux concours ? Contactez Bientôt Étudiant.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bientôt Étudiant">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:url" content="https://bientot-etudiant.vercel.app/contact.html">
+<meta property="og:image" content="https://bientot-etudiant.vercel.app/img/og-bientot.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bientot-etudiant.vercel.app/img/og-bientot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .contact-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:56px;align-items:start}
+  .contact-info .item{padding:20px 0;border-top:1px solid var(--craie-2)}
+  .contact-info .item:last-child{border-bottom:1px solid var(--craie-2)}
+  .contact-info .lbl{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-2);display:block;margin-bottom:6px}
+  .contact-info .val{font-size:1.08rem;color:var(--encre);font-weight:500}
+  .contact-info a.val:hover{color:var(--ocre-d)}
+  .form-card{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:32px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:.85rem;font-weight:600;color:var(--encre);margin-bottom:7px}
+  .field input,.field select,.field textarea{width:100%;background:#fff;border:1px solid var(--craie-2);
+    border-radius:10px;padding:12px 14px;font-family:var(--corps);font-size:1rem;color:var(--encre);transition:border-color .2s}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ocre)}
+  .field textarea{min-height:130px;resize:vertical;line-height:1.6}
+  .form-msg{display:none;padding:12px 15px;border-radius:10px;font-size:.92rem;margin-bottom:14px}
+  .form-msg.on{display:block}
+  .form-msg.ok{background:rgba(63,160,106,.12);color:var(--f1-d);border:1px solid rgba(63,160,106,.3)}
+  .form-msg.err{background:rgba(194,91,78,.1);color:var(--rouge);border:1px solid rgba(194,91,78,.3)}
+  @media (max-width:820px){.contact-grid{grid-template-columns:1fr;gap:36px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html">Accueil</a>
+      <a href="filieres.html">Filières</a>
+      <a href="matieres.html">Matières</a>
+      <a href="a-propos.html">À propos</a>
+      <a href="filieres.html" class="cta">Commencer</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow">Écris-nous</span>
+    <h1>Une question ? Parlons-en</h1>
+    <p>Que tu hésites sur ta filière ou que tu veuilles en savoir plus, on est là pour t'aider.</p>
+    <div class="breadcrumb"><a href="index.html">Accueil</a> › Contact</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap contact-grid">
+
+    <div class="contact-info">
+      <div class="item">
+        <span class="lbl">WhatsApp</span>
+        <a class="val" href="https://wa.me/50955108873" target="_blank" rel="noopener">+509 5510 8873</a>
+      </div>
+      <div class="item">
+        <span class="lbl">Email</span>
+        <a class="val" href="mailto:stefimerv@gmail.com">stefimerv@gmail.com</a>
+      </div>
+      <div class="item">
+        <span class="lbl">Réponse</span>
+        <span class="val" style="font-weight:400;color:var(--encre-2)">Sous 24 à 48 heures</span>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="contactForm">
+        <div class="form-msg" id="contactMsg"></div>
+        <div class="field">
+          <label for="cNom">Ton nom *</label>
+          <input type="text" id="cNom" name="nom" placeholder="Ton nom complet" required>
+        </div>
+        <div class="field">
+          <label for="cContact">WhatsApp ou email *</label>
+          <input type="text" id="cContact" name="contact" placeholder="Pour te répondre" required>
+        </div>
+        <div class="field">
+          <label for="cFiliere">La filière qui t'intéresse</label>
+          <select id="cFiliere" name="filiere">
+            <option value="">— Je ne sais pas encore —</option>
+            <option>Médecine, Agronomie &amp; Vétérinaire</option>
+            <option>Sciences administratives, Économie &amp; Génie</option>
+            <option>Sciences humaines, Droit &amp; Sociales</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cMessage">Ton message *</label>
+          <textarea id="cMessage" name="message" placeholder="Ta question…" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-dark">Envoyer <span>→</span></button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
+        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+      </div>
+      <div class="f-col"><h5>Navigation</h5><a href="index.html">Accueil</a><a href="filieres.html">Filières</a><a href="matieres.html">Matières</a><a href="a-propos.html">À propos</a></div>
+      <div class="f-col"><h5>Filières</h5><a href="matieres.html#f1">Médecine &amp; Agro</a><a href="matieres.html#f2">Gestion &amp; Génie</a><a href="matieres.html#f3">Sciences humaines</a></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant</span><span>Conçu par SteFi Services</span></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/contact.js"></script>
+</body>
+</html>
