@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>À propos · Bientôt Étudiant</title>
-<meta name="description" content="Bientôt Étudiant accompagne les élèves haïtiens dans leur préparation aux concours d'entrée à l'université.">
+<meta name="description" content="Bientôt Étudiant accompagne les postulant.e.s haïtien.ne.s dans leur préparation aux concours d'entrée à l'université.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
       <a href="a-propos.html" class="on">À propos</a>
       <a href="contact.html">Contact</a>
       <a href="contribuer.html">Contribuer</a>
-      <a href="filieres.html" class="cta">Commencer</a>
+      <span id="compteZone"><a href="connexion.html" class="cta">Se connecter</a></span>
     </nav>
   </div>
 </header>
@@ -52,7 +52,7 @@
 <section class="page-hero">
   <div class="wrap">
     <span class="eyebrow">Notre raison d'être</span>
-    <h1>Chaque élève mérite sa chance</h1>
+    <h1>Chaque postulant.e mérite sa chance</h1>
     <p>Bientôt Étudiant est né d'une conviction : la réussite au concours ne devrait pas dépendre du hasard ni des moyens.</p>
     <div class="breadcrumb"><a href="index.html">Accueil</a> › À propos</div>
   </div>
@@ -61,9 +61,9 @@
 <section>
   <div class="wrap">
     <div class="prose">
-      <p>Chaque année, des milliers d'élèves haïtiens se présentent aux concours d'entrée des universités. Beaucoup ont le talent et la volonté (mais pas toujours les <strong>outils</strong> pour se préparer dans de bonnes conditions).</p>
+      <p>Chaque année, des milliers de postulant.e.s haïtien.ne.s se présentent aux concours d'entrée des universités. Beaucoup ont le talent et la volonté (mais pas toujours les <strong>outils</strong> pour se préparer dans de bonnes conditions).</p>
 
-      <p>C'est là que <strong>Bientôt Étudiant</strong> intervient : une plateforme pensée pour accompagner l'élève, du premier cours jusqu'au jour du concours. Réviser par matière, s'entraîner avec des quiz, mesurer ses progrès, et arriver le jour J préparé et confiant.</p>
+      <p>C'est là que <strong>Bientôt Étudiant</strong> intervient : une plateforme pensée pour accompagner le/la postulant.e, du premier cours jusqu'au jour du concours. Réviser par matière, s'entraîner avec des quiz, mesurer ses progrès, et arriver le jour J préparé et confiant.</p>
 
       <div class="mission">« Prépare aujourd'hui. Réussis demain. » Ce n'est pas qu'un slogan : c'est notre méthode.</div>
 
@@ -71,10 +71,10 @@
       <p>Nous couvrons les grands groupes de facultés : <strong>Médecine, Agronomie et Vétérinaire</strong> ; <strong>Sciences administratives, Économie et Génie</strong> ; <strong>Sciences humaines et sociales</strong>. Chaque filière regroupe les matières exactes du concours à préparer.</p>
 
       <h2>Une plateforme qui grandit</h2>
-      <p>Nous construisons le contenu avec soin, matière par matière. Les premières leçons et les premiers quiz ouvrent bientôt. Notre objectif : que chaque élève trouve ici tout ce dont il a besoin pour réussir, au même endroit.</p>
+      <p>Nous construisons le contenu avec soin, matière par matière. Les premières leçons et les premiers quiz ouvrent bientôt. Notre objectif : que chaque postulant.e trouve ici tout ce dont il a besoin pour réussir, au même endroit.</p>
 
       <h2>Un projet haïtien</h2>
-      <p>Bientôt Étudiant est conçu en Haïti, pour les élèves haïtiens, avec la réalité de leur parcours en tête. Accessible sur téléphone comme sur ordinateur, pour que la préparation soit possible partout.</p>
+      <p>Bientôt Étudiant est conçu en Haïti, pour les postulant.e.s haïtien.ne.s, avec la réalité de leur parcours en tête. Accessible sur téléphone comme sur ordinateur, pour que la préparation soit possible partout.</p>
     </div>
   </div>
 </section>
@@ -103,6 +103,9 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
 <script src="js/main.js"></script>
+<script src="js/eleve.js"></script>
 </body>
 </html>

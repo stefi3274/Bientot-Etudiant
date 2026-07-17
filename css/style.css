@@ -305,3 +305,60 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .soon .m-emoji[data-icon]{display:flex;align-items:center;justify-content:center;
     width:72px;height:72px;margin:0 auto 16px;border-radius:18px;background:rgba(232,184,75,.15);color:var(--ocre-d)}
 .soon .m-emoji[data-icon] svg{width:38px;height:38px}
+
+/* ============================================================
+   Comptes élèves — auth + espace
+   ============================================================ */
+.auth-wrap{max-width:460px;margin:0 auto}
+.auth-card{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:36px 32px}
+.auth-card h1{font-size:1.8rem;margin-bottom:6px}
+.auth-card .sub{color:var(--encre-2);font-size:.95rem;margin-bottom:26px}
+.auth-field{margin-bottom:16px}
+.auth-field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px}
+.auth-field input{width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;
+  padding:12px 14px;font-family:var(--corps);font-size:1rem;transition:border-color .2s}
+.auth-field input:focus{outline:none;border-color:var(--ocre)}
+.fil-choose{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px}
+.fil-opt{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--craie-2);
+  border-radius:10px;cursor:pointer;transition:border-color .2s,background .2s;background:#fff}
+.fil-opt:hover{border-color:var(--ocre)}
+.fil-opt input{width:auto;accent-color:var(--ardoise)}
+.fil-opt .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+.fil-opt.f1 .dot{background:var(--f1)}
+.fil-opt.f2 .dot{background:var(--f2)}
+.fil-opt.f3 .dot{background:var(--f3)}
+.fil-opt span{font-size:.92rem;color:var(--encre)}
+.auth-foot{text-align:center;margin-top:20px;font-size:.9rem;color:var(--encre-2)}
+.auth-foot a{color:var(--ocre-d);font-weight:600}
+.form-msg{display:none;padding:11px 14px;border-radius:10px;font-size:.9rem;margin-bottom:14px}
+.form-msg.on{display:block}
+.form-msg.ok{background:rgba(63,160,106,.12);color:var(--f1-d);border:1px solid rgba(63,160,106,.3)}
+.form-msg.err{background:rgba(194,91,78,.1);color:var(--rouge);border:1px solid rgba(194,91,78,.3)}
+
+/* Espace élève */
+.espace-hero{background:var(--ardoise);color:var(--craie);padding:48px 0 54px;position:relative;overflow:hidden}
+.espace-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--f1),var(--ocre),var(--f3))}
+.espace-hero .hi{font-size:.85rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ocre);margin-bottom:10px}
+.espace-hero h1{color:var(--craie);font-size:clamp(2rem,4vw,2.8rem)}
+.espace-card{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:28px;margin-bottom:20px}
+.espace-card h2{font-size:1.35rem;margin-bottom:14px}
+.fil-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.fil-tag{font-size:.85rem;font-weight:600;padding:6px 14px;border-radius:20px;background:var(--craie-2);color:var(--encre)}
+.fil-tag.f1{background:rgba(42,157,111,.14);color:var(--f1-d)}
+.fil-tag.f2{background:rgba(44,110,143,.14);color:var(--f2-d)}
+.fil-tag.f3{background:rgba(156,63,86,.14);color:var(--f3-d)}
+.wait-box{text-align:center;padding:40px 24px;background:var(--craie-2);border-radius:14px;border:1px dashed #c5cbc0}
+.wait-box .wi{width:56px;height:56px;margin:0 auto 14px;border-radius:14px;background:rgba(232,184,75,.18);
+  display:flex;align-items:center;justify-content:center;color:var(--ocre-d)}
+.wait-box .wi svg{width:28px;height:28px}
+.wait-box h3{font-size:1.2rem;margin-bottom:8px}
+.wait-box p{color:var(--encre-2);margin-bottom:18px;max-width:400px;margin-left:auto;margin-right:auto}
+
+/* Œil afficher/masquer mot de passe */
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:46px!important;width:100%}
+.pass-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;
+  cursor:pointer;padding:8px;color:var(--encre-2);display:flex;align-items:center;justify-content:center;
+  border-radius:8px;transition:color .2s,background .2s}
+.pass-eye:hover{color:var(--ardoise);background:var(--craie-2)}
+.pass-eye svg{width:20px;height:20px;pointer-events:none}

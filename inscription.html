@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription · Bientôt Étudiant</title>
+<meta name="description" content="Crée ton compte postulant.e et commence ta préparation aux concours.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html">Accueil</a>
+      <a href="filieres.html">Filières</a>
+      <a href="matieres.html">Matières</a>
+      <a href="contribuer.html">Contribuer</a>
+      <span id="compteZone"><a href="connexion.html" class="cta">Se connecter</a></span>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow">Rejoins-nous</span>
+    <h1>Crée ton compte</h1>
+    <p>Gratuit. Choisis ta filière et commence ta préparation dès aujourd'hui.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap auth-wrap">
+    <div class="auth-card">
+      <div class="form-msg" id="signupMsg"></div>
+      <form id="signupForm">
+        <div class="auth-field">
+          <label for="suNom">Ton nom complet</label>
+          <input type="text" id="suNom" name="nom" placeholder="Prénom et nom" required>
+        </div>
+        <div class="auth-field">
+          <label for="suEmail">Email</label>
+          <input type="email" id="suEmail" name="email" placeholder="ton@email.com" required>
+        </div>
+        <div class="auth-field">
+          <label for="suPass">Mot de passe</label>
+          <input type="password" id="suPass" name="password" placeholder="Au moins 6 caractères" required>
+        </div>
+        <div class="auth-field">
+          <label>Ta ou tes filières (2 maximum)</label>
+          <div class="fil-choose">
+            <label class="fil-opt f1"><input type="checkbox" name="filiere" value="f1"><span class="dot"></span><span>Médecine, Agronomie &amp; Vétérinaire</span></label>
+            <label class="fil-opt f2"><input type="checkbox" name="filiere" value="f2"><span class="dot"></span><span>Sciences administratives, Économie &amp; Génie</span></label>
+            <label class="fil-opt f3"><input type="checkbox" name="filiere" value="f3"><span class="dot"></span><span>Sciences humaines et sociales</span></label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-dark" style="width:100%;justify-content:center;margin-top:8px">Créer mon compte <span>→</span></button>
+      </form>
+      <div class="auth-foot">Déjà un compte ? <a href="connexion.html">Se connecter</a></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
+        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+      </div>
+      <div class="f-col"><h5>Navigation</h5><a href="index.html">Accueil</a><a href="filieres.html">Filières</a><a href="matieres.html">Matières</a><a href="contact.html">Contact</a></div>
+      <div class="f-col"><h5>En savoir plus</h5><a href="a-propos.html">À propos</a><a href="contribuer.html">Contribuer</a><a href="mentions-legales.html">Mentions légales</a></div>
+    </div>
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant · Projet à but non lucratif</span><span>Conçu par SteFi Services</span></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/eleve.js"></script>
+<script src="js/passeye.js"></script>
+</body>
+</html>
