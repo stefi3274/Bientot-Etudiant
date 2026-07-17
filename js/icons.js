@@ -26,10 +26,14 @@
     device: `<rect ${P} x="7" y="3" width="10" height="18" rx="2"/><path ${P} d="M11 18h2"/>`
   };
 
-  document.querySelectorAll("[data-icon]").forEach(el => {
-    const key = el.getAttribute("data-icon");
-    if (ICONS[key]) {
-      el.innerHTML = `<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">${ICONS[key]}</svg>`;
-    }
-  });
+  function render() {
+    document.querySelectorAll("[data-icon]").forEach(el => {
+      const key = el.getAttribute("data-icon");
+      if (ICONS[key] && !el.querySelector("svg")) {
+        el.innerHTML = `<svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true">${ICONS[key]}</svg>`;
+      }
+    });
+  }
+  window.__renderIcons = render;
+  render();
 })();

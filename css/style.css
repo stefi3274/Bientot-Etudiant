@@ -362,3 +362,95 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
   border-radius:8px;transition:color .2s,background .2s}
 .pass-eye:hover{color:var(--ardoise);background:var(--craie-2)}
 .pass-eye svg{width:20px;height:20px;pointer-events:none}
+
+/* ============================================================
+   Admin — onglets + éditeur de leçons
+   ============================================================ */
+.adm-tabs{display:flex;gap:6px}
+.adm-tab{background:none;border:1px solid var(--craie-2);color:var(--encre-2);font-family:var(--serif);
+  font-weight:600;font-size:1.1rem;padding:9px 20px;border-radius:10px;cursor:pointer;transition:all .2s}
+.adm-tab:hover{border-color:var(--ocre)}
+.adm-tab.on{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
+
+.lecon-editor{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:28px;margin-bottom:24px}
+.lecon-editor h2{font-size:1.4rem;margin-bottom:16px}
+.le-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.le-field{margin-bottom:16px}
+.le-field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--encre)}
+.le-field input,.le-field select{width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;
+  padding:11px 14px;font-family:var(--corps);font-size:1rem;color:var(--encre)}
+.le-field input:focus,.le-field select:focus{outline:none;border-color:var(--ocre)}
+@media (max-width:640px){.le-row{grid-template-columns:1fr}}
+
+/* Éditeur riche */
+.rte-toolbar{display:flex;gap:4px;flex-wrap:wrap;background:var(--craie-2);border:1px solid var(--craie-2);
+  border-bottom:0;border-radius:10px 10px 0 0;padding:8px}
+.rte-toolbar button{width:36px;height:36px;border:0;background:#fff;border-radius:7px;cursor:pointer;
+  font-size:.95rem;color:var(--encre);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.rte-toolbar button:hover{background:var(--ocre);color:var(--ardoise)}
+.rte{background:#fff;border:1px solid var(--craie-2);border-radius:0 0 10px 10px;padding:16px 18px;
+  min-height:220px;font-size:1rem;line-height:1.7;color:var(--encre);outline:none}
+.rte:empty::before{content:attr(data-placeholder);color:#a8b3aa}
+.rte h3{font-family:var(--serif);font-size:1.3rem;margin:14px 0 8px}
+.rte p{margin-bottom:10px}
+.rte ul,.rte ol{margin:0 0 10px 22px}
+.rte img{max-width:100%;border-radius:8px;margin:10px 0}
+
+.pdf-drop{border:2px dashed var(--craie-2);border-radius:10px;padding:16px;text-align:center;
+  background:#fff;cursor:pointer;color:var(--encre-2);font-size:.9rem;transition:border-color .2s}
+.pdf-drop:hover{border-color:var(--ocre)}
+.pdf-drop.has{border-color:var(--f1);color:var(--f1-d);font-weight:600}
+
+.lecon-list-wrap{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:28px}
+.lecon-list-wrap h2{font-size:1.3rem;margin-bottom:16px}
+.lec-item{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;
+  padding:16px;border:1px solid var(--craie-2);border-radius:12px;margin-bottom:10px;border-left-width:4px}
+.lec-item.f1{border-left-color:var(--f1)}
+.lec-item.f2{border-left-color:var(--f2)}
+.lec-item.f3{border-left-color:var(--f3)}
+.lec-info b{display:block;font-family:var(--serif);font-size:1.1rem;color:var(--encre)}
+.lec-info .lec-meta{font-size:.82rem;color:var(--encre-2);margin-top:3px}
+.lec-act{display:flex;gap:7px;flex-wrap:wrap}
+.lec-act button{font-family:inherit;font-weight:600;font-size:.82rem;padding:8px 14px;border-radius:8px;
+  cursor:pointer;border:1px solid var(--craie-2);background:none;color:var(--encre);transition:all .2s}
+.lec-act button:hover{border-color:var(--ocre)}
+.lec-act .del:hover{border-color:var(--rouge);color:var(--rouge)}
+
+/* ============================================================
+   Leçons — liste dans la matière + lecture
+   ============================================================ */
+.lecons-head{margin-bottom:24px}
+.lecons-head h2{font-size:1.6rem}
+.lecons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.lecon-carte{display:block;background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;
+  padding:24px;border-left-width:4px;border-left-color:var(--ardoise);transition:transform .2s,box-shadow .2s;position:relative}
+body[data-filiere="f1"] .lecon-carte{border-left-color:var(--f1)}
+body[data-filiere="f2"] .lecon-carte{border-left-color:var(--f2)}
+body[data-filiere="f3"] .lecon-carte{border-left-color:var(--f3)}
+.lecon-carte:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(20,52,43,.1)}
+.lc-num{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ocre-d)}
+.lecon-carte h3{font-size:1.25rem;margin:8px 0 10px}
+.lecon-carte p{color:var(--encre-2);font-size:.95rem;line-height:1.55;margin-bottom:16px}
+.lc-go{font-weight:600;color:var(--ardoise);font-size:.92rem}
+body[data-filiere="f1"] .lc-go{color:var(--f1-d)}
+body[data-filiere="f2"] .lc-go{color:var(--f2-d)}
+body[data-filiere="f3"] .lc-go{color:var(--f3-d)}
+.lc-pdf{position:absolute;top:20px;right:20px;font-size:.7rem;font-weight:600;background:var(--craie-2);
+  color:var(--encre-2);padding:3px 9px;border-radius:12px}
+
+/* Page de lecture */
+.lecture{max-width:760px;margin:0 auto}
+.lecture-head{margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid var(--craie-2)}
+.lecture-head .lh-num{font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ocre-d)}
+.lecture-head h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:8px 0 12px}
+.lecture-head .lh-meta{color:var(--encre-2);font-size:.92rem}
+.lecture-corps{font-size:1.1rem;line-height:1.8;color:var(--encre)}
+.lecture-corps h3{font-family:var(--serif);font-size:1.5rem;margin:28px 0 12px}
+.lecture-corps p{margin-bottom:16px}
+.lecture-corps ul,.lecture-corps ol{margin:0 0 16px 24px}
+.lecture-corps li{margin-bottom:6px}
+.lecture-corps img{max-width:100%;border-radius:10px;margin:16px 0}
+.lecture-pdf{margin-top:32px;padding:20px 24px;background:var(--craie-2);border-radius:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.lecture-pdf b{color:var(--encre)}
+.lecture-nav{display:flex;justify-content:space-between;gap:16px;margin-top:40px;flex-wrap:wrap}

@@ -84,17 +84,96 @@
     <!-- Panneau -->
     <div id="panel" style="display:none">
       <div class="a-head">
-        <h1>Contributions reçues</h1>
+        <div class="adm-tabs">
+          <button class="adm-tab on" data-tab="contrib">Contributions</button>
+          <button class="adm-tab" data-tab="lecons">Leçons</button>
+        </div>
         <button class="btn btn-ghost" id="logoutBtn" style="color:var(--encre);border-color:var(--craie-2)">Déconnexion</button>
       </div>
       <div class="status-msg" id="admStatus"></div>
-      <div class="filters">
-        <button class="filter on" data-f="a_verifier">À vérifier</button>
-        <button class="filter" data-f="valide">Validées</button>
-        <button class="filter" data-f="rejete">Rejetées</button>
-        <button class="filter" data-f="tous">Toutes</button>
+
+      <!-- ONGLET CONTRIBUTIONS -->
+      <div id="tab-contrib">
+        <div class="filters">
+          <button class="filter on" data-f="a_verifier">À vérifier</button>
+          <button class="filter" data-f="valide">Validées</button>
+          <button class="filter" data-f="rejete">Rejetées</button>
+          <button class="filter" data-f="tous">Toutes</button>
+        </div>
+        <div id="contribList"><p class="empty">Chargement…</p></div>
       </div>
-      <div id="contribList"><p class="empty">Chargement…</p></div>
+
+      <!-- ONGLET LEÇONS -->
+      <div id="tab-lecons" style="display:none">
+        <div class="lecon-editor" id="leconEditor">
+          <h2 id="leconFormTitre">Nouvelle leçon</h2>
+          <div class="status-msg" id="leconMsg"></div>
+          <div class="le-row">
+            <div class="le-field">
+              <label>Filière</label>
+              <select id="leFiliere">
+                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
+                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
+                <option value="f3">Sciences humaines et sociales</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière</label>
+              <select id="leMatiere"></select>
+            </div>
+          </div>
+          <div class="le-field">
+            <label>Titre de la leçon</label>
+            <input type="text" id="leTitre" placeholder="Ex. Les fonctions du second degré">
+          </div>
+          <div class="le-field">
+            <label>Aperçu (court résumé affiché dans la liste)</label>
+            <input type="text" id="leApercu" placeholder="En une phrase, de quoi parle cette leçon ?">
+          </div>
+          <div class="le-field">
+            <label>Contenu de la leçon</label>
+            <div class="rte-toolbar" id="rteToolbar">
+              <button type="button" data-cmd="bold" title="Gras"><b>B</b></button>
+              <button type="button" data-cmd="italic" title="Italique"><i>I</i></button>
+              <button type="button" data-cmd="formatBlock" data-val="h3" title="Titre">H</button>
+              <button type="button" data-cmd="formatBlock" data-val="p" title="Paragraphe">¶</button>
+              <button type="button" data-cmd="insertUnorderedList" title="Liste">•</button>
+              <button type="button" data-cmd="insertOrderedList" title="Liste numérotée">1.</button>
+              <button type="button" data-img title="Image">🖼️</button>
+              <button type="button" data-cmd="removeFormat" title="Nettoyer">✕</button>
+            </div>
+            <div class="rte" id="leContenu" contenteditable="true" data-placeholder="Écris ta leçon ici…"></div>
+            <input type="file" id="leImgInput" accept="image/*" style="display:none">
+          </div>
+          <div class="le-field">
+            <label>PDF de la leçon (facultatif)</label>
+            <div class="pdf-drop" id="lePdfDrop">
+              <span id="lePdfTxt">Clique pour joindre un PDF (facultatif)</span>
+            </div>
+            <input type="file" id="lePdfInput" accept=".pdf,application/pdf" style="display:none">
+          </div>
+          <div class="le-field">
+            <label>Auteur / crédit (facultatif)</label>
+            <input type="text" id="leAuteur" placeholder="Ton nom, ou celui du contributeur">
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-dark" id="leSave">Publier la leçon <span>→</span></button>
+            <button class="btn btn-ghost" id="leCancel" style="display:none;color:var(--encre);border-color:var(--craie-2)">Annuler</button>
+          </div>
+        </div>
+
+        <div class="lecon-list-wrap">
+          <h2>Leçons publiées</h2>
+          <div class="filters" id="leconFilters">
+            <button class="filter on" data-lf="all">Toutes</button>
+            <button class="filter" data-lf="f1">Filière 1</button>
+            <button class="filter" data-lf="f2">Filière 2</button>
+            <button class="filter" data-lf="f3">Filière 3</button>
+          </div>
+          <div id="leconList"><p class="empty">Chargement…</p></div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -103,6 +182,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/admin-lecons.js"></script>
 <script src="js/passeye.js"></script>
 </body>
 </html>
