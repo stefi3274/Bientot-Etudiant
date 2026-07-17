@@ -1,9 +1,8 @@
-/* Page matière — récupère le nom et l'emoji depuis l'URL */
+/* Page matière — récupère le nom de la matière depuis l'URL */
 (function () {
   const params = new URLSearchParams(location.search);
   const m = params.get("m") || "Matière";
   const f = params.get("f") || "";
-  const emoji = params.get("e") || "📚";
 
   const filiereNoms = {
     f1: "Médecine, Agronomie & Vétérinaire",
@@ -16,6 +15,5 @@
 
   setTxt("mTitre", m);
   setTxt("mBread", m);
-  setTxt("mEmoji", emoji);
   setTxt("mFiliere", filiereNoms[f] || "Matière");
 })();
