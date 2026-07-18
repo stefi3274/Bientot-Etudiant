@@ -26,6 +26,20 @@
 
     const retour = 'matiere.html?f=' + l.filiere + '&m=' + encodeURIComponent(l.matiere);
 
+    // Chercher un quiz rattaché à cette leçon
+    let quizBtn = "";
+    const { data: qz } = await DB.from("quiz").select("id, titre, duree_sec, questions(count)")
+      .eq("lecon_id", l.id).eq("publie", true).maybeSingle();
+    if (qz) {
+      const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
+      quizBtn = '<div class="lecon-quiz-cta">'
+        + '<div class="lqc-txt"><span class="lqc-kick">Teste-toi</span>'
+        + '<b>' + esc(qz.titre) + '</b>'
+        + '<span class="lqc-meta">' + nbQ + ' questions · ' + Math.round(qz.duree_sec/60) + ' min chronométrées</span></div>'
+        + '<a class="btn btn-dark" href="quiz.html?id=' + qz.id + '">Passer le quiz <span>→</span></a>'
+        + '</div>';
+    }
+
     zone.innerHTML =
       '<div class="lecture-head">'
       + '<span class="lh-num">' + esc(l.matiere) + ' · Leçon ' + (l.ordre || 1) + '</span>'
@@ -38,6 +52,7 @@
           ? '<div class="lecture-pdf"><b>📄 ' + esc(l.pdf_nom || "Document PDF") + '</b>'
             + '<a class="btn btn-dark" href="' + esc(l.pdf_url) + '" target="_blank" rel="noopener" download>Télécharger le PDF <span>→</span></a></div>'
           : '')
+      + quizBtn
       + '<div class="lecture-nav"><a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="' + retour + '">← Toutes les leçons de ' + esc(l.matiere) + '</a></div>';
   })();
 })();

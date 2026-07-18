@@ -14,14 +14,15 @@
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-  // ---------- Onglets admin (indépendants de Supabase) ----------
+  // ---------- Onglets admin (gère les 3 : contrib, lecons, quiz) ----------
   document.querySelectorAll(".adm-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       const t = tab.getAttribute("data-tab");
       document.querySelectorAll(".adm-tab").forEach(x => x.classList.toggle("on", x === tab));
-      const c = $("tab-contrib"), l = $("tab-lecons");
-      if (c) c.style.display = (t === "contrib") ? "block" : "none";
-      if (l) l.style.display = (t === "lecons") ? "block" : "none";
+      ["contrib", "lecons", "quiz"].forEach(k => {
+        const el = $("tab-" + k);
+        if (el) el.style.display = (t === k) ? "block" : "none";
+      });
       if (t === "lecons" && window.DB) chargerLecons();
     });
   });

@@ -87,6 +87,7 @@
         <div class="adm-tabs">
           <button class="adm-tab on" data-tab="contrib">Contributions</button>
           <button class="adm-tab" data-tab="lecons">Leçons</button>
+          <button class="adm-tab" data-tab="quiz">Quiz</button>
         </div>
         <button class="btn btn-ghost" id="logoutBtn" style="color:var(--encre);border-color:var(--craie-2)">Déconnexion</button>
       </div>
@@ -174,6 +175,64 @@
         </div>
       </div>
 
+      <!-- ONGLET QUIZ -->
+      <div id="tab-quiz" style="display:none">
+        <div class="lecon-editor">
+          <h2 id="quizFormTitre">Nouveau quiz</h2>
+          <div class="status-msg" id="quizMsg"></div>
+          <div class="le-field">
+            <label>Type de quiz</label>
+            <div class="qz-type-choix">
+              <label class="qz-type-opt"><input type="radio" name="qzType" value="lecon" checked><span>Quiz de leçon</span><small>Rattaché à une leçon</small></label>
+              <label class="qz-type-opt rainbow"><input type="radio" name="qzType" value="dimanche"><span>Quiz du dimanche</span><small>Grand quiz spécial</small></label>
+            </div>
+          </div>
+          <div class="le-row">
+            <div class="le-field">
+              <label>Filière</label>
+              <select id="qzFiliere">
+                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
+                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
+                <option value="f3">Sciences humaines et sociales</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière</label>
+              <select id="qzMatiere"></select>
+            </div>
+          </div>
+          <div class="le-field" id="qzLeconWrap">
+            <label>Leçon à rattacher</label>
+            <select id="qzLecon"><option value="">— Choisir une leçon —</option></select>
+            <p class="qz-hint">Le quiz sera proposé à la fin de cette leçon.</p>
+          </div>
+          <div class="le-row">
+            <div class="le-field">
+              <label>Titre du quiz</label>
+              <input type="text" id="qzTitre" placeholder="Ex. Les fonctions - niveau 1">
+            </div>
+            <div class="le-field">
+              <label>Durée (minutes)</label>
+              <input type="number" id="qzDuree" value="10" min="1" max="180">
+            </div>
+          </div>
+
+          <h3 style="font-family:var(--serif);margin:20px 0 12px">Questions</h3>
+          <div id="qzQuestions"></div>
+          <button type="button" class="btn btn-ghost" id="qzAddQ" style="color:var(--encre);border-color:var(--craie-2);margin-top:8px">+ Ajouter une question</button>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+            <button class="btn btn-dark" id="qzSave">Publier le quiz <span>→</span></button>
+            <button class="btn btn-ghost" id="qzCancel" style="display:none;color:var(--encre);border-color:var(--craie-2)">Annuler</button>
+          </div>
+        </div>
+
+        <div class="lecon-list-wrap">
+          <h2>Quiz publiés</h2>
+          <div id="quizList"><p class="empty">Chargement…</p></div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -183,6 +242,7 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/admin-lecons.js"></script>
+<script src="js/admin-quiz.js"></script>
 <script src="js/passeye.js"></script>
 </body>
 </html>
