@@ -88,6 +88,7 @@
           <button class="adm-tab on" data-tab="contrib">Contributions</button>
           <button class="adm-tab" data-tab="lecons">Leçons</button>
           <button class="adm-tab" data-tab="quiz">Quiz</button>
+          <button class="adm-tab" data-tab="generer">Générer</button>
         </div>
         <button class="btn btn-ghost" id="logoutBtn" style="color:var(--encre);border-color:var(--craie-2)">Déconnexion</button>
       </div>
@@ -233,6 +234,48 @@
         </div>
       </div>
 
+      <!-- ONGLET GÉNÉRER -->
+      <div id="tab-generer" style="display:none">
+        <div class="lecon-editor">
+          <h2>Générer une leçon + un quiz depuis un texte</h2>
+          <div class="status-msg" id="geMsg"></div>
+          <div class="le-row">
+            <div class="le-field">
+              <label>Filière</label>
+              <select id="geFiliere">
+                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
+                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
+                <option value="f3">Sciences humaines et sociales</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière</label>
+              <select id="geMatiere"></select>
+            </div>
+          </div>
+          <div class="le-field">
+            <label>Fichier source (PDF, Word .doc/.docx, ODT, max 3 Mo — facultatif si tu colles le texte ci-dessous)</label>
+            <div class="pdf-drop" id="geFichierDrop">
+              <span id="geFichierTxt">Clique pour choisir un fichier</span>
+            </div>
+            <input type="file" id="geFichierInput" accept=".pdf,.docx,.doc,.odt,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.oasis.opendocument.text,text/plain" style="display:none">
+          </div>
+          <div class="le-field">
+            <label>Ou colle le texte ici</label>
+            <textarea id="geTexte" rows="10" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:var(--corps);font-size:.95rem" placeholder="Colle ici le texte à transformer en leçon + quiz…"></textarea>
+          </div>
+          <button class="btn btn-dark" id="geGenerer">Générer la leçon et le quiz <span>→</span></button>
+
+          <div id="geApercuZone" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--craie-2)">
+            <h3 style="font-family:var(--serif);margin-bottom:8px">Aperçu du résultat</h3>
+            <p style="margin-bottom:4px"><b id="geApercuTitre"></b></p>
+            <p style="color:var(--encre-2);font-size:.9rem;margin-bottom:6px" id="geApercuTexte"></p>
+            <p style="color:var(--encre-2);font-size:.85rem;margin-bottom:16px" id="geApercuNbQ"></p>
+            <button class="btn btn-ghost" id="geAppliquer" style="display:none;color:var(--encre);border-color:var(--craie-2)">Appliquer aux onglets Leçon/Quiz <span>→</span></button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -243,6 +286,7 @@
 <script src="js/admin.js"></script>
 <script src="js/admin-lecons.js"></script>
 <script src="js/admin-quiz.js"></script>
+<script src="js/admin-generer.js"></script>
 <script src="js/passeye.js"></script>
 </body>
 </html>

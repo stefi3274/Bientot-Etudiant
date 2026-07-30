@@ -81,6 +81,13 @@
 
   if ($("qzAddQ")) $("qzAddQ").addEventListener("click", () => ajouterQuestion());
 
+  // Utilisée par admin-generer.js pour préremplir les questions générées par l'API
+  window.BQ_remplirQuestions = function (questions) {
+    qBox.innerHTML = ""; qCount = 0;
+    (questions || []).forEach(q => ajouterQuestion(q));
+    if (!questions || !questions.length) ajouterQuestion();
+  };
+
   // ---------- Onglet quiz : init au premier affichage ----------
   let initFait = false;
   document.querySelectorAll('.adm-tab[data-tab="quiz"]').forEach(t => {
