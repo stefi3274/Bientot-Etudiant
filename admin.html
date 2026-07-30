@@ -21,6 +21,11 @@
   .field input:focus,.field select:focus{outline:none;border-color:var(--ocre)}
   .a-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:28px}
   .a-head h1{font-size:1.9rem}
+  .adm-tabs{display:flex;gap:6px;flex-wrap:wrap}
+  @media (max-width:640px){
+    .adm-tab{font-size:.82rem;padding:8px 12px}
+    .a-head{gap:10px}
+  }
   .filters{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
   .filter{background:none;border:1px solid var(--craie-2);color:var(--encre-2);font-family:inherit;font-weight:600;font-size:.85rem;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s}
   .filter:hover{border-color:var(--ocre)}

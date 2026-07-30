@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "mammoth": "^1.8.0",
-    "pdfjs-dist": "^4.0.379",
+    "pdfjs-dist": "^3.11.174",
     "jszip": "^3.10.1",
     "word-extractor": "^1.0.4"
   }
