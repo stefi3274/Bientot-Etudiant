@@ -17,9 +17,23 @@ async function extraireTexteFichier(base64, nomFichier) {
     return buffer.toString("utf-8");
   }
   if (ext === "pdf") {
-    const pdfParse = require("pdf-parse");
-    const data = await pdfParse(buffer);
-    return data.text || "";
+    const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve("pdfjs-dist/legacy/build/pdf.worker.js");
+    let texte = "";
+    try {
+      const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer), disableFontFace: true, useSystemFonts: false }).promise;
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const contenu = await page.getTextContent();
+        texte += contenu.items.map(it => it.str).join(" ") + "\n\n";
+      }
+    } catch (e) {
+      throw new Error("Impossible de lire ce PDF (fichier corrompu ou protégé). Réexporte-le ou colle le texte directement.");
+    }
+    if (!texte.trim()) {
+      throw new Error("Aucun texte trouvé dans ce PDF — c'est probablement un scan sans couche de texte (image). Colle le texte directement.");
+    }
+    return texte;
   }
   if (ext === "docx") {
     const mammoth = require("mammoth");
