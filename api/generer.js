@@ -88,20 +88,28 @@ Voici un texte source fourni par un contributeur :
 ${texteSource.trim()}
 """
 
-À partir de ce texte, produis :
-1. Une LEÇON claire et bien organisée pour des candidats au concours (titre, aperçu en une phrase, contenu structuré en HTML simple : balises <h3>, <p>, <ul>/<li>, <b> uniquement — pas de <html>/<body>/<style>, pas de classes CSS).
-2. Un QUIZ de 5 questions à choix multiples (4 choix chacune) qui teste la compréhension du contenu de la leçon. Une seule bonne réponse par question.
+Ta tâche :
+- Si le texte est court ou traite d'un seul sujet cohérent, produis UNE SEULE leçon.
+- Si le texte est long ou couvre plusieurs sous-thèmes distincts, découpe-le en PLUSIEURS leçons cohérentes (une leçon par sous-thème, ~400 à 900 mots chacune), dans l'ordre logique de progression.
+
+Pour CHAQUE leçon, produis :
+1. Un titre, un aperçu (une phrase, max 160 caractères), un contenu HTML simple (balises <h3>, <p>, <ul>/<li>, <b> uniquement — pas de <html>/<body>/<style>, pas de classes CSS).
+2. Un quiz de 5 questions à choix multiples (4 choix chacune, une seule bonne réponse) qui teste la compréhension de CETTE leçon précise.
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après, sans balises markdown, au format exact suivant :
 {
-  "titre": "string",
-  "apercu": "string (une phrase, max 160 caractères)",
-  "contenu_html": "string (HTML de la leçon)",
-  "questions": [
-    { "enonce": "string", "choix_a": "string", "choix_b": "string", "choix_c": "string", "choix_d": "string", "bonne": "a" }
+  "lecons": [
+    {
+      "titre": "string",
+      "apercu": "string",
+      "contenu_html": "string",
+      "questions": [
+        { "enonce": "string", "choix_a": "string", "choix_b": "string", "choix_c": "string", "choix_d": "string", "bonne": "a" }
+      ]
+    }
   ]
 }
-Le tableau "questions" doit contenir exactement 5 éléments. "bonne" doit être "a", "b", "c" ou "d".`;
+Chaque tableau "questions" doit contenir exactement 5 éléments. "bonne" doit être "a", "b", "c" ou "d". Le tableau "lecons" contient 1 élément si le sujet est simple, ou plusieurs si le texte couvre plusieurs sous-thèmes.`;
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
@@ -113,7 +121,7 @@ Le tableau "questions" doit contenir exactement 5 éléments. "bonne" doit être
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        max_tokens: 4000,
+        max_tokens: 8000,
         messages: [{ role: "user", content: prompt }]
       })
     });
@@ -137,9 +145,15 @@ Le tableau "questions" doit contenir exactement 5 éléments. "bonne" doit être
       return;
     }
 
-    if (!parsed.titre || !parsed.contenu_html || !Array.isArray(parsed.questions)) {
+    if (!parsed.lecons || !Array.isArray(parsed.lecons) || !parsed.lecons.length) {
       res.status(502).json({ error: "Réponse incomplète de Claude, réessaie." });
       return;
+    }
+    for (const l of parsed.lecons) {
+      if (!l.titre || !l.contenu_html || !Array.isArray(l.questions)) {
+        res.status(502).json({ error: "Une leçon générée est incomplète, réessaie." });
+        return;
+      }
     }
 
     res.status(200).json(parsed);

@@ -19,7 +19,7 @@
     tab.addEventListener("click", () => {
       const t = tab.getAttribute("data-tab");
       document.querySelectorAll(".adm-tab").forEach(x => x.classList.toggle("on", x === tab));
-      ["contrib", "lecons", "quiz", "generer"].forEach(k => {
+      ["contrib", "lecons", "quiz", "generer", "carousels"].forEach(k => {
         const el = $("tab-" + k);
         if (el) el.style.display = (t === k) ? "block" : "none";
       });
