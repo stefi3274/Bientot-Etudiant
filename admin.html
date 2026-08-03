@@ -93,7 +93,6 @@
           <button class="adm-tab on" data-tab="contrib">Contributions</button>
           <button class="adm-tab" data-tab="lecons">Leçons</button>
           <button class="adm-tab" data-tab="quiz">Quiz</button>
-          <button class="adm-tab" data-tab="generer">Générer</button>
           <button class="adm-tab" data-tab="carousels">Carousels</button>
           <button class="adm-tab" data-tab="fiche">Fiche</button>
         </div>
@@ -241,108 +240,6 @@
         </div>
       </div>
 
-      <!-- ONGLET GÉNÉRER -->
-      <div id="tab-generer" style="display:none">
-        <div class="lecon-editor">
-          <h2>Générer une leçon + un quiz</h2>
-          <div class="status-msg" id="geMsg"></div>
-
-          <div class="le-field">
-            <label>Mode</label>
-            <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:6px">
-              <label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer">
-                <input type="radio" name="geMode" id="geModeIA" checked> Texte/fichier brut → IA (~0,01-0,02$/génération)
-              </label>
-              <label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer">
-                <input type="radio" name="geMode" id="geModeManuel"> Texte déjà structuré → import gratuit
-              </label>
-            </div>
-          </div>
-
-          <div class="le-row">
-            <div class="le-field">
-              <label>Filière</label>
-              <select id="geFiliere">
-                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
-                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
-                <option value="f3">Sciences humaines et sociales</option>
-              </select>
-            </div>
-            <div class="le-field">
-              <label>Matière</label>
-              <select id="geMatiere"></select>
-            </div>
-          </div>
-
-          <div id="geZoneIA">
-            <div class="le-field">
-              <label>Fichier source (PDF, Word .doc/.docx, ODT, max 3 Mo — facultatif si tu colles le texte ci-dessous)</label>
-              <div class="pdf-drop" id="geFichierDrop">
-                <span id="geFichierTxt">Clique pour choisir un fichier</span>
-              </div>
-              <input type="file" id="geFichierInput" accept=".pdf,.docx,.doc,.odt,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.oasis.opendocument.text,text/plain" style="display:none">
-            </div>
-            <div class="le-field">
-              <label>Ou colle le texte ici</label>
-              <textarea id="geTexte" rows="10" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:var(--corps);font-size:.95rem" placeholder="Colle ici le texte à transformer en leçon + quiz…"></textarea>
-            </div>
-            <button class="btn btn-dark" id="geGenerer">Générer avec l'IA <span>→</span></button>
-          </div>
-
-          <div id="geZoneManuel" style="display:none">
-            <div class="le-field">
-              <label>Colle ta leçon + ton quiz déjà rédigés (format ci-dessous) — <a href="#" id="geVoirFormat" style="color:var(--marine,#0e3a5c)">voir un exemple</a></label>
-              <pre id="geExempleFormat" style="display:none;background:var(--craie2,#ede8da);padding:14px;border-radius:10px;font-size:.82rem;white-space:pre-wrap;margin-bottom:10px">TITRE: La conscience
-APERCU: Une phrase qui résume la leçon
----
-Premier paragraphe de la leçon.
-
-Deuxième paragraphe.
-
-- Un point de liste
-- Un autre point
-
-===QUIZ===
-1. Énoncé de la première question ?
-A) Choix A
-B) Choix B
-C) Choix C
-D) Choix D
-Réponse: B
-
-2. Deuxième question ?
-A) ...
-B) ...
-C) ...
-D) ...
-Réponse: A
-
-Pour plusieurs leçons d'un coup, sépare chaque bloc complet par une ligne :
-%%%LECON%%%</pre>
-              <textarea id="geTexteManuel" rows="14" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:ui-monospace,monospace;font-size:.88rem" placeholder="TITRE: ...
-APERCU: ...
----
-(contenu)
-
-===QUIZ===
-1. ...
-A) ...
-B) ...
-C) ...
-D) ...
-Réponse: B"></textarea>
-            </div>
-            <button class="btn btn-dark" id="geImporter">Importer (gratuit) <span>→</span></button>
-          </div>
-
-          <div id="geApercuZone" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--craie-2)">
-            <h3 style="font-family:var(--serif);margin-bottom:8px">Aperçu du résultat</h3>
-            <div id="geApercuListe" style="margin-bottom:16px"></div>
-            <button class="btn btn-ghost" id="geAppliquer" style="display:none;color:var(--encre);border-color:var(--craie-2)">Appliquer <span>→</span></button>
-          </div>
-        </div>
-      </div>
-
       <!-- ONGLET CAROUSELS -->
       <div id="tab-carousels" style="display:none">
         <div class="lecon-editor">
@@ -381,7 +278,7 @@ Réponse: B"></textarea>
       <!-- ONGLET FICHE (leçon + quiz combinés, pour toi) -->
       <div id="tab-fiche" style="display:none">
         <div class="lecon-editor">
-          <h2>Fiche — leçon + quiz en un seul écran</h2>
+          <h2>Fiche — leçon + quiz en un seul texte</h2>
           <div class="status-msg" id="fiMsg"></div>
 
           <div class="le-row">
@@ -399,22 +296,54 @@ Réponse: B"></textarea>
             </div>
           </div>
 
-          <div class="le-field"><label>Titre de la leçon</label><input type="text" id="fiTitre" placeholder="Titre"></div>
-          <div class="le-field"><label>Aperçu (une phrase)</label><input type="text" id="fiApercu" placeholder="Résumé en une phrase"></div>
           <div class="le-field">
-            <label>Contenu (un paragraphe par ligne vide ; "- point" pour une liste)</label>
-            <textarea id="fiContenu" rows="8" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:var(--corps);font-size:.95rem" placeholder="Premier paragraphe…
+            <label>Colle ta leçon + ton quiz (format ci-dessous) — <a href="#" id="fiVoirFormat">voir un exemple</a></label>
+            <pre id="fiExempleFormat" style="display:none;background:var(--craie-2);padding:14px;border-radius:10px;font-size:.82rem;white-space:pre-wrap;margin-bottom:10px">TITRE: La conscience
+APERCU: Une phrase qui résume la leçon
+---
+Premier paragraphe de la leçon.
 
-Deuxième paragraphe…
+Deuxième paragraphe.
 
-- Point de liste
-- Autre point"></textarea>
+- Un point de liste
+- Un autre point
+
+===QUIZ===
+1. Énoncé de la première question ?
+A) Choix A
+B) Choix B
+C) Choix C
+D) Choix D
+Réponse: B
+
+2. Deuxième question ?
+A) ...
+B) ...
+C) ...
+D) ...
+Réponse: A
+
+Pour plusieurs leçons d'un coup, sépare chaque bloc complet par une ligne :
+%%%LECON%%%</pre>
+            <textarea id="fiTexte" rows="18" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:ui-monospace,monospace;font-size:.88rem" placeholder="TITRE: ...
+APERCU: ...
+---
+(contenu)
+
+===QUIZ===
+1. ...
+A) ...
+B) ...
+C) ...
+D) ...
+Réponse: B"></textarea>
           </div>
+          <button class="btn btn-dark" id="fiPublier">Publier (tout automatique) <span>→</span></button>
 
-          <div id="fiQuestions"></div>
-          <button type="button" class="btn btn-ghost" id="fiAddQ" style="margin:10px 0 20px">+ Ajouter une question</button>
-          <br>
-          <button class="btn btn-dark" id="fiPublier">Publier la fiche (leçon + quiz) <span>→</span></button>
+          <div id="fiApercuZone" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--craie-2)">
+            <h3 style="font-family:var(--serif)">Résultat</h3>
+            <div id="fiApercuListe"></div>
+          </div>
         </div>
       </div>
 
@@ -429,7 +358,6 @@ Deuxième paragraphe…
 <script src="js/admin-lecons.js"></script>
 <script src="js/admin-quiz.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="js/admin-generer.js"></script>
 <script src="js/admin-carousel.js"></script>
 <script src="js/admin-fiche.js"></script>
 <script src="js/passeye.js"></script>

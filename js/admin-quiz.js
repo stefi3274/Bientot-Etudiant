@@ -81,7 +81,7 @@
 
   if ($("qzAddQ")) $("qzAddQ").addEventListener("click", () => ajouterQuestion());
 
-  // Utilisée par admin-generer.js pour préremplir les questions générées par l'API
+  // Fonction exposée globalement (non utilisée actuellement, gardée si besoin futur de préremplissage)
   window.BQ_remplirQuestions = function (questions) {
     qBox.innerHTML = ""; qCount = 0;
     (questions || []).forEach(q => ajouterQuestion(q));
