@@ -48,7 +48,7 @@
   <div class="wrap hero-in">
     <span class="eyebrow">Concours d'entrée à l'université</span>
     <h1>Prépare <span class="chalk">aujourd'hui</span>.<br>Réussis demain.</h1>
-    <p>La plateforme qui accompagne les postulant.e.s haïtien.ne.s vers la faculté. Révise par matière, entraîne-toi, et arrive au concours prêt.</p>
+    <p>La plateforme qui accompagne les postulant.e.s haïtien.ne.s vers la faculté.</p>
     <div class="hero-actions">
       <a href="#explorerSection" class="btn btn-primary">Voir les leçons et quiz <span>→</span></a>
     </div>
@@ -72,29 +72,10 @@
 <!-- ===== EXPLORER LES LEÇONS/QUIZ ===== -->
 <section class="explorer" id="explorerSection">
   <div class="wrap">
-    <div class="sec-head">
-      <span class="kicker">Droit au but</span>
-      <h2>Leçons et quiz par matière</h2>
-      <p>Choisis ta filière, puis ta matière.</p>
-    </div>
-    <div class="filters" id="expFiliereBtns">
-      <button class="filter on" data-f="f1">Médecine, Agro &amp; Véto</button>
-      <button class="filter" data-f="f2">Sciences admin, Éco &amp; Génie</button>
-      <button class="filter" data-f="f3">Sciences humaines et sociales</button>
-    </div>
+    <div class="filters" id="expFiliereBtns"></div>
+    <p class="exp-filiere-label" id="expFiliereLabel"></p>
     <div class="filters" id="expMatiereBtns"></div>
     <div id="expZone"></div>
-  </div>
-</section>
-
-<!-- ===== CTA ===== -->
-<section>
-  <div class="wrap">
-    <div class="cta-band reveal">
-      <h2>Ta place à l'université t'attend</h2>
-      <p>Commence dès aujourd'hui. Chaque révision te rapproche du concours.</p>
-      <a href="#explorerSection" class="btn btn-primary">Voir les leçons et quiz <span>→</span></a>
-    </div>
   </div>
 </section>
 
@@ -130,10 +111,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
-<script src="js/quiz-du-jour.js"></script>
-<script src="js/explorer-accueil.js"></script>
 <script src="js/main.js"></script>
 <script src="js/eleve.js"></script>
+<script src="js/quiz-du-jour.js"></script>
+<script src="js/explorer-accueil.js"></script>
 <script src="js/icons.js"></script>
 </body>
 </html>

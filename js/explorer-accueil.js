@@ -1,11 +1,17 @@
 /* ============================================================
-   Page d'accueil — explorer les leçons et quiz par filière/matière
-   directement sur l'accueil, sans changer de page.
+   Page d'accueil — explorer les leçons et quiz par filière/matière.
+   - N'affiche que les filières/matières qui ont déjà du contenu publié.
+   - Si l'utilisateur est connecté, ne montre que SA (ses) filière(s).
    ============================================================ */
 (function () {
   const zone = document.getElementById("expZone");
   if (!zone) return;
 
+  const FILIERES = {
+    f1: "Médecine, Agronomie & Vétérinaire",
+    f2: "Sciences administratives, Économie & Génie",
+    f3: "Sciences humaines et sociales"
+  };
   const MATIERES = {
     f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français"],
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale"],
@@ -16,14 +22,55 @@
 
   const filBtns = document.getElementById("expFiliereBtns");
   const matBtns = document.getElementById("expMatiereBtns");
-  let filiereActuelle = "f1", matiereActuelle = null;
+  const labelFil = document.getElementById("expFiliereLabel");
+
+  let disponibles = {};   // { f1: Set(matières disponibles), f2: Set(...), f3: Set(...) }
+  let filieresAffichees = ["f1", "f2", "f3"];
+  let filiereActuelle = null, matiereActuelle = null;
+
+  async function chargerDisponibilites() {
+    if (typeof DB === "undefined" || !DB) return;
+    const [{ data: lecons }, { data: quiz }] = await Promise.all([
+      DB.from("lecons").select("filiere, matiere").eq("publie", true),
+      DB.from("quiz").select("filiere, matiere").eq("publie", true)
+    ]);
+    disponibles = { f1: new Set(), f2: new Set(), f3: new Set() };
+    (lecons || []).forEach(l => { if (disponibles[l.filiere]) disponibles[l.filiere].add(l.matiere); });
+    (quiz || []).forEach(q => { if (disponibles[q.filiere]) disponibles[q.filiere].add(q.matiere); });
+  }
+
+  function filieresAvecContenu() {
+    return ["f1", "f2", "f3"].filter(f => disponibles[f] && disponibles[f].size > 0);
+  }
+
+  function rendreFiliereBtns() {
+    filBtns.innerHTML = filieresAffichees.map((f, i) =>
+      '<button class="filter' + (f === filiereActuelle ? ' on' : '') + '" data-f="' + f + '">' + esc(FILIERES[f]) + '</button>'
+    ).join("");
+    filBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
+      filiereActuelle = b.dataset.f;
+      rendreFiliereBtns();
+      majMatieres();
+    }));
+  }
 
   function majMatieres() {
     document.body.setAttribute("data-filiere", filiereActuelle);
-    matBtns.innerHTML = (MATIERES[filiereActuelle] || []).map((m, i) =>
+    labelFil.textContent = FILIERES[filiereActuelle] || "";
+
+    const dispo = disponibles[filiereActuelle] || new Set();
+    const matieresDisponibles = (MATIERES[filiereActuelle] || []).filter(m => dispo.has(m));
+
+    if (!matieresDisponibles.length) {
+      matBtns.innerHTML = "";
+      zone.innerHTML = '<p class="exp-empty">Pas encore de contenu publié pour ' + esc(FILIERES[filiereActuelle]) + '. Reviens bientôt !</p>';
+      return;
+    }
+
+    matBtns.innerHTML = matieresDisponibles.map((m, i) =>
       '<button class="filter' + (i === 0 ? ' on' : '') + '" data-m="' + esc(m) + '">' + esc(m) + '</button>'
     ).join("");
-    matiereActuelle = (MATIERES[filiereActuelle] || [])[0] || null;
+    matiereActuelle = matieresDisponibles[0];
     matBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
       matBtns.querySelectorAll(".filter").forEach(x => x.classList.remove("on"));
       b.classList.add("on");
@@ -33,16 +80,8 @@
     charger();
   }
 
-  filBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
-    filBtns.querySelectorAll(".filter").forEach(x => x.classList.remove("on"));
-    b.classList.add("on");
-    filiereActuelle = b.dataset.f;
-    majMatieres();
-  }));
-
   async function charger() {
-    if (!matiereActuelle) return;
-    if (typeof DB === "undefined" || !DB) return;
+    if (!matiereActuelle || typeof DB === "undefined" || !DB) return;
     zone.innerHTML = '<p class="exp-empty">Chargement…</p>';
 
     const { data: lecons } = await DB.from("lecons")
@@ -56,7 +95,7 @@
       .order("created_at", { ascending: false });
 
     if ((!lecons || !lecons.length) && (!quiz || !quiz.length)) {
-      zone.innerHTML = '<p class="exp-empty">Pas encore de contenu pour ' + esc(matiereActuelle) + '. Reviens bientôt !</p>';
+      zone.innerHTML = '<p class="exp-empty">Pas encore de contenu pour ' + esc(matiereActuelle) + '.</p>';
       return;
     }
 
@@ -74,7 +113,7 @@
         + '</div>';
     }
     if (quiz && quiz.length) {
-      html += '<div class="lecons-head" style="margin-top:32px"><h2>' + quiz.length + (quiz.length > 1 ? " quiz" : " quiz") + '</h2></div>'
+      html += '<div class="lecons-head" style="margin-top:32px"><h2>' + quiz.length + " quiz" + '</h2></div>'
         + '<div class="lecons-grid">'
         + quiz.map(q => {
             const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
@@ -90,5 +129,28 @@
     zone.innerHTML = html;
   }
 
-  majMatieres();
+  (async function init() {
+    await chargerDisponibilites();
+    const avecContenu = filieresAvecContenu();
+
+    let filieresEtudiant = null;
+    if (typeof eleveActuel === "function") {
+      try {
+        const el = await eleveActuel();
+        if (el && el.nom && el.filieres && el.filieres.length) filieresEtudiant = el.filieres;
+      } catch (e) { /* pas connecté ou erreur silencieuse */ }
+    }
+
+    if (filieresEtudiant) {
+      // Connecté : uniquement SA/ses filière(s)
+      filieresAffichees = filieresEtudiant;
+    } else {
+      // Invité : uniquement les filières qui ont du contenu (repli sur les 3 si aucune n'a encore de contenu)
+      filieresAffichees = avecContenu.length ? avecContenu : ["f1", "f2", "f3"];
+    }
+
+    filiereActuelle = filieresAffichees[0];
+    rendreFiliereBtns();
+    majMatieres();
+  })();
 })();

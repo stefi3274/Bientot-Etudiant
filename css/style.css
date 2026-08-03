@@ -647,3 +647,4 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 /* ===== EXPLORER ===== */
 .explorer{padding:30px 0 60px}
 .explorer .exp-empty{text-align:center;color:var(--encre-2);padding:40px 0;font-style:italic}
+.exp-filiere-label{font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ocre-d);margin:-6px 0 14px}
