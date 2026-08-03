@@ -63,19 +63,20 @@
     chargerQuiz();
   })();
 
-  // ---------- Quiz de la matière ----------
+  // ---------- Quiz de la matière (tous types : liés à une leçon + quiz du dimanche) ----------
   async function chargerQuiz() {
     if (typeof DB === "undefined" || !DB) return;
     const { data } = await DB.from("quiz")
       .select("id, titre, duree_sec, type, questions(count)")
-      .eq("filiere", f).eq("matiere", m).eq("publie", true).eq("type", "dimanche")
+      .eq("filiere", f).eq("matiere", m).eq("publie", true)
       .order("created_at", { ascending: false });
     if (!data || data.length === 0) return;
 
     const cartes = data.map(q => {
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
-      return '<a class="lecon-carte quiz-carte dimanche" href="quiz.html?id=' + q.id + '">'
-        + '<span class="lc-num">Quiz du dimanche</span>'
+      const estDimanche = q.type === "dimanche";
+      return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' dimanche' : '') + '" href="quiz.html?id=' + q.id + '">'
+        + '<span class="lc-num">' + (estDimanche ? 'Quiz du dimanche' : 'Quiz') + '</span>'
         + '<h3>' + esc(q.titre) + '</h3>'
         + '<p>' + nbQ + ' questions \u00b7 ' + Math.round(q.duree_sec/60) + ' min chronom\u00e9tr\u00e9es</p>'
         + '<span class="lc-go">Relever le d\u00e9fi \u2192</span></a>';
@@ -83,7 +84,7 @@
 
     const bloc = document.createElement("div");
     bloc.innerHTML =
-      '<div class="lecons-head" style="margin-top:40px"><h2>Quiz du dimanche</h2></div>'
+      '<div class="lecons-head" style="margin-top:40px"><h2>Quiz disponibles</h2></div>'
       + '<div class="lecons-grid">' + cartes + '</div>';
     zone.appendChild(bloc);
   }

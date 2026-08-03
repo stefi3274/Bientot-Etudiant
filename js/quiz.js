@@ -9,7 +9,7 @@
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const fmtTemps = s => Math.floor(s/60) + ":" + String(s%60).padStart(2,"0");
 
-  let quiz = null, questions = [], reponses = {}, tempsRestant = 0, timer = null, tempsMis = 0, demarre = 0;
+  let quiz = null, questions = [], reponses = {}, tempsRestant = 0, timer = null, tempsMis = 0, demarre = 0, eleveConnecte = null;
 
   if (!id) { zone.innerHTML = "<p style='text-align:center'>Quiz introuvable.</p>"; return; }
 
@@ -22,11 +22,16 @@
     if (!qs || !qs.length) { zone.innerHTML = "<p style='text-align:center'>Ce quiz n'a pas encore de questions.</p>"; return; }
     questions = qs;
     if (quiz.filiere) document.body.setAttribute("data-filiere", quiz.filiere);
+    const el = await eleveActuel();
+    eleveConnecte = (el && el.nom) ? el : null;
     ecranIntro();
   })();
 
   // ---------- Écran d'intro ----------
   function ecranIntro() {
+    const blocClassementOuCompte = eleveConnecte
+      ? '<a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="classement.html?quiz=' + quiz.id + '">Voir le classement</a>'
+      : '<p class="qi-note" style="margin-top:14px">Tu peux faire ce quiz sans compte. <a href="inscription.html" style="font-weight:600">Crée un compte</a> pour enregistrer ta progression et apparaître au classement.</p>';
     zone.innerHTML =
       '<div class="quiz-intro">'
       + '<span class="qi-kicker">' + esc(quiz.matiere) + '</span>'
@@ -37,19 +42,10 @@
       + '<div class="qi-fact"><b>1</b><span>bonne réponse / question</span></div>'
       + '</div>'
       + '<p class="qi-note">Le chronomètre démarre dès que tu cliques. À la fin, tu verras ton score et les questions ratées.</p>'
-      + '<div id="introMsg"></div>'
       + '<button class="btn btn-dark" id="startBtn">Commencer le quiz <span>→</span></button>'
-      + ' <a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="classement.html?quiz=' + quiz.id + '">Voir le classement</a>'
+      + (eleveConnecte ? ' ' + blocClassementOuCompte : blocClassementOuCompte)
       + '</div>';
-    document.getElementById("startBtn").addEventListener("click", async () => {
-      const el = await eleveActuel();
-      if (!el || !el.nom) {
-        document.getElementById("introMsg").innerHTML =
-          '<div class="form-msg on err" style="margin-bottom:14px">Connecte-toi pour passer le quiz et apparaître au classement. <a href="connexion.html" style="font-weight:600">Se connecter</a></div>';
-        return;
-      }
-      demarrer();
-    });
+    document.getElementById("startBtn").addEventListener("click", demarrer);
   }
 
   // ---------- Déroulement ----------
@@ -106,12 +102,11 @@
       else ratees.push({ q, i, rep });
     });
 
-    // enregistrer la tentative
-    const el = await eleveActuel();
-    if (el && el.nom && DB) {
+    // enregistrer la tentative (uniquement si connecté)
+    if (eleveConnecte && DB) {
       const ent = await entrepriseId();
       await DB.from("tentatives").insert({
-        quiz_id: quiz.id, entreprise_id: ent, user_id: el.user_id, nom: el.nom,
+        quiz_id: quiz.id, entreprise_id: ent, user_id: eleveConnecte.user_id, nom: eleveConnecte.nom,
         filiere: quiz.filiere, matiere: quiz.matiere,
         score: score, total: questions.length, temps_sec: tempsMis
       });
@@ -145,7 +140,7 @@
       + '<p class="cr-legende"><span class="lg lg-bon">Vert = bonne réponse</span> · <span class="lg lg-mauvais">Rouge = ta réponse fausse</span></p>'
       + correctum + '</div>';
 
-    const prenom = (el && el.nom) ? el.nom.split(" ")[0] : "";
+    const prenom = (eleveConnecte && eleveConnecte.nom) ? eleveConnecte.nom.split(" ")[0] : "";
     const titreFelic = pct >= 80 ? "Bravo" : pct >= 50 ? "Bien joué" : "Courage";
     const felic = prenom ? (titreFelic + ", " + esc(prenom) + " !") : (titreFelic + " !");
 
@@ -162,6 +157,10 @@
       + '<button class="pt-btn cp" id="copyBtn" data-txt="' + esc(txtPartage + lien) + '">Copier</button>'
       + '</div></div>';
 
+    const actionClassementOuCompte = eleveConnecte
+      ? '<a class="btn btn-primary" href="classement.html?quiz=' + quiz.id + '">Voir le classement <span>→</span></a>'
+      : '<a class="btn btn-primary" href="inscription.html">Créer un compte pour suivre ma progression <span>→</span></a>';
+
     zone.innerHTML =
       '<div class="quiz-result">'
       + (tempsEcoule ? '<p class="temps-ecoule">⏱ Temps écoulé !</p>' : '')
@@ -171,7 +170,7 @@
       + partage
       + ratHtml
       + '<div class="quiz-result-actions">'
-      + '<a class="btn btn-primary" href="classement.html?quiz=' + quiz.id + '">Voir le classement <span>→</span></a>'
+      + actionClassementOuCompte
       + '<a class="btn btn-dark" href="quiz.html?id=' + quiz.id + '">Recommencer</a>'
       + '<a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="matiere.html?f=' + quiz.filiere + '&m=' + encodeURIComponent(quiz.matiere) + '">Retour à la matière</a>'
       + '</div></div>';

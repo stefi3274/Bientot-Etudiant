@@ -120,6 +120,24 @@
   </div>
 </section>
 
+<!-- ===== EXPLORER LES LEÇONS/QUIZ ===== -->
+<section class="explorer" id="explorerSection">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Explore le contenu</span>
+      <h2>Leçons et quiz par matière</h2>
+      <p>Choisis ta filière, puis ta matière, pour voir directement les leçons et quiz disponibles.</p>
+    </div>
+    <div class="filters" id="expFiliereBtns">
+      <button class="filter on" data-f="f1">Médecine, Agro &amp; Véto</button>
+      <button class="filter" data-f="f2">Sciences admin, Éco &amp; Génie</button>
+      <button class="filter" data-f="f3">Sciences humaines et sociales</button>
+    </div>
+    <div class="filters" id="expMatiereBtns"></div>
+    <div id="expZone"></div>
+  </div>
+</section>
+
 <!-- ===== COMMENT ÇA MARCHE ===== -->
 <section class="how" id="comment">
   <div class="wrap">
@@ -197,6 +215,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/quiz-du-jour.js"></script>
+<script src="js/explorer-accueil.js"></script>
 <script src="js/main.js"></script>
 <script src="js/eleve.js"></script>
 <script src="js/icons.js"></script>

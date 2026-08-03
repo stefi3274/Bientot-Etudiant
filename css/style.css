@@ -636,3 +636,14 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 @media (max-width:640px){
   .quiz-jour .qj-card{padding:24px 22px}
 }
+
+/* ===== FILTRES (filière / matière) ===== */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.filter{background:none;border:1px solid var(--craie-2);color:var(--encre-2);font-family:inherit;
+  font-weight:600;font-size:.85rem;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s}
+.filter:hover{border-color:var(--ocre)}
+.filter.on{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
+
+/* ===== EXPLORER ===== */
+.explorer{padding:30px 0 60px}
+.explorer .exp-empty{text-align:center;color:var(--encre-2);padding:40px 0;font-style:italic}
