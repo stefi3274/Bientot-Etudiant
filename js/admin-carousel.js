@@ -189,6 +189,90 @@
     return cv;
   }
 
+  function slidePromo(quiz) {
+    const cv = document.createElement("canvas"); cv.width = TAILLE; cv.height = TAILLE;
+    const ctx = cv.getContext("2d");
+    fondCommun(ctx);
+
+    ctx.fillStyle = COULEURS.f1;
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(80, 130, 380, 60, 30); ctx.fill(); }
+    ctx.fillStyle = COULEURS.craie;
+    ctx.font = "700 24px Inter, system-ui, sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.fillText("NOUVEAU QUIZ", 108, 160);
+    ctx.textBaseline = "alphabetic";
+
+    ctx.fillStyle = COULEURS.craie;
+    ctx.font = "600 70px Fraunces, Georgia, serif";
+    const lignes = decouperTexte(ctx, quiz.titre, TAILLE - 160);
+    let y = 300;
+    lignes.slice(0, 4).forEach(l => { ctx.fillText(l, 80, y); y += 80; });
+
+    ctx.fillStyle = "rgba(247,244,236,.75)";
+    ctx.font = "500 32px Inter, system-ui, sans-serif";
+    ctx.fillText((FILIERES[quiz.filiere] || quiz.filiere || "") + " · " + (quiz.matiere || ""), 80, y + 30);
+
+    ctx.fillStyle = COULEURS.ocre;
+    ctx.font = "600 34px Inter, system-ui, sans-serif";
+    ctx.fillText("Teste tes connaissances →", 80, TAILLE - 150);
+
+    piedDePage(ctx);
+    return cv;
+  }
+
+  function texteSuggere(quiz) {
+    return "📚 Nouveau quiz disponible sur Bientôt Étudiant !\n\n"
+      + "🎯 " + quiz.titre + "\n"
+      + "📖 " + (FILIERES[quiz.filiere] || quiz.filiere || "") + " · " + (quiz.matiere || "") + "\n\n"
+      + "Teste tes connaissances et prépare-toi pour le concours d'entrée à l'université.\n\n"
+      + "👉 bientot-etudiant.vercel.app\n\n"
+      + "#ConcoursHaiti #BientôtÉtudiant #Éducation";
+  }
+
+  let postCanvas = null;
+
+  if ($("caPostGenerer")) $("caPostGenerer").addEventListener("click", async () => {
+    const quizId = $("caQuiz").value;
+    if (!quizId) { statusC("Choisis un quiz.", "err"); return; }
+    if (typeof DB === "undefined" || !DB) { statusC("Connexion Supabase indisponible.", "err"); return; }
+
+    statusC("Génération du post…", "");
+    try {
+      const { data: quiz, error } = await DB.from("quiz").select("*").eq("id", quizId).single();
+      if (error || !quiz) { statusC("Quiz introuvable.", "err"); return; }
+
+      if (!logoImg) await chargerLogo();
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+      postCanvas = slidePromo(quiz);
+      $("caPostImg").src = postCanvas.toDataURL("image/png");
+      $("caPostTexte").value = texteSuggere(quiz);
+      $("caPostZone").style.display = "block";
+      statusC("Post promo prêt.", "ok");
+    } catch (e) {
+      statusC("Erreur : " + e.message, "err");
+    }
+  });
+
+  if ($("caPostTelecharger")) $("caPostTelecharger").addEventListener("click", async () => {
+    if (!postCanvas) return;
+    const blob = await new Promise(res => postCanvas.toBlob(res, "image/png"));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "post-promo.png";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  if ($("caPostCopier")) $("caPostCopier").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText($("caPostTexte").value);
+      statusC("Texte copié !", "ok");
+    } catch (e) {
+      statusC("Impossible de copier automatiquement, sélectionne et copie manuellement.", "err");
+    }
+  });
+
   // ---------- Chargement du quiz choisi ----------
   document.querySelectorAll('.adm-tab[data-tab="carousels"]').forEach(t => {
     t.addEventListener("click", () => { if (window.DB) chargerListeQuiz(); });

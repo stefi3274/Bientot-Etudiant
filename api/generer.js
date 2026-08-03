@@ -134,7 +134,7 @@ Chaque tableau "questions" doit contenir exactement 5 éléments. "bonne" doit �
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 8000,
         messages: [{ role: "user", content: prompt }]
       })

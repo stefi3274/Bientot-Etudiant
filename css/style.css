@@ -627,3 +627,12 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .pt-btn.wa{background:#25d366}
 .pt-btn.fb{background:#1877f2}
 .pt-btn.cp{background:var(--ardoise)}
+
+/* ===== QUIZ DU JOUR ===== */
+.quiz-jour{padding:20px 0}
+.quiz-jour .qj-card{background:var(--ardoise);border-radius:20px;padding:32px 36px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.quiz-jour .qj-txt{flex:1;min-width:240px}
+@media (max-width:640px){
+  .quiz-jour .qj-card{padding:24px 22px}
+}

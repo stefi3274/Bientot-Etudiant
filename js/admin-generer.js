@@ -20,6 +20,20 @@
   }
   if (selFil) { selFil.addEventListener("change", majMat); majMat(); }
 
+  // Bascule IA / Manuel
+  function majMode() {
+    const ia = $("geModeIA").checked;
+    $("geZoneIA").style.display = ia ? "block" : "none";
+    $("geZoneManuel").style.display = ia ? "none" : "block";
+  }
+  if ($("geModeIA")) { $("geModeIA").addEventListener("change", majMode); $("geModeManuel").addEventListener("change", majMode); }
+
+  if ($("geVoirFormat")) $("geVoirFormat").addEventListener("click", e => {
+    e.preventDefault();
+    const ex = $("geExempleFormat");
+    ex.style.display = ex.style.display === "none" ? "block" : "none";
+  });
+
   let dernierResultat = null;
   let fichierChoisi = null;
 
@@ -49,6 +63,92 @@
     });
   }
 
+  // ---------- Import gratuit (parsing local, sans IA) ----------
+  function escHtml(s) { return (s || "").replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c])); }
+
+  function texteVersHtml(txt) {
+    const paragraphes = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    return paragraphes.map(p => {
+      const lignes = p.split("\n").map(l => l.trim()).filter(Boolean);
+      if (lignes.length && lignes.every(l => /^[-*]\s+/.test(l))) {
+        return "<ul>" + lignes.map(l => "<li>" + escHtml(l.replace(/^[-*]\s+/, "")) + "</li>").join("") + "</ul>";
+      }
+      if (/^##\s+/.test(p)) return "<h3>" + escHtml(p.replace(/^##\s+/, "")) + "</h3>";
+      return "<p>" + escHtml(p).replace(/\n/g, "<br>") + "</p>";
+    }).join("\n");
+  }
+
+  function parseQuestions(txt) {
+    const blocs = txt.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+    const questions = [];
+    blocs.forEach(bloc => {
+      const lignes = bloc.split("\n").map(l => l.trim()).filter(Boolean);
+      if (!lignes.length) return;
+      const enonce = lignes[0].replace(/^\d+[.)]\s*/, "");
+      const choix = {};
+      let bonne = null;
+      lignes.slice(1).forEach(l => {
+        const m = l.match(/^([A-Da-d])[).]\s*(.+)$/);
+        if (m) choix["choix_" + m[1].toLowerCase()] = m[2].trim();
+        const r = l.match(/^R[ée]ponse\s*:\s*([A-Da-d])/i);
+        if (r) bonne = r[1].toLowerCase();
+      });
+      questions.push({
+        enonce, choix_a: choix.choix_a || "", choix_b: choix.choix_b || "",
+        choix_c: choix.choix_c || "", choix_d: choix.choix_d || "", bonne: bonne || "a"
+      });
+    });
+    return questions;
+  }
+
+  function parseUneLecon(bloc) {
+    const idxQuiz = bloc.search(/^===QUIZ===$/im);
+    if (idxQuiz < 0) throw new Error("Marqueur ===QUIZ=== manquant dans une leçon.");
+    const avant = bloc.slice(0, idxQuiz);
+    const apres = bloc.slice(idxQuiz).replace(/^===QUIZ===$/im, "").trim();
+
+    const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
+    const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
+    if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
+
+    let contenuBrut = avant;
+    const idxSep = avant.search(/^---$/m);
+    if (idxSep >= 0) contenuBrut = avant.slice(idxSep + 3);
+    else contenuBrut = avant.replace(/^TITRE\s*:.*$/im, "").replace(/^APERCU\s*:.*$/im, "");
+
+    const questions = parseQuestions(apres);
+    if (!questions.length) throw new Error('Aucune question trouvée après "===QUIZ===" pour la leçon "' + titreMatch[1].trim() + '".');
+    questions.forEach((q, i) => {
+      if (!q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d) {
+        throw new Error("Question " + (i + 1) + ' de "' + titreMatch[1].trim() + '" : il manque un choix A/B/C/D (vérifie le format "A) ...").');
+      }
+    });
+
+    return {
+      titre: titreMatch[1].trim(),
+      apercu: apercuMatch ? apercuMatch[1].trim() : "",
+      contenu_html: texteVersHtml(contenuBrut.trim()),
+      questions
+    };
+  }
+
+  function parseTexteStructure(texteBrut) {
+    const blocs = texteBrut.split(/^%%%LECON%%%$/im).map(b => b.trim()).filter(Boolean);
+    if (!blocs.length) throw new Error("Texte vide.");
+    return blocs.map(parseUneLecon);
+  }
+
+  if ($("geImporter")) $("geImporter").addEventListener("click", () => {
+    const txt = ($("geTexteManuel").value || "").trim();
+    if (!txt) { statusG("Colle d'abord ta leçon + ton quiz.", "err"); return; }
+    try {
+      dernierResultat = parseTexteStructure(txt);
+      afficherApercu();
+      statusG(dernierResultat.length + " leçon(s) importée(s) (gratuit, sans IA). Vérifie l'aperçu ci-dessous.", "ok");
+    } catch (e) {
+      statusG("Erreur de format : " + e.message, "err");
+    }
+  });
   if ($("geGenerer")) $("geGenerer").addEventListener("click", async () => {
     const texte = ($("geTexte").value || "").trim();
     if (!fichierChoisi && texte.length < 80) { statusG("Choisis un fichier ou colle un texte plus long (minimum ~80 caractères).", "err"); return; }
