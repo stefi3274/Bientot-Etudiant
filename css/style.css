@@ -654,3 +654,43 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .explorer{padding:30px 0 60px}
 .explorer .exp-empty{text-align:center;color:var(--encre-2);padding:40px 0;font-style:italic}
 .exp-filiere-label{font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ocre-d);margin:-6px 0 14px}
+
+/* ===== SUPER QUIZ (arc-en-ciel) ===== */
+.super-quiz-band{padding:8px 0 30px}
+.super-quiz-band .sq-card{
+  border-radius:22px;padding:38px 34px;text-align:center;color:#fff;
+  background:linear-gradient(115deg,#e0554e,#e8b84b,#2a9d6f,#2c6e8f,#7d5aa6,#9c3f56);
+  background-size:300% 300%;animation:sq-flow 10s ease infinite;
+}
+.super-quiz-band .sq-card h2{color:#fff;font-family:var(--serif);font-size:1.7rem;margin:8px 0 6px}
+.super-quiz-band .sq-card p{color:rgba(255,255,255,.92);max-width:520px;margin:0 auto 20px}
+.super-quiz-band .sq-kicker{font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+@keyframes sq-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+.super-quiz-splash{
+  border-radius:22px;padding:48px 34px;text-align:center;
+  background:linear-gradient(115deg,#e0554e,#e8b84b,#2a9d6f,#2c6e8f,#7d5aa6,#9c3f56);
+  background-size:300% 300%;animation:sq-flow 10s ease infinite;
+}
+@media (max-width:640px){
+  .super-quiz-band .sq-card{padding:28px 20px}
+  .super-quiz-splash{padding:32px 20px}
+}
+
+/* ===== TABLEAU DE BORD ADMIN ===== */
+.db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.db-carte{background:#fff;border:1px solid var(--craie-2);border-radius:14px;padding:18px}
+.db-carte .db-n{font-family:var(--serif);font-size:2rem;font-weight:600;color:var(--encre)}
+.db-carte .db-l{font-size:.82rem;color:var(--encre-2);margin-top:2px}
+.db-fil-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--craie-2)}
+.db-fil-row:last-child{border-bottom:none}
+.db-fil-nom{flex:1;font-weight:600;font-size:.92rem}
+.db-fil-bar{flex:2;height:8px;background:var(--craie-2);border-radius:4px;overflow:hidden}
+.db-fil-bar span{display:block;height:100%;background:var(--ocre)}
+.db-fil-chiffres{font-size:.82rem;color:var(--encre-2);white-space:nowrap}
+.db-activite{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--craie-2);font-size:.9rem}
+.db-activite:last-child{border-bottom:none}
+.db-activite .db-nom{font-weight:600}
+.db-activite .db-score{font-weight:700}
+.db-activite .db-score.ok{color:var(--f1-d)}
+.db-activite .db-score.low{color:var(--rouge)}

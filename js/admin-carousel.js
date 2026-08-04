@@ -1,7 +1,8 @@
 /* ============================================================
    Admin — génération de carousels (TikTok/Instagram) depuis un quiz
    Rendu en Canvas côté client (aucun coût API), export PNG zippés.
-   Design repris du site : fond ardoise, texte craie, accents ocre.
+   Design éditorial : fond ardoise + halo coloré, accent par filière,
+   badges circulaires, numéros watermark, grille de corrigé.
    ============================================================ */
 (function () {
   const $ = id => document.getElementById(id);
@@ -13,208 +14,263 @@
     craie: "#f7f4ec",
     craie2: "#ede8da",
     ocre: "#e8b84b",
-    ocreD: "#d4a336",
-    f1: "#2a9d6f"
+    ocreD: "#d4a336"
   };
+  const ACCENTS = { f1: "#2a9d6f", f2: "#4a90c4", f3: "#c96b83" };
   const FILIERES = { f1: "Médecine, Agronomie & Vétérinaire", f2: "Sciences administratives, Économie & Génie", f3: "Sciences humaines et sociales" };
+  const accentDe = f => ACCENTS[f] || COULEURS.ocre;
 
   let logoImg = null;
   function chargerLogo() {
     return new Promise(resolve => {
       const img = new Image();
       img.onload = () => { logoImg = img; resolve(); };
-      img.onerror = () => resolve(); // pas bloquant si le logo est absent
+      img.onerror = () => resolve();
       img.src = "img/logo.png";
     });
   }
 
-  // Découpe un texte en lignes selon une largeur max, retourne le tableau de lignes
   function decouperTexte(ctx, texte, maxWidth) {
     const mots = (texte || "").split(/\s+/);
     const lignes = [];
     let ligne = "";
     mots.forEach(mot => {
       const essai = ligne ? ligne + " " + mot : mot;
-      if (ctx.measureText(essai).width > maxWidth && ligne) {
-        lignes.push(ligne);
-        ligne = mot;
-      } else {
-        ligne = essai;
-      }
+      if (ctx.measureText(essai).width > maxWidth && ligne) { lignes.push(ligne); ligne = mot; }
+      else ligne = essai;
     });
     if (ligne) lignes.push(ligne);
     return lignes;
   }
 
-  function fondCommun(ctx) {
+  function rr(ctx, x, y, w, h, r) {
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+    else { ctx.beginPath(); ctx.rect(x, y, w, h); }
+  }
+
+  function hexToRgba(hex, a) {
+    const n = parseInt(hex.replace("#", ""), 16);
+    return "rgba(" + [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(",") + "," + a + ")";
+  }
+
+  // ---------- Fond éditorial : ardoise + halo coloré + liseré ----------
+  function fondCommun(ctx, accent) {
     ctx.fillStyle = COULEURS.ardoise;
     ctx.fillRect(0, 0, TAILLE, TAILLE);
-    // liseré ocre en haut
-    ctx.fillStyle = COULEURS.ocre;
-    ctx.fillRect(0, 0, TAILLE, 10);
+
+    const glow = ctx.createRadialGradient(TAILLE * 0.85, TAILLE * 0.08, 0, TAILLE * 0.85, TAILLE * 0.08, TAILLE * 0.75);
+    glow.addColorStop(0, hexToRgba(accent, 0.28));
+    glow.addColorStop(1, hexToRgba(accent, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, TAILLE, TAILLE);
+
+    ctx.fillStyle = accent;
+    ctx.fillRect(0, 0, TAILLE, 8);
   }
 
   function piedDePage(ctx) {
-    const y = TAILLE - 64;
-    if (logoImg) ctx.drawImage(logoImg, 60, y - 28, 40, 49);
+    const y = TAILLE - 58;
+    ctx.strokeStyle = "rgba(247,244,236,.15)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(60, y - 30); ctx.lineTo(TAILLE - 60, y - 30); ctx.stroke();
+
+    if (logoImg) ctx.drawImage(logoImg, 60, y - 12, 34, 41);
     ctx.fillStyle = COULEURS.craie;
-    ctx.font = "600 30px Fraunces, Georgia, serif";
+    ctx.font = "600 26px Fraunces, Georgia, serif";
     ctx.textBaseline = "middle";
-    ctx.fillText("Bientôt " + "Étudiant", logoImg ? 112 : 60, y - 3);
-    ctx.font = "500 22px Inter, system-ui, sans-serif";
-    ctx.fillStyle = COULEURS.ocre;
+    ctx.fillText("Bientôt Étudiant", logoImg ? 104 : 60, y + 8);
+    ctx.font = "500 19px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(247,244,236,.65)";
     ctx.textAlign = "right";
-    ctx.fillText("bientot-etudiant.vercel.app", TAILLE - 60, y - 3);
-    ctx.textAlign = "left";
+    ctx.fillText("bientot-etudiant.vercel.app", TAILLE - 60, y + 8);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
+  // Pastille (tag) avec fond accent
+  function pastille(ctx, texte, x, y, accent, taillePolice) {
+    ctx.font = "700 " + (taillePolice || 24) + "px Inter, system-ui, sans-serif";
+    const w = ctx.measureText(texte).width + 40;
+    const h = (taillePolice || 24) + 26;
+    ctx.fillStyle = accent;
+    rr(ctx, x, y, w, h, h / 2); ctx.fill();
+    ctx.fillStyle = COULEURS.craie;
+    ctx.textBaseline = "middle";
+    ctx.fillText(texte, x + 20, y + h / 2 + 1);
+    ctx.textBaseline = "alphabetic";
+    return w;
+  }
+
+  // Grand numéro/symbole filigrane décoratif
+  function watermark(ctx, texte, x, y, accent) {
+    ctx.font = "700 340px Fraunces, Georgia, serif";
+    ctx.fillStyle = hexToRgba(accent, 0.10);
+    ctx.fillText(texte, x, y);
+  }
+
+  // Badge circulaire lettré (A/B/C/D)
+  function badgeLettre(ctx, x, y, r, lettre, accent, plein) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    if (plein) { ctx.fillStyle = accent; ctx.fill(); }
+    else { ctx.strokeStyle = accent; ctx.lineWidth = 2.5; ctx.stroke(); }
+    ctx.fillStyle = plein ? COULEURS.craie : accent;
+    ctx.font = "700 26px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(lettre, x, y + 1);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  }
+
+  // ---------- Slide 1 : couverture ----------
   function slideIntro(quiz, nbQ) {
     const cv = document.createElement("canvas"); cv.width = TAILLE; cv.height = TAILLE;
     const ctx = cv.getContext("2d");
-    fondCommun(ctx);
+    const accent = accentDe(quiz.filiere);
+    fondCommun(ctx, accent);
+    watermark(ctx, "?", TAILLE - 220, 340, accent);
 
-    ctx.fillStyle = COULEURS.ocre;
-    ctx.font = "700 26px Inter, system-ui, sans-serif";
-    ctx.fillText("CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 80, 220);
+    ctx.font = "700 24px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(247,244,236,.65)";
+    ctx.fillText("CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 80, 130);
+
+    pastille(ctx, FILIERES[quiz.filiere] || quiz.filiere || "", 80, 165, accent, 22);
 
     ctx.fillStyle = COULEURS.craie;
-    ctx.font = "600 76px Fraunces, Georgia, serif";
+    ctx.font = "600 78px Fraunces, Georgia, serif";
     const lignesTitre = decouperTexte(ctx, quiz.titre, TAILLE - 160);
-    let y = 320;
-    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 80, y); y += 86; });
+    let y = 400;
+    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 80, y); y += 88; });
 
-    ctx.fillStyle = "rgba(247,244,236,.75)";
+    ctx.fillStyle = "rgba(247,244,236,.7)";
     ctx.font = "500 32px Inter, system-ui, sans-serif";
-    ctx.fillText((FILIERES[quiz.filiere] || quiz.filiere || "") + " · " + (quiz.matiere || ""), 80, y + 30);
+    ctx.fillText(quiz.matiere || "", 80, y + 28);
 
-    // pastille nb questions
-    const py = y + 90;
-    ctx.fillStyle = COULEURS.f1;
-    ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(80, py, 320, 74, 37) : ctx.rect(80, py, 320, 74);
-    ctx.fill();
-    ctx.fillStyle = COULEURS.craie;
-    ctx.font = "700 30px Inter, system-ui, sans-serif";
+    const py = y + 80;
+    ctx.fillStyle = COULEURS.craie2;
+    const w = ctx.measureText(nbQ + " questions").width;
+    rr(ctx, 80, py, w + 44, 74, 37); ctx.fill();
+    ctx.font = "700 26px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(20,52,43,.85)";
     ctx.textBaseline = "middle";
-    ctx.fillText(nbQ + " questions", 110, py + 39);
+    ctx.fillText(nbQ + " questions", 102, py + 39);
     ctx.textBaseline = "alphabetic";
 
-    ctx.fillStyle = "rgba(247,244,236,.6)";
-    ctx.font = "500 28px Inter, system-ui, sans-serif";
-    ctx.fillText("Glisse pour tester tes connaissances →", 80, TAILLE - 140);
+    // flèche "swipe"
+    const ay = TAILLE - 130;
+    ctx.strokeStyle = COULEURS.craie; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(80, ay); ctx.lineTo(220, ay); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(200, ay - 14); ctx.lineTo(220, ay); ctx.lineTo(200, ay + 14); ctx.stroke();
+    ctx.fillStyle = COULEURS.craie;
+    ctx.font = "600 30px Inter, system-ui, sans-serif";
+    ctx.fillText("Fais défiler pour jouer", 240, ay + 10);
 
     piedDePage(ctx);
     return cv;
   }
 
-  function slideQuestion(q, index, total) {
+  // ---------- Slides question ----------
+  function slideQuestion(q, index, total, filiere) {
     const cv = document.createElement("canvas"); cv.width = TAILLE; cv.height = TAILLE;
     const ctx = cv.getContext("2d");
-    fondCommun(ctx);
+    const accent = accentDe(filiere);
+    fondCommun(ctx, accent);
+    watermark(ctx, String(index).padStart(2, "0"), 40, 300, accent);
 
-    ctx.fillStyle = COULEURS.ocre;
-    ctx.font = "700 26px Inter, system-ui, sans-serif";
-    ctx.fillText("QUESTION " + index + " / " + total, 80, 130);
+    pastille(ctx, "QUESTION " + index + " / " + total, 80, 70, accent, 22);
 
     ctx.fillStyle = COULEURS.craie;
-    ctx.font = "600 52px Fraunces, Georgia, serif";
+    ctx.font = "600 54px Fraunces, Georgia, serif";
     const lignes = decouperTexte(ctx, q.enonce, TAILLE - 160);
-    let y = 210;
-    lignes.slice(0, 5).forEach(l => { ctx.fillText(l, 80, y); y += 60; });
+    let y = 240;
+    lignes.slice(0, 5).forEach(l => { ctx.fillText(l, 80, y); y += 62; });
 
-    // Choix A-D
     const choix = [["A", q.choix_a], ["B", q.choix_b], ["C", q.choix_c], ["D", q.choix_d]];
-    let cy = Math.max(y + 50, 520);
-    const boxH = 96, gap = 20;
+    let cy = Math.max(y + 60, 540);
+    const rowH = 92;
     choix.forEach(([lettre, texte]) => {
-      ctx.fillStyle = COULEURS.craie2;
-      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(80, cy, TAILLE - 160, boxH, 16); ctx.fill(); }
-      else ctx.fillRect(80, cy, TAILLE - 160, boxH);
-
-      ctx.fillStyle = COULEURS.ardoise;
-      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(100, cy + 18, 60, 60, 12); ctx.fill(); }
+      badgeLettre(ctx, 116, cy, 30, lettre, accent, false);
       ctx.fillStyle = COULEURS.craie;
-      ctx.font = "700 30px Inter, system-ui, sans-serif";
+      ctx.font = "500 32px Inter, system-ui, sans-serif";
+      const ligneTxt = decouperTexte(ctx, texte || "", TAILLE - 260);
       ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-      ctx.fillText(lettre, 130, cy + 48);
-      ctx.textAlign = "left";
-
-      ctx.fillStyle = "#1b3a5b";
-      ctx.font = "500 30px Inter, system-ui, sans-serif";
-      const ligneTxt = decouperTexte(ctx, texte || "", TAILLE - 160 - 200);
-      ctx.fillText(ligneTxt[0] || "", 185, cy + 48);
+      ctx.fillText(ligneTxt[0] || "", 172, cy + 1);
       ctx.textBaseline = "alphabetic";
-
-      cy += boxH + gap;
+      if (lettre !== "D") {
+        ctx.strokeStyle = "rgba(247,244,236,.14)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(80, cy + rowH/2); ctx.lineTo(TAILLE - 80, cy + rowH/2); ctx.stroke();
+      }
+      cy += rowH;
     });
 
     piedDePage(ctx);
     return cv;
   }
 
-  function slideReponses(questions) {
+  // ---------- Slide corrigé ----------
+  function slideReponses(questions, filiere) {
     const cv = document.createElement("canvas"); cv.width = TAILLE; cv.height = TAILLE;
     const ctx = cv.getContext("2d");
-    fondCommun(ctx);
+    const accent = accentDe(filiere);
+    fondCommun(ctx, accent);
+    watermark(ctx, "✓", TAILLE - 260, 340, accent);
 
+    pastille(ctx, "CORRIGÉ", 80, 70, accent, 22);
     ctx.fillStyle = COULEURS.craie;
-    ctx.font = "600 64px Fraunces, Georgia, serif";
-    ctx.fillText("Réponses", 80, 160);
+    ctx.font = "600 62px Fraunces, Georgia, serif";
+    ctx.fillText("Tu as tout bon ?", 80, 220);
 
-    ctx.font = "600 40px Inter, system-ui, sans-serif";
-    let y = 260;
     const parCol = Math.ceil(questions.length / 2);
+    const colW = (TAILLE - 160 - 40) / 2;
     questions.forEach((q, i) => {
       const col = i < parCol ? 0 : 1;
       const ligne = i < parCol ? i : i - parCol;
-      const x = 80 + col * 480;
-      const yy = y + ligne * 70;
-      ctx.fillStyle = COULEURS.ocre;
-      ctx.fillText((i + 1) + ".", x, yy);
-      ctx.fillStyle = COULEURS.craie;
-      ctx.fillText((q.bonne || "").toUpperCase(), x + 60, yy);
+      const x = 80 + col * (colW + 40);
+      const yy = 300 + ligne * 78;
+      badgeLettre(ctx, x + 30, yy, 28, (q.bonne || "").toUpperCase(), accent, true);
+      ctx.fillStyle = "rgba(247,244,236,.85)";
+      ctx.font = "600 30px Inter, system-ui, sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Question " + (i + 1), x + 76, yy + 1);
+      ctx.textBaseline = "alphabetic";
     });
 
-    ctx.fillStyle = COULEURS.f1;
-    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(80, TAILLE - 260, TAILLE - 160, 100, 20); ctx.fill(); }
+    ctx.fillStyle = accent;
+    rr(ctx, 80, TAILLE - 250, TAILLE - 160, 96, 20); ctx.fill();
     ctx.fillStyle = COULEURS.craie;
-    ctx.font = "700 34px Inter, system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Prépare ton concours sur Bientôt Étudiant", TAILLE / 2, TAILLE - 210);
+    ctx.font = "700 32px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Refais le quiz complet sur Bientôt Étudiant", TAILLE / 2, TAILLE - 202);
     ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
 
     piedDePage(ctx);
     return cv;
   }
 
+  // ---------- Post promo Facebook/WhatsApp ----------
   function slidePromo(quiz) {
     const cv = document.createElement("canvas"); cv.width = TAILLE; cv.height = TAILLE;
     const ctx = cv.getContext("2d");
-    fondCommun(ctx);
+    const accent = accentDe(quiz.filiere);
+    fondCommun(ctx, accent);
+    watermark(ctx, "!", 60, 340, accent);
 
-    ctx.fillStyle = COULEURS.f1;
-    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(80, 130, 380, 60, 30); ctx.fill(); }
-    ctx.fillStyle = COULEURS.craie;
-    ctx.font = "700 24px Inter, system-ui, sans-serif";
-    ctx.textBaseline = "middle";
-    ctx.fillText("NOUVEAU QUIZ", 108, 160);
-    ctx.textBaseline = "alphabetic";
+    pastille(ctx, "NOUVEAU QUIZ", 80, 130, accent, 24);
 
     ctx.fillStyle = COULEURS.craie;
-    ctx.font = "600 70px Fraunces, Georgia, serif";
+    ctx.font = "600 72px Fraunces, Georgia, serif";
     const lignes = decouperTexte(ctx, quiz.titre, TAILLE - 160);
-    let y = 300;
-    lignes.slice(0, 4).forEach(l => { ctx.fillText(l, 80, y); y += 80; });
+    let y = 320;
+    lignes.slice(0, 4).forEach(l => { ctx.fillText(l, 80, y); y += 82; });
 
-    ctx.fillStyle = "rgba(247,244,236,.75)";
+    ctx.fillStyle = "rgba(247,244,236,.72)";
     ctx.font = "500 32px Inter, system-ui, sans-serif";
     ctx.fillText((FILIERES[quiz.filiere] || quiz.filiere || "") + " · " + (quiz.matiere || ""), 80, y + 30);
 
-    ctx.fillStyle = COULEURS.ocre;
-    ctx.font = "600 34px Inter, system-ui, sans-serif";
-    ctx.fillText("Teste tes connaissances →", 80, TAILLE - 150);
+    const ay = TAILLE - 150;
+    ctx.strokeStyle = accent; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(80, ay); ctx.lineTo(220, ay); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(200, ay - 14); ctx.lineTo(220, ay); ctx.lineTo(200, ay + 14); ctx.stroke();
+    ctx.fillStyle = COULEURS.craie;
+    ctx.font = "600 30px Inter, system-ui, sans-serif";
+    ctx.fillText("Teste tes connaissances", 240, ay + 10);
 
     piedDePage(ctx);
     return cv;
@@ -308,8 +364,8 @@
 
       slidesActuelles = [];
       slidesActuelles.push(slideIntro(quiz, questions.length));
-      questions.forEach((q, i) => slidesActuelles.push(slideQuestion(q, i + 1, questions.length)));
-      slidesActuelles.push(slideReponses(questions));
+      questions.forEach((q, i) => slidesActuelles.push(slideQuestion(q, i + 1, questions.length, quiz.filiere)));
+      slidesActuelles.push(slideReponses(questions, quiz.filiere));
 
       const zone = $("caSlides");
       zone.innerHTML = "";
@@ -319,7 +375,7 @@
         mini.style.width = "100%";
         mini.style.borderRadius = "10px";
         mini.style.border = "1px solid var(--craie-2)";
-        mini.title = i === 0 ? "Intro" : (i === slidesActuelles.length - 1 ? "Réponses" : "Question " + i);
+        mini.title = i === 0 ? "Intro" : (i === slidesActuelles.length - 1 ? "Corrigé" : "Question " + i);
         zone.appendChild(mini);
       });
       $("caApercu").style.display = "block";
@@ -337,7 +393,7 @@
     const zip = new JSZip();
     for (let i = 0; i < slidesActuelles.length; i++) {
       const blob = await new Promise(res => slidesActuelles[i].toBlob(res, "image/png"));
-      const nom = i === 0 ? "01-intro.png" : (i === slidesActuelles.length - 1 ? String(i + 1).padStart(2, "0") + "-reponses.png" : String(i + 1).padStart(2, "0") + "-question.png");
+      const nom = i === 0 ? "01-intro.png" : (i === slidesActuelles.length - 1 ? String(i + 1).padStart(2, "0") + "-corrige.png" : String(i + 1).padStart(2, "0") + "-question.png");
       zip.file(nom, blob);
     }
     const contenu = await zip.generateAsync({ type: "blob" });

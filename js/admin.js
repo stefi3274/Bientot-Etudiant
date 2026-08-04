@@ -12,7 +12,7 @@
 
   async function refreshAuth() {
     const { data } = await DB.auth.getSession();
-    if (data.session) { $("loginCard").style.display = "none"; $("panel").style.display = "block"; charger(); }
+    if (data.session) { $("loginCard").style.display = "none"; $("panel").style.display = "block"; charger(); if (window.chargerDashboard) window.chargerDashboard(); }
     else { $("loginCard").style.display = "block"; $("panel").style.display = "none"; }
   }
 

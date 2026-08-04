@@ -19,11 +19,12 @@
     tab.addEventListener("click", () => {
       const t = tab.getAttribute("data-tab");
       document.querySelectorAll(".adm-tab").forEach(x => x.classList.toggle("on", x === tab));
-      ["contrib", "lecons", "quiz", "carousels", "fiche"].forEach(k => {
+      ["dashboard", "contrib", "lecons", "quiz", "carousels", "fiche"].forEach(k => {
         const el = $("tab-" + k);
         if (el) el.style.display = (t === k) ? "block" : "none";
       });
       if (t === "lecons" && window.DB) chargerLecons();
+      if (t === "dashboard" && window.DB && window.chargerDashboard) window.chargerDashboard();
     });
   });
 

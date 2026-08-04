@@ -90,7 +90,8 @@
     <div id="panel" style="display:none">
       <div class="a-head">
         <div class="adm-tabs">
-          <button class="adm-tab on" data-tab="contrib">Contributions</button>
+          <button class="adm-tab on" data-tab="dashboard">Tableau de bord</button>
+          <button class="adm-tab" data-tab="contrib">Contributions</button>
           <button class="adm-tab" data-tab="lecons">Leçons</button>
           <button class="adm-tab" data-tab="quiz">Quiz</button>
           <button class="adm-tab" data-tab="carousels">Carousels</button>
@@ -100,8 +101,29 @@
       </div>
       <div class="status-msg" id="admStatus"></div>
 
+      <!-- ONGLET TABLEAU DE BORD -->
+      <div id="tab-dashboard">
+        <div class="lecon-editor">
+          <h2>Vue d'ensemble</h2>
+          <div class="status-msg" id="dbMsg"></div>
+          <div class="db-grid" id="dbCartes">
+            <p class="empty">Chargement…</p>
+          </div>
+        </div>
+
+        <div class="lecon-editor">
+          <h2>Répartition par filière</h2>
+          <div id="dbFilieres"><p class="empty">Chargement…</p></div>
+        </div>
+
+        <div class="lecon-editor">
+          <h2>Activité récente</h2>
+          <div id="dbActivite"><p class="empty">Chargement…</p></div>
+        </div>
+      </div>
+
       <!-- ONGLET CONTRIBUTIONS -->
-      <div id="tab-contrib">
+      <div id="tab-contrib" style="display:none">
         <div class="filters">
           <button class="filter on" data-f="a_verifier">À vérifier</button>
           <button class="filter" data-f="valide">Validées</button>
@@ -355,6 +377,7 @@ Réponse: B"></textarea>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/admin-dashboard.js"></script>
 <script src="js/admin-lecons.js"></script>
 <script src="js/admin-quiz.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
