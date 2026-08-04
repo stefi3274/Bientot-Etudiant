@@ -1,7 +1,9 @@
 /* ============================================================
    Quiz du jour — page d'accueil
-   Sélectionne un quiz publié de façon déterministe (même quiz
-   pour tout le monde le même jour), sans appel serveur dédié.
+   Un quiz différent par filière, sélectionné de façon déterministe
+   (même quiz pour tout le monde le même jour, dans chaque filière).
+   Si l'utilisateur est connecté, ne montre que le(s) quiz de SA/ses
+   filière(s) ; sinon, montre une carte par filière disponible.
    ============================================================ */
 (function () {
   const FILIERES = {
@@ -9,6 +11,8 @@
     f2: "Sciences administratives, Économie & Génie",
     f3: "Sciences humaines et sociales"
   };
+  const esc = s => (s || "").replace(/[&<>"']/g, c => (
+    { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
   function hashJour(txt) {
     let h = 0;
@@ -18,21 +22,37 @@
 
   async function init() {
     const sec = document.getElementById("quizJourSection");
-    if (!sec || typeof DB === "undefined" || !DB) return;
+    const grille = document.getElementById("quizJourGrid");
+    if (!sec || !grille || typeof DB === "undefined" || !DB) return;
 
-    const { data, error } = await DB.from("quiz").select("id, titre, filiere, matiere").eq("publie", true);
-    if (error || !data || !data.length) return;
+    let filieresAffichees = ["f1", "f2", "f3"];
+    if (typeof eleveActuel === "function") {
+      try {
+        const el = await eleveActuel();
+        if (el && el.nom && el.filieres && el.filieres.length) filieresAffichees = el.filieres;
+      } catch (e) { /* invité */ }
+    }
 
     const jour = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const q = data[hashJour(jour) % data.length];
+    const { data: tousLesQuiz } = await DB.from("quiz").select("id, titre, filiere, matiere").eq("publie", true);
+    if (!tousLesQuiz || !tousLesQuiz.length) return;
 
-    const elTitre = document.getElementById("qjTitre");
-    const elInfo = document.getElementById("qjInfo");
-    const elLien = document.getElementById("qjLien");
-    if (elTitre) elTitre.textContent = q.titre;
-    if (elInfo) elInfo.textContent = (FILIERES[q.filiere] || q.filiere || "") + " · " + (q.matiere || "");
-    if (elLien) elLien.href = "quiz.html?id=" + q.id;
+    let cartes = "";
+    filieresAffichees.forEach(f => {
+      const dispo = tousLesQuiz.filter(q => q.filiere === f);
+      if (!dispo.length) return;
+      const q = dispo[hashJour(jour + f) % dispo.length];
+      cartes +=
+        '<div class="qj-card">'
+        + '<span class="kicker" style="color:var(--ocre)">Quiz du jour · ' + esc(FILIERES[f] || f) + '</span>'
+        + '<h3 style="font-family:var(--serif);color:var(--craie);margin:6px 0 8px">' + esc(q.titre) + '</h3>'
+        + '<p style="color:rgba(247,244,236,.75)">' + esc(q.matiere) + '</p>'
+        + '<a href="quiz.html?id=' + q.id + '" class="btn btn-primary">Faire le quiz <span>→</span></a>'
+        + '</div>';
+    });
 
+    if (!cartes) return;
+    grille.innerHTML = cartes;
     sec.style.display = "block";
   }
 

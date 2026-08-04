@@ -634,11 +634,13 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 
 /* ===== QUIZ DU JOUR ===== */
 .quiz-jour{padding:20px 0}
-.quiz-jour .qj-card{background:var(--ardoise);border-radius:20px;padding:32px 36px;
-  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.quiz-jour .qj-txt{flex:1;min-width:240px}
+.quiz-jour .qj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.quiz-jour .qj-card{background:var(--ardoise);border-radius:20px;padding:26px 28px;
+  display:flex;flex-direction:column;align-items:flex-start}
+.quiz-jour .qj-card p{margin-bottom:16px}
+.quiz-jour .qj-card .btn{margin-top:auto}
 @media (max-width:640px){
-  .quiz-jour .qj-card{padding:24px 22px}
+  .quiz-jour .qj-card{padding:22px 22px}
 }
 
 /* ===== FILTRES (filière / matière) ===== */
