@@ -1,8 +1,8 @@
 /* ============================================================
    Super Quiz — quiz libre, questions aléatoires toutes matières
-   confondues. Accès réservé aux postulants connectés. Pas
-   enregistré dans le classement (c'est un test de niveau, pas
-   une compétition par matière).
+   confondues. Accès réservé aux postulants connectés. Enregistré
+   dans un classement dédié (super_tentatives), fait progresser le
+   streak, et alimente "Mes erreurs" pour les questions ratées.
    ============================================================ */
 (function () {
   const zone = document.getElementById("quizZone");
@@ -13,13 +13,14 @@
   const NB_QUESTIONS = 15;
   const SEC_PAR_QUESTION = 40;
 
-  let questions = [], reponses = {}, tempsRestant = 0, timer = null, tempsMis = 0, demarre = 0, dureeSec = 0;
+  let questions = [], reponses = {}, tempsRestant = 0, timer = null, tempsMis = 0, demarre = 0, dureeSec = 0, eleveConnecte = null;
 
   (async function () {
     if (typeof DB === "undefined" || !DB) { zone.innerHTML = "<p style='text-align:center'>Indisponible pour le moment.</p>"; return; }
 
     const el = await eleveActuel();
     if (!el || !el.nom) { ecranGate(); return; }
+    eleveConnecte = el;
 
     ecranIntro(el);
   })();
@@ -51,7 +52,7 @@
   // ---------- Chargement du pool de questions (toutes matières, quiz publiés) ----------
   async function chargerQuestions() {
     const { data } = await DB.from("questions")
-      .select("*, quiz!inner(publie)")
+      .select("*, quiz!inner(publie, filiere, matiere)")
       .eq("quiz.publie", true);
 
     const startZone = document.getElementById("startZone");
@@ -123,12 +124,30 @@
     });
   }
 
-  // ---------- Fin : score + correction (pas de classement pour le Super Quiz) ----------
-  function terminer(tempsEcoule) {
+  // ---------- Fin : score + correction + classement + streak + erreurs ----------
+  async function terminer(tempsEcoule) {
     tempsMis = Math.min(dureeSec, Math.round((Date.now() - demarre) / 1000));
     let score = 0;
     questions.forEach((q, i) => { if (reponses["q-" + i] === q.bonne) score++; });
     const pct = Math.round(100 * score / questions.length);
+
+    if (eleveConnecte && DB) {
+      await DB.from("super_tentatives").insert({
+        user_id: eleveConnecte.user_id, nom: eleveConnecte.nom,
+        score, total: questions.length, temps_sec: tempsMis
+      });
+
+      const questionsRatees = questions
+        .filter((q, i) => reponses["q-" + i] !== q.bonne)
+        .map(q => ({ user_id: eleveConnecte.user_id, question_id: q.id, quiz_id: q.quiz_id || null,
+          filiere: (q.quiz && q.quiz.filiere) || null, matiere: (q.quiz && q.quiz.matiere) || null,
+          resolu: false, updated_at: new Date().toISOString() }));
+      if (questionsRatees.length) await DB.from("erreurs").upsert(questionsRatees, { onConflict: "user_id,question_id" });
+      const idsReussies = questions.filter((q, i) => reponses["q-" + i] === q.bonne).map(q => q.id);
+      if (idsReussies.length) await DB.from("erreurs").update({ resolu: true }).eq("user_id", eleveConnecte.user_id).in("question_id", idsReussies);
+
+      if (window.majStreak) await window.majStreak(eleveConnecte);
+    }
 
     const correctum = questions.map((q, i) => {
       const rep = reponses["q-" + i];
@@ -165,6 +184,7 @@
       + '<p class="score-meta">' + pct + '% de bonnes réponses · Temps : ' + fmtTemps(tempsMis) + '</p>'
       + ratHtml
       + '<div class="quiz-result-actions">'
+      + '<a class="btn btn-primary" href="super-classement.html">Voir le classement <span>→</span></a>'
       + '<a class="btn btn-dark" href="super-quiz.html">Refaire un Super Quiz</a>'
       + '<a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="index.html">Retour à l\'accueil</a>'
       + '</div></div>';

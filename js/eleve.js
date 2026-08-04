@@ -151,6 +151,87 @@ async function initEspace() {
     });
   }
 
+  // Ma progression (mes tentatives de quiz)
+  const progZone = document.getElementById("progressionZone");
+  if (progZone && typeof DB !== "undefined" && DB) {
+    const esc = s => (s || "").replace(/[&<>"']/g, c => (
+      { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    const dateFr = iso => new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+
+    const { data: mesTentatives } = await DB.from("tentatives")
+      .select("matiere, filiere, score, total, created_at")
+      .eq("user_id", el.user_id)
+      .order("created_at", { ascending: false });
+
+    if (!mesTentatives || !mesTentatives.length) {
+      progZone.innerHTML =
+        '<div class="wait-box">'
+        + '<div class="wi" data-icon="progres"></div>'
+        + '<h3>Aucun quiz pour l\'instant</h3>'
+        + '<p>Fais ton premier quiz pour voir ta progression apparaître ici.</p>'
+        + '<a href="index.html#explorerSection" class="btn btn-primary">Voir les leçons et quiz <span>→</span></a>'
+        + '</div>';
+    } else {
+      const nb = mesTentatives.length;
+      const moy = Math.round(100 * mesTentatives.reduce((a, t) => a + (t.total ? t.score / t.total : 0), 0) / nb);
+      const cartes =
+        '<div class="db-grid" style="margin-bottom:22px">'
+        + '<div class="db-carte"><div class="db-n">' + nb + '</div><div class="db-l">Quiz passés</div></div>'
+        + '<div class="db-carte"><div class="db-n">' + moy + '%</div><div class="db-l">Score moyen</div></div>'
+        + '</div>';
+      const liste = mesTentatives.slice(0, 12).map(t => {
+        const pct = t.total ? Math.round(100 * t.score / t.total) : 0;
+        return '<div class="db-activite">'
+          + '<span class="db-nom">' + esc(t.matiere || "") + '</span>'
+          + '<span class="db-score ' + (pct >= 50 ? "ok" : "low") + '">' + t.score + '/' + t.total + ' (' + pct + '%)</span>'
+          + '<span style="color:var(--encre-2);font-size:.82rem">' + dateFr(t.created_at) + '</span>'
+          + '</div>';
+      }).join("");
+      progZone.innerHTML = cartes + liste;
+    }
+  }
+
+  // Ma série (streak)
+  const streakCard = document.getElementById("streakCard");
+  const streakZone = document.getElementById("streakZone");
+  if (streakZone && typeof DB !== "undefined" && DB) {
+    const { data: eleveStreak } = await DB.from("eleves").select("streak_actuel, streak_record").eq("user_id", el.user_id).maybeSingle();
+    const actuel = (eleveStreak && eleveStreak.streak_actuel) || 0;
+    const record = (eleveStreak && eleveStreak.streak_record) || 0;
+    if (actuel > 0 || record > 0) {
+      streakCard.style.display = "block";
+      streakZone.innerHTML =
+        '<div class="db-grid">'
+        + '<div class="db-carte"><div class="db-n">🔥 ' + actuel + '</div><div class="db-l">jour' + (actuel > 1 ? "s" : "") + ' de suite</div></div>'
+        + '<div class="db-carte"><div class="db-n">' + record + '</div><div class="db-l">record personnel</div></div>'
+        + '</div>';
+    }
+  }
+
+  // Mes erreurs à retravailler (par matière)
+  const erreursZone = document.getElementById("erreursZone");
+  if (erreursZone && typeof DB !== "undefined" && DB) {
+    const { data: mesErreurs } = await DB.from("erreurs").select("matiere, filiere").eq("user_id", el.user_id).eq("resolu", false);
+    if (!mesErreurs || !mesErreurs.length) {
+      erreursZone.innerHTML = '<p class="empty">Aucune erreur à retravailler pour l\'instant. Continue comme ça !</p>';
+    } else {
+      const parMatiere = {};
+      mesErreurs.forEach(e => {
+        const key = (e.matiere || "?") + "|" + (e.filiere || "");
+        parMatiere[key] = (parMatiere[key] || 0) + 1;
+      });
+      erreursZone.innerHTML = Object.keys(parMatiere).map(key => {
+        const [matiere, filiere] = key.split("|");
+        const n = parMatiere[key];
+        return '<div class="db-activite">'
+          + '<span class="db-nom">' + matiere.replace(/[<>]/g, "") + '</span>'
+          + '<span>' + n + ' question' + (n > 1 ? "s" : "") + '</span>'
+          + '<a class="btn btn-ghost" style="padding:8px 16px;font-size:.85rem;color:var(--encre);border-color:var(--craie-2)" href="erreurs.html?matiere=' + encodeURIComponent(matiere) + (filiere ? "&f=" + filiere : "") + '">Retravailler →</a>'
+          + '</div>';
+      }).join("");
+    }
+  }
+
   // Déconnexion
   const out = document.getElementById("logoutBtn");
   if (out) out.addEventListener("click", async () => { await DB.auth.signOut(); location.href = "index.html"; });

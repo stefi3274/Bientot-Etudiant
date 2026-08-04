@@ -39,6 +39,12 @@
 <section>
   <div class="wrap" id="espaceContenu">
 
+    <!-- Ma série -->
+    <div class="espace-card" id="streakCard" style="display:none">
+      <h2>Ma série</h2>
+      <div id="streakZone"></div>
+    </div>
+
     <!-- Mes filières -->
     <div class="espace-card">
       <h2>Mes filières</h2>
@@ -57,14 +63,19 @@
       </details>
     </div>
 
-    <!-- Ma progression (en attente de contenu) -->
+    <!-- Ma progression -->
     <div class="espace-card">
       <h2>Ma progression</h2>
-      <div class="wait-box">
-        <div class="wi" data-icon="progres"></div>
-        <h3>En attente de contenu</h3>
-        <p>Les leçons et les quiz arrivent bientôt. Dès qu'ils seront là, ta progression s'affichera ici.</p>
-        <a href="contribuer.html" class="btn btn-primary">Contribuer au contenu <span>→</span></a>
+      <div id="progressionZone">
+        <p class="empty">Chargement…</p>
+      </div>
+    </div>
+
+    <!-- Mes erreurs -->
+    <div class="espace-card">
+      <h2>Mes erreurs à retravailler</h2>
+      <div id="erreursZone">
+        <p class="empty">Chargement…</p>
       </div>
     </div>
 

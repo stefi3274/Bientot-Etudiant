@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Super Quiz · Bientôt Étudiant</title>
+<title>Classement Super Quiz · Bientôt Étudiant</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
@@ -28,10 +28,21 @@
   </div>
 </header>
 
+<section class="page-hero super-quiz-splash" style="padding:48px 0 52px">
+  <div class="wrap">
+    <span class="eyebrow" style="color:#fff">🌈 Super Quiz</span>
+    <h1 style="color:#fff">Classement</h1>
+    <p style="color:rgba(255,255,255,.92)">Meilleur score de chaque postulant.e, toutes matières confondues.</p>
+  </div>
+</section>
+
 <section>
-  <div class="wrap" style="padding-top:40px">
-    <div id="quizZone">
+  <div class="wrap">
+    <div id="classementZone" style="max-width:760px;margin:0 auto">
       <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <a href="super-quiz.html" class="btn btn-dark">Faire le Super Quiz <span>→</span></a>
     </div>
   </div>
 </section>
@@ -54,7 +65,6 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/main.js"></script>
 <script src="js/eleve.js"></script>
-<script src="js/streak.js"></script>
-<script src="js/super-quiz.js"></script>
+<script src="js/super-classement.js"></script>
 </body>
 </html>

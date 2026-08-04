@@ -1,7 +1,14 @@
 /* ============================================================
    Admin — Tableau de bord : vue d'ensemble complète.
    Élèves, leçons, quiz, tentatives, score moyen, contributions
-   en attente, répartition par filière, activité récente.
+   en attente, répartition par filière, progression par élève,
+   activité récente.
+
+   Note : les comptages sont dérivés des données réellement
+   récupérées (.length), pas d'un count "head:true" — ce dernier
+   s'est révélé peu fiable (renvoie parfois null/0 même quand des
+   lignes existent), d'où l'écart observé entre la carte "Élèves
+   inscrits" et la répartition par filière.
    ============================================================ */
 (function () {
   const $ = id => document.getElementById(id);
@@ -18,7 +25,7 @@
 
   window.chargerDashboard = async function () {
     if (typeof DB === "undefined" || !DB) return;
-    if (charge) return; // évite les rechargements multiples au clic répété
+    if (charge) return; // évite les rechargements simultanés
     charge = true;
 
     const cartes = $("dbCartes"), filieresBox = $("dbFilieres"), activiteBox = $("dbActivite"), msg = $("dbMsg");
@@ -26,52 +33,50 @@
 
     try {
       const [
-        { count: nbEleves },
-        { count: nbLecons },
-        { count: nbQuiz },
-        { count: nbTentatives },
-        { count: nbContribAttente },
         { data: eleves },
         { data: lecons },
         { data: quizList },
-        { data: tentatives }
+        { data: toutesTentatives },
+        { data: contribAttente },
+        { data: activiteRecente }
       ] = await Promise.all([
-        DB.from("eleves").select("id", { count: "exact", head: true }),
-        DB.from("lecons").select("id", { count: "exact", head: true }).eq("publie", true),
-        DB.from("quiz").select("id", { count: "exact", head: true }).eq("publie", true),
-        DB.from("tentatives").select("id", { count: "exact", head: true }),
-        DB.from("contributions").select("id", { count: "exact", head: true }).eq("statut", "a_verifier"),
-        DB.from("eleves").select("filieres"),
+        DB.from("eleves").select("user_id, nom, filieres"),
         DB.from("lecons").select("filiere").eq("publie", true),
         DB.from("quiz").select("filiere").eq("publie", true),
-        DB.from("tentatives").select("nom, score, total, filiere, matiere, created_at").order("created_at", { ascending: false }).limit(8)
+        DB.from("tentatives").select("user_id, nom, score, total, created_at"),
+        DB.from("contributions").select("id").eq("statut", "a_verifier"),
+        DB.from("tentatives").select("nom, score, total, matiere, created_at").order("created_at", { ascending: false }).limit(8)
       ]);
 
-      // ---------- Cartes KPI ----------
+      const nbEleves = (eleves || []).length;
+      const nbLecons = (lecons || []).length;
+      const nbQuiz = (quizList || []).length;
+      const nbTentatives = (toutesTentatives || []).length;
+      const nbContribAttente = (contribAttente || []).length;
+
       let scoreMoyen = "—";
-      if (tentatives && tentatives.length) {
-        // score moyen calculé sur l'échantillon récent affiché ; pour un vrai moyen global on interroge tout
-      }
-      const { data: toutesTentatives } = await DB.from("tentatives").select("score, total");
       if (toutesTentatives && toutesTentatives.length) {
         const pct = toutesTentatives.reduce((acc, t) => acc + (t.total ? t.score / t.total : 0), 0) / toutesTentatives.length;
         scoreMoyen = Math.round(pct * 100) + "%";
       }
 
+      // ---------- Cartes KPI ----------
       cartes.innerHTML = [
-        ["Élèves inscrits", nbEleves || 0],
-        ["Leçons publiées", nbLecons || 0],
-        ["Quiz publiés", nbQuiz || 0],
-        ["Quiz passés", nbTentatives || 0],
+        ["Élèves inscrits", nbEleves],
+        ["Leçons publiées", nbLecons],
+        ["Quiz publiés", nbQuiz],
+        ["Quiz passés", nbTentatives],
         ["Score moyen", scoreMoyen],
-        ["Contributions à vérifier", nbContribAttente || 0]
+        ["Contributions à vérifier", nbContribAttente]
       ].map(([label, val]) =>
         '<div class="db-carte"><div class="db-n">' + esc(String(val)) + '</div><div class="db-l">' + esc(label) + '</div></div>'
       ).join("");
 
-      if ((nbContribAttente || 0) > 0) {
+      if (nbContribAttente > 0) {
         msg.textContent = nbContribAttente + " contribution(s) en attente de vérification.";
         msg.className = "status-msg on";
+      } else {
+        msg.className = "status-msg";
       }
 
       // ---------- Répartition par filière ----------
@@ -87,15 +92,18 @@
         return '<div class="db-fil-row">'
           + '<span class="db-fil-nom">' + esc(FILIERES[f]) + '</span>'
           + '<span class="db-fil-bar"><span style="width:' + largeur + '%"></span></span>'
-          + '<span class="db-fil-chiffres">' + c.eleves + ' élèves · ' + c.lecons + ' leçons · ' + c.quiz + ' quiz</span>'
+          + '<span class="db-fil-chiffres">' + c.eleves + ' élève' + (c.eleves > 1 ? "s" : "") + ' · ' + c.lecons + ' leçons · ' + c.quiz + ' quiz</span>'
           + '</div>';
       }).join("");
+      if (nbEleves === 0) {
+        filieresBox.innerHTML += '<p class="empty" style="margin-top:10px">Un élève peut appartenir à plusieurs filières ; la somme des lignes peut donc dépasser le nombre total d\'élèves.</p>';
+      }
 
       // ---------- Activité récente ----------
-      if (!tentatives || !tentatives.length) {
+      if (!activiteRecente || !activiteRecente.length) {
         activiteBox.innerHTML = '<p class="empty">Aucune tentative de quiz enregistrée pour le moment.</p>';
       } else {
-        activiteBox.innerHTML = tentatives.map(t => {
+        activiteBox.innerHTML = activiteRecente.map(t => {
           const pct = t.total ? Math.round(100 * t.score / t.total) : 0;
           return '<div class="db-activite">'
             + '<span class="db-nom">' + esc(t.nom || "Anonyme") + '</span>'
@@ -106,14 +114,14 @@
         }).join("");
       }
     } catch (e) {
-      cartes.innerHTML = '<p class="empty">Erreur de chargement du tableau de bord.</p>';
+      cartes.innerHTML = '<p class="empty">Erreur de chargement du tableau de bord : ' + esc(e.message) + '</p>';
     } finally {
       charge = false;
     }
   };
 
   // Vérifie directement la session au chargement du script, sans dépendre
-  // du timing d'exécution d'admin.js (source du bug précédent).
+  // du timing d'exécution d'admin.js.
   (async function () {
     if (typeof DB === "undefined" || !DB) return;
     const { data } = await DB.auth.getSession();

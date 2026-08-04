@@ -688,7 +688,7 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .db-fil-bar{flex:2;height:8px;background:var(--craie-2);border-radius:4px;overflow:hidden}
 .db-fil-bar span{display:block;height:100%;background:var(--ocre)}
 .db-fil-chiffres{font-size:.82rem;color:var(--encre-2);white-space:nowrap}
-.db-activite{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--craie-2);font-size:.9rem}
+.db-activite{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--craie-2);font-size:.9rem}
 .db-activite:last-child{border-bottom:none}
 .db-activite .db-nom{font-weight:600}
 .db-activite .db-score{font-weight:700}

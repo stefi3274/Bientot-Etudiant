@@ -110,6 +110,17 @@
         filiere: quiz.filiere, matiere: quiz.matiere,
         score: score, total: questions.length, temps_sec: tempsMis
       });
+
+      // Mémoriser les questions ratées (pour "Mes erreurs") et marquer les résolues
+      const questionsRatees = ratees.map(r => ({
+        user_id: eleveConnecte.user_id, question_id: r.q.id, quiz_id: quiz.id,
+        filiere: quiz.filiere, matiere: quiz.matiere, resolu: false, updated_at: new Date().toISOString()
+      }));
+      if (questionsRatees.length) await DB.from("erreurs").upsert(questionsRatees, { onConflict: "user_id,question_id" });
+      const idsReussies = questions.filter((q, i) => reponses["q-" + i] === q.bonne).map(q => q.id);
+      if (idsReussies.length) await DB.from("erreurs").update({ resolu: true }).eq("user_id", eleveConnecte.user_id).in("question_id", idsReussies);
+
+      if (window.majStreak) await window.majStreak(eleveConnecte);
     }
 
     const pct = Math.round(100 * score / questions.length);
