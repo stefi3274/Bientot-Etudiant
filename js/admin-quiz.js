@@ -108,17 +108,87 @@
     return questions;
   }
 
-  if ($("qzImporterTexte")) $("qzImporterTexte").addEventListener("click", () => {
+  // Découpe sur des marqueurs ===QUIZ: Sous-titre=== pour détecter plusieurs quiz d'un coup.
+  // Le texte éventuel AVANT le premier marqueur (titre, intro) est ignoré.
+  // Compatible aussi avec l'ancien style ===QUIZ 1/5=== (numérotation auto en repli).
+  function detecterGroupes(txt) {
+    const regexMarqueur = /^\s*===\s*QUIZ\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
+    const matches = [...txt.matchAll(regexMarqueur)];
+    if (!matches.length) return [{ sousTitre: "", texte: txt.trim() }];
+
+    const groupes = [];
+    for (let i = 0; i < matches.length; i++) {
+      const debut = matches[i].index + matches[i][0].length;
+      const fin = (i + 1 < matches.length) ? matches[i + 1].index : txt.length;
+      const morceau = txt.slice(debut, fin).trim();
+      if (!morceau) continue;
+      let sousTitre = matches[i][1].trim();
+      const mNum = sousTitre.match(/^(\d+)\s*\/\s*\d+$/) || sousTitre.match(/^(\d+)$/);
+      if (mNum) sousTitre = "Partie " + mNum[1];
+      if (!sousTitre) sousTitre = "Partie " + (groupes.length + 1);
+      groupes.push({ sousTitre, texte: morceau });
+    }
+    return groupes;
+  }
+
+  if ($("qzImporterTexte")) $("qzImporterTexte").addEventListener("click", async () => {
     const txt = ($("qzTexteImport").value || "").trim();
     if (!txt) { statusQ("Colle d'abord tes questions.", "err"); return; }
-    const questions = parseQuestionsTexte(txt);
-    if (!questions.length) { statusQ("Aucune question reconnue dans le texte collé.", "err"); return; }
-    const incomplete = questions.findIndex(q => !q.enonce || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
-    if (incomplete !== -1) { statusQ("Question " + (incomplete + 1) + " incomplète (énoncé + 4 choix requis, format \"A) ...\").", "err"); return; }
-    qBox.innerHTML = ""; qCount = 0;
-    questions.forEach(q => ajouterQuestion(q));
-    statusQ(questions.length + " question(s) importée(s). Vérifie, puis publie le quiz.", "ok");
+
+    const groupes = detecterGroupes(txt);
+
+    // Un seul groupe (ou pas de marqueur) : comportement existant, remplit le formulaire pour relecture
+    if (groupes.length <= 1) {
+      const questions = parseQuestionsTexte(groupes.length ? groupes[0].texte : txt);
+      if (!questions.length) { statusQ("Aucune question reconnue dans le texte collé.", "err"); return; }
+      const incomplete = questions.findIndex(q => !q.enonce || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
+      if (incomplete !== -1) { statusQ("Question " + (incomplete + 1) + " incomplète (énoncé + 4 choix requis, format \"A) ...\").", "err"); return; }
+      qBox.innerHTML = ""; qCount = 0;
+      questions.forEach(q => ajouterQuestion(q));
+      statusQ(questions.length + " question(s) importée(s). Vérifie, puis publie le quiz.", "ok");
+      $("qzTexteImport").value = "";
+      return;
+    }
+
+    // Plusieurs groupes ===QUIZ:...=== détectés : publication directe de N quiz séparés (type "dimanche", sans leçon)
+    const titreBase = ($("qzTitre").value || "").trim();
+    if (!titreBase) { statusQ(groupes.length + " groupes détectés. Renseigne d'abord le grand titre (ex: \"Biologie Cellulaire\") avant d'importer.", "err"); return; }
+    if (typeof DB === "undefined" || !DB) { statusQ("Connexion Supabase indisponible.", "err"); return; }
+    const apercuTitres = groupes.map(g => titreBase + " — " + g.sousTitre).join("\n");
+    if (!confirm(groupes.length + " quiz détectés, publiés sous :\n" + apercuTitres + "\n\nConfirmer ?")) return;
+
+    statusQ("Publication de " + groupes.length + " quiz…", "");
+    const ent = await monEnt();
+    if (!ent) { statusQ("Entreprise introuvable.", "err"); return; }
+    const dureeSec = (parseInt($("qzDuree").value) || 10) * 60;
+
+    let ok = 0, erreurs = [];
+    for (let i = 0; i < groupes.length; i++) {
+      const questions = parseQuestionsTexte(groupes[i].texte);
+      if (!questions.length) { erreurs.push(groupes[i].sousTitre + " : aucune question reconnue."); continue; }
+      const incomplete = questions.findIndex(q => !q.enonce || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
+      if (incomplete !== -1) { erreurs.push(groupes[i].sousTitre + ", question " + (incomplete + 1) + " incomplète."); continue; }
+
+      const { data: qz, error: eQz } = await DB.from("quiz").insert({
+        entreprise_id: ent, filiere: selFil.value, matiere: selMat.value,
+        titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
+        type: "dimanche", lecon_id: null, publie: true
+      }).select("id").single();
+      if (eQz) { erreurs.push(groupes[i].sousTitre + " : " + eQz.message); continue; }
+
+      const rows = questions.map((q, idx) => ({
+        quiz_id: qz.id, ordre: idx + 1, enonce: q.enonce,
+        choix_a: q.choix_a, choix_b: q.choix_b, choix_c: q.choix_c, choix_d: q.choix_d, bonne: q.bonne
+      }));
+      const { error: eQ } = await DB.from("questions").insert(rows);
+      if (eQ) { erreurs.push(groupes[i].sousTitre + " (questions) : " + eQ.message); continue; }
+      ok++;
+    }
+
+    if (erreurs.length) statusQ(ok + " quiz publiés, " + erreurs.length + " erreur(s) : " + erreurs.join(" | "), "err");
+    else statusQ(ok + " quiz publiés avec succès sous \"" + titreBase + " — ...\" !", "ok");
     $("qzTexteImport").value = "";
+    chargerQuiz();
   });
 
   // Fonction exposée globalement (non utilisée actuellement, gardée si besoin futur de préremplissage)
