@@ -112,9 +112,11 @@
     }
   };
 
-  // Si le panneau admin est déjà visible au chargement du script (session déjà active), on charge tout de suite
-  document.addEventListener("DOMContentLoaded", () => {
-    const panel = $("panel");
-    if (panel && panel.style.display === "block" && window.DB) window.chargerDashboard();
-  });
+  // Vérifie directement la session au chargement du script, sans dépendre
+  // du timing d'exécution d'admin.js (source du bug précédent).
+  (async function () {
+    if (typeof DB === "undefined" || !DB) return;
+    const { data } = await DB.auth.getSession();
+    if (data && data.session) window.chargerDashboard();
+  })();
 })();

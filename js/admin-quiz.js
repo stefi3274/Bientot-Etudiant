@@ -81,6 +81,46 @@
 
   if ($("qzAddQ")) $("qzAddQ").addEventListener("click", () => ajouterQuestion());
 
+  // ---------- Import de questions collées (texte -> QCM, sans IA) ----------
+  if ($("qzVoirFormat")) $("qzVoirFormat").addEventListener("click", e => {
+    e.preventDefault();
+    const ex = $("qzExempleFormat");
+    ex.style.display = ex.style.display === "none" ? "block" : "none";
+  });
+
+  function parseQuestionsTexte(txt) {
+    const blocs = txt.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+    const questions = [];
+    blocs.forEach(bloc => {
+      const lignes = bloc.split("\n").map(l => l.trim()).filter(Boolean);
+      if (!lignes.length) return;
+      const enonce = lignes[0].replace(/^\d+[.)]\s*/, "");
+      const choix = {};
+      let bonne = null;
+      lignes.slice(1).forEach(l => {
+        const m = l.match(/^([A-Da-d])[).]\s*(.+)$/);
+        if (m) choix["choix_" + m[1].toLowerCase()] = m[2].trim();
+        const r = l.match(/^R[ée]ponse\s*:\s*([A-Da-d])/i);
+        if (r) bonne = r[1].toLowerCase();
+      });
+      questions.push({ enonce, choix_a: choix.choix_a || "", choix_b: choix.choix_b || "", choix_c: choix.choix_c || "", choix_d: choix.choix_d || "", bonne: bonne || "a" });
+    });
+    return questions;
+  }
+
+  if ($("qzImporterTexte")) $("qzImporterTexte").addEventListener("click", () => {
+    const txt = ($("qzTexteImport").value || "").trim();
+    if (!txt) { statusQ("Colle d'abord tes questions.", "err"); return; }
+    const questions = parseQuestionsTexte(txt);
+    if (!questions.length) { statusQ("Aucune question reconnue dans le texte collé.", "err"); return; }
+    const incomplete = questions.findIndex(q => !q.enonce || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
+    if (incomplete !== -1) { statusQ("Question " + (incomplete + 1) + " incomplète (énoncé + 4 choix requis, format \"A) ...\").", "err"); return; }
+    qBox.innerHTML = ""; qCount = 0;
+    questions.forEach(q => ajouterQuestion(q));
+    statusQ(questions.length + " question(s) importée(s). Vérifie, puis publie le quiz.", "ok");
+    $("qzTexteImport").value = "";
+  });
+
   // Fonction exposée globalement (non utilisée actuellement, gardée si besoin futur de préremplissage)
   window.BQ_remplirQuestions = function (questions) {
     qBox.innerHTML = ""; qCount = 0;
@@ -93,7 +133,7 @@
   document.querySelectorAll('.adm-tab[data-tab="quiz"]').forEach(t => {
     t.addEventListener("click", () => {
       if (!initFait) { ajouterQuestion(); initFait = true; }
-      if (window.DB) setTimeout(chargerQuiz, 50);
+      if (typeof DB !== "undefined" && DB) setTimeout(chargerQuiz, 50);
     });
   });
 

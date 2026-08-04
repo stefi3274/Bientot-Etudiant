@@ -247,6 +247,32 @@
           </div>
 
           <h3 style="font-family:var(--serif);margin:20px 0 12px">Questions</h3>
+
+          <div class="le-field">
+            <label>Coller mes questions (format ci-dessous) — <a href="#" id="qzVoirFormat">voir un exemple</a></label>
+            <pre id="qzExempleFormat" style="display:none;background:var(--craie-2);padding:14px;border-radius:10px;font-size:.82rem;white-space:pre-wrap;margin-bottom:10px">1. Énoncé de la première question ?
+A) Choix A
+B) Choix B
+C) Choix C
+D) Choix D
+Réponse: B
+
+2. Deuxième question ?
+A) ...
+B) ...
+C) ...
+D) ...
+Réponse: A</pre>
+            <textarea id="qzTexteImport" rows="8" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:ui-monospace,monospace;font-size:.88rem" placeholder="1. Énoncé...
+A) ...
+B) ...
+C) ...
+D) ...
+Réponse: B"></textarea>
+            <button type="button" class="btn btn-ghost" id="qzImporterTexte" style="color:var(--encre);border-color:var(--craie-2);margin-top:10px">Importer ces questions <span>→</span></button>
+            <p class="qz-hint">Remplace les questions ci-dessous par celles du texte collé.</p>
+          </div>
+
           <div id="qzQuestions"></div>
           <button type="button" class="btn btn-ghost" id="qzAddQ" style="color:var(--encre);border-color:var(--craie-2);margin-top:8px">+ Ajouter une question</button>
 

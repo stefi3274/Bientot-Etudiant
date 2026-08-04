@@ -331,7 +331,7 @@
 
   // ---------- Chargement du quiz choisi ----------
   document.querySelectorAll('.adm-tab[data-tab="carousels"]').forEach(t => {
-    t.addEventListener("click", () => { if (window.DB) chargerListeQuiz(); });
+    t.addEventListener("click", () => { if (typeof DB !== "undefined" && DB) chargerListeQuiz(); });
   });
 
   async function chargerListeQuiz() {

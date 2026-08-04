@@ -23,8 +23,8 @@
         const el = $("tab-" + k);
         if (el) el.style.display = (t === k) ? "block" : "none";
       });
-      if (t === "lecons" && window.DB) chargerLecons();
-      if (t === "dashboard" && window.DB && window.chargerDashboard) window.chargerDashboard();
+      if (t === "lecons" && typeof DB !== "undefined" && DB) chargerLecons();
+      if (t === "dashboard" && typeof DB !== "undefined" && DB && window.chargerDashboard) window.chargerDashboard();
     });
   });
 
