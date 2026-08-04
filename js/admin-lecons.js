@@ -208,11 +208,20 @@
   }
 
   async function delLecon(id) {
-    if (!confirm("Supprimer cette leçon ?")) return;
+    if (!confirm("Supprimer cette leçon ? Le quiz qui lui est lié (et ses questions) sera aussi supprimé.")) return;
     const { data: l } = await DB.from("lecons").select("pdf_chemin").eq("id", id).maybeSingle();
     if (l && l.pdf_chemin) await DB.storage.from(BUCKET).remove([l.pdf_chemin]);
+
+    // Retirer d'abord le(s) quiz lié(s) à cette leçon (sinon la contrainte de clé étrangère bloque la suppression)
+    const { data: quizLies } = await DB.from("quiz").select("id").eq("lecon_id", id);
+    if (quizLies && quizLies.length) {
+      const idsQuiz = quizLies.map(q => q.id);
+      await DB.from("questions").delete().in("quiz_id", idsQuiz);
+      await DB.from("quiz").delete().in("id", idsQuiz);
+    }
+
     const { error } = await DB.from("lecons").delete().eq("id", id);
     if (error) statusL("Erreur : " + error.message, "err");
-    else { if (editId === id) resetForm(); chargerLecons(); }
+    else { if (editId === id) resetForm(); chargerLecons(); statusL("Leçon (et son quiz) supprimée.", "ok"); }
   }
 })();

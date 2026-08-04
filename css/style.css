@@ -694,3 +694,10 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .db-activite .db-score{font-weight:700}
 .db-activite .db-score.ok{color:var(--f1-d)}
 .db-activite .db-score.low{color:var(--rouge)}
+
+/* ===== DÉFI ENTRE POSTULANTS ===== */
+.defi-banniere{background:rgba(232,184,75,.15);border:1px solid rgba(232,184,75,.4);
+  border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:.95rem;color:var(--encre)}
+.defi-resultat{font-weight:700;font-size:1.05rem;margin-bottom:14px;padding:12px 16px;border-radius:12px;background:var(--craie2,#ede8da)}
+.defi-resultat.defi-gagne{background:rgba(63,160,106,.15);color:var(--f1-d)}
+.defi-resultat.defi-perdu{background:rgba(194,91,78,.1);color:var(--rouge)}

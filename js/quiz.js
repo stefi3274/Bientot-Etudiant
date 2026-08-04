@@ -4,7 +4,11 @@
 (function () {
   const zone = document.getElementById("quizZone");
   if (!zone) return;
-  const id = new URLSearchParams(location.search).get("id");
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const defiNom = params.get("defiNom");
+  const defiScore = params.get("defiScore") ? parseInt(params.get("defiScore"), 10) : null;
+  const defiTotal = params.get("defiTotal") ? parseInt(params.get("defiTotal"), 10) : null;
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const fmtTemps = s => Math.floor(s/60) + ":" + String(s%60).padStart(2,"0");
@@ -24,16 +28,47 @@
     if (quiz.filiere) document.body.setAttribute("data-filiere", quiz.filiere);
     const el = await eleveActuel();
     eleveConnecte = (el && el.nom) ? el : null;
-    ecranIntro();
+
+    // Quiz lié à une leçon (pas un quiz libre "dimanche") -> proposer de lire la leçon d'abord
+    const clefVue = "lecon_demandee_" + quiz.id;
+    if (quiz.type !== "dimanche" && quiz.lecon_id && !sessionStorage.getItem(clefVue)) {
+      ecranChoixLecon();
+    } else {
+      ecranIntro();
+    }
   })();
+
+  // ---------- Proposer de lire la leçon avant le quiz ----------
+  function ecranChoixLecon() {
+    zone.innerHTML =
+      '<div class="quiz-intro">'
+      + '<span class="qi-kicker">' + esc(quiz.matiere) + '</span>'
+      + '<h1>Veux-tu lire la leçon d\'abord ?</h1>'
+      + '<p class="qi-note">« ' + esc(quiz.titre) + ' » est lié à une leçon. La lire avant t\'aidera à mieux répondre.</p>'
+      + '<button class="btn btn-dark" id="lireLeconBtn">Lire la leçon d\'abord <span>→</span></button>'
+      + ' <button class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" id="direQuizBtn">Non, je fais le quiz directement</button>'
+      + '</div>';
+    document.getElementById("lireLeconBtn").addEventListener("click", () => {
+      sessionStorage.setItem("lecon_demandee_" + quiz.id, "1");
+      location.href = "lecon.html?id=" + quiz.lecon_id;
+    });
+    document.getElementById("direQuizBtn").addEventListener("click", () => {
+      sessionStorage.setItem("lecon_demandee_" + quiz.id, "1");
+      ecranIntro();
+    });
+  }
 
   // ---------- Écran d'intro ----------
   function ecranIntro() {
     const blocClassementOuCompte = eleveConnecte
       ? '<a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="classement.html?quiz=' + quiz.id + '">Voir le classement</a>'
       : '<p class="qi-note" style="margin-top:14px">Tu peux faire ce quiz sans compte. <a href="inscription.html" style="font-weight:600">Crée un compte</a> pour enregistrer ta progression et apparaître au classement.</p>';
+    const banniereDefi = (defiNom && defiScore !== null && defiTotal)
+      ? '<div class="defi-banniere">🎯 <b>' + esc(defiNom) + '</b> te défie avec un score de <b>' + defiScore + '/' + defiTotal + '</b>. À toi de faire mieux !</div>'
+      : '';
     zone.innerHTML =
       '<div class="quiz-intro">'
+      + banniereDefi
       + '<span class="qi-kicker">' + esc(quiz.matiere) + '</span>'
       + '<h1>' + esc(quiz.titre) + '</h1>'
       + '<div class="qi-facts">'
@@ -155,18 +190,29 @@
     const titreFelic = pct >= 80 ? "Bravo" : pct >= 50 ? "Bien joué" : "Courage";
     const felic = prenom ? (titreFelic + ", " + esc(prenom) + " !") : (titreFelic + " !");
 
-    // Message de partage (texte + lien)
-    const lien = "https://bientot-etudiant.vercel.app/quiz.html?id=" + quiz.id;
-    const txtPartage = "J'ai obtenu " + score + "/" + questions.length + " au quiz « " + quiz.titre + " » sur Bientôt Étudiant ! Prépare-toi au concours avec moi : ";
+    // Message de partage / défi (texte + lien)
+    const lien = "https://bientot-etudiant.vercel.app/quiz.html?id=" + quiz.id
+      + "&defiNom=" + encodeURIComponent(prenom || (eleveConnecte && eleveConnecte.nom) || "Un.e ami.e")
+      + "&defiScore=" + score + "&defiTotal=" + questions.length;
+    const txtPartage = "Je te défie au quiz « " + quiz.titre + " » sur Bientôt Étudiant ! J'ai fait " + score + "/" + questions.length + ", sauras-tu faire mieux ? ";
     const encTxt = encodeURIComponent(txtPartage);
     const encLien = encodeURIComponent(lien);
     const partage =
-      '<div class="partage"><span class="pt-label">Partager mon score</span>'
+      '<div class="partage"><span class="pt-label">Défier un.e ami.e</span>'
       + '<div class="pt-btns">'
       + '<a class="pt-btn wa" href="https://wa.me/?text=' + encTxt + encLien + '" target="_blank" rel="noopener">WhatsApp</a>'
       + '<a class="pt-btn fb" href="https://www.facebook.com/sharer/sharer.php?u=' + encLien + '" target="_blank" rel="noopener">Facebook</a>'
       + '<button class="pt-btn cp" id="copyBtn" data-txt="' + esc(txtPartage + lien) + '">Copier</button>'
-      + '</div></div>';
+      + '</div><p class="qi-note" style="margin-top:8px">Pas besoin de compte pour relever le défi.</p></div>';
+
+    // Comparaison si ce quiz a été ouvert via un lien de défi
+    let compareDefi = "";
+    if (defiNom && defiScore !== null && defiTotal) {
+      const pctDefi = Math.round(100 * defiScore / defiTotal);
+      if (pct > pctDefi) compareDefi = '<p class="defi-resultat defi-gagne">🏆 Tu as battu ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>';
+      else if (pct === pctDefi) compareDefi = '<p class="defi-resultat">🤝 Égalité avec ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>';
+      else compareDefi = '<p class="defi-resultat defi-perdu">' + esc(defiNom) + ' est devant (' + defiScore + '/' + defiTotal + '). Retente ta chance !</p>';
+    }
 
     const actionClassementOuCompte = eleveConnecte
       ? '<a class="btn btn-primary" href="classement.html?quiz=' + quiz.id + '">Voir le classement <span>→</span></a>'
@@ -178,6 +224,7 @@
       + '<div class="score-ring ' + (pct>=50?"ok":"low") + '"><b>' + score + '</b><span>/ ' + questions.length + '</span></div>'
       + '<h1>' + felic + '</h1>'
       + '<p class="score-meta">' + pct + '% de bonnes réponses · Temps : ' + fmtTemps(tempsMis) + '</p>'
+      + compareDefi
       + partage
       + ratHtml
       + '<div class="quiz-result-actions">'
