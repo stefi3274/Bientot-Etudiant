@@ -7,8 +7,8 @@
 
   const BUCKET = "Images";
   const MATIERES = {
-    f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français"],
-    f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale"],
+    f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français", "Botanique"],
+    f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques"]
   };
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
