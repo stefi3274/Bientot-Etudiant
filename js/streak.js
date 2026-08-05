@@ -1,6 +1,6 @@
 /* ============================================================
    Streak — série de jours consécutifs de révision.
-   Appelée à chaque quiz terminé (normal, Super Quiz, ou révision
+   Appelée à chaque quiz terminé (leçon, libre, ou révision
    des erreurs). Incrémente si la dernière activité était hier,
    remet à 1 si le fil est rompu, ne change rien si déjà compté
    aujourd'hui.

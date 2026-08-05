@@ -591,7 +591,7 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .cx-mauvais .cx-t{color:var(--rouge)}
 .cx-mauvais .cx-m{color:var(--rouge)}
 
-/* Type de quiz (leçon / dimanche) */
+/* Type de quiz (leçon / libre) */
 .qz-type-choix{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .qz-type-opt{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border:1.5px solid var(--craie-2);
   border-radius:12px;cursor:pointer;background:#fff;transition:border-color .2s}
@@ -599,18 +599,21 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .qz-type-opt small{font-size:.8rem;color:var(--encre-2)}
 .qz-type-opt input{display:none}
 .qz-type-opt:has(input:checked){border-color:var(--ardoise);background:var(--craie)}
-.qz-type-opt.rainbow:has(input:checked){border-image:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5) 1}
+.qz-type-opt.libre:has(input:checked){border-color:var(--ocre-d)}
+body[data-filiere="f1"] .qz-type-opt.libre:has(input:checked){border-color:var(--f1)}
+body[data-filiere="f2"] .qz-type-opt.libre:has(input:checked){border-color:var(--f2)}
+body[data-filiere="f3"] .qz-type-opt.libre:has(input:checked){border-color:var(--f3)}
 @media (max-width:560px){.qz-type-choix{grid-template-columns:1fr}}
 
-/* Badge et bordure arc-en-ciel pour les quiz du dimanche */
-.rainbow-badge{display:inline-block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-  padding:4px 12px;border-radius:20px;color:#fff;
-  background:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5)}
-.quiz-carte.dimanche{border-left:0;position:relative;overflow:hidden}
-.quiz-carte.dimanche::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;
-  background:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5)}
-.quiz-carte.dimanche .lc-num{color:transparent;background:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5);
-  -webkit-background-clip:text;background-clip:text;font-weight:700}
+/* Badge et carte "Quiz Libre" — couleur de la filière (plus d'arc-en-ciel) */
+.badge-libre{display:inline-block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  padding:4px 12px;border-radius:20px;color:#fff;background:var(--ocre-d)}
+body[data-filiere="f1"] .badge-libre{background:var(--f1)}
+body[data-filiere="f2"] .badge-libre{background:var(--f2)}
+body[data-filiere="f3"] .badge-libre{background:var(--f3)}
+body[data-filiere="f1"] .quiz-carte.libre .lc-num{color:var(--f1)}
+body[data-filiere="f2"] .quiz-carte.libre .lc-num{color:var(--f2)}
+body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
 
 /* CTA quiz en fin de leçon */
 .lecon-quiz-cta{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
@@ -654,28 +657,6 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .explorer{padding:30px 0 60px}
 .explorer .exp-empty{text-align:center;color:var(--encre-2);padding:40px 0;font-style:italic}
 .exp-filiere-label{font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ocre-d);margin:-6px 0 14px}
-
-/* ===== SUPER QUIZ (arc-en-ciel) ===== */
-.super-quiz-band{padding:8px 0 30px}
-.super-quiz-band .sq-card{
-  border-radius:22px;padding:38px 34px;text-align:center;color:#fff;
-  background:linear-gradient(115deg,#e0554e,#e8b84b,#2a9d6f,#2c6e8f,#7d5aa6,#9c3f56);
-  background-size:300% 300%;animation:sq-flow 10s ease infinite;
-}
-.super-quiz-band .sq-card h2{color:#fff;font-family:var(--serif);font-size:1.7rem;margin:8px 0 6px}
-.super-quiz-band .sq-card p{color:rgba(255,255,255,.92);max-width:520px;margin:0 auto 20px}
-.super-quiz-band .sq-kicker{font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-@keyframes sq-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-.super-quiz-splash{
-  border-radius:22px;padding:48px 34px;text-align:center;
-  background:linear-gradient(115deg,#e0554e,#e8b84b,#2a9d6f,#2c6e8f,#7d5aa6,#9c3f56);
-  background-size:300% 300%;animation:sq-flow 10s ease infinite;
-}
-@media (max-width:640px){
-  .super-quiz-band .sq-card{padding:28px 20px}
-  .super-quiz-splash{padding:32px 20px}
-}
 
 /* ===== TABLEAU DE BORD ADMIN ===== */
 .db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}

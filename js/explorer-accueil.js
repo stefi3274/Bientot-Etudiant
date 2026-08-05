@@ -118,8 +118,8 @@
         + quiz.map(q => {
             const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
             const estDimanche = q.type === "dimanche";
-            return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' dimanche' : '') + '" href="quiz.html?id=' + q.id + '">'
-              + '<span class="lc-num">' + (estDimanche ? "Quiz du dimanche" : "Quiz") + '</span>'
+            return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' libre' : '') + '" href="quiz.html?id=' + q.id + '">'
+              + '<span class="lc-num">' + (estDimanche ? "Quiz Libre" : "Quiz") + '</span>'
               + '<h3>' + esc(q.titre) + '</h3>'
               + '<p>' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min chronométrées</p>'
               + '<span class="lc-go">Relever le défi →</span></a>';

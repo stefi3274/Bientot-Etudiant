@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Super Quiz · Bientôt Étudiant</title>
+<title>Quiz Libres · Bientôt Étudiant</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
@@ -28,9 +28,18 @@
   </div>
 </header>
 
+<section class="page-hero" style="padding:48px 0 40px">
+  <div class="wrap">
+    <span class="eyebrow">Entraînement libre</span>
+    <h1>Quiz Libres</h1>
+    <p>Des quiz indépendants des leçons, toutes matières. Choisis ta filière pour voir ceux qui te concernent.</p>
+  </div>
+</section>
+
 <section>
-  <div class="wrap" style="padding-top:40px">
-    <div id="quizZone">
+  <div class="wrap">
+    <div class="filters" id="qlFiliereBtns"></div>
+    <div id="qlZone">
       <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
     </div>
   </div>
@@ -54,7 +63,6 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/main.js"></script>
 <script src="js/eleve.js"></script>
-<script src="js/streak.js"></script>
-<script src="js/super-quiz.js"></script>
+<script src="js/quiz-libres.js"></script>
 </body>
 </html>

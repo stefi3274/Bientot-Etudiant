@@ -18,6 +18,7 @@
   function majMat() {
     if (!selFil || !selMat) return;
     selMat.innerHTML = (MATIERES[selFil.value] || []).map(m => '<option>' + esc(m) + '</option>').join("");
+    document.body.setAttribute("data-filiere", selFil.value);
     chargerLeconsRattach();
   }
   if (selFil) { selFil.addEventListener("change", majMat); majMat(); }
@@ -250,7 +251,7 @@
 
     const typeQ = (document.querySelector('input[name="qzType"]:checked') || {}).value || "lecon";
     const leconId = ($("qzLecon") && $("qzLecon").value) ? $("qzLecon").value : null;
-    if (typeQ === "lecon" && !leconId) { statusQ("Choisis la leçon à rattacher (ou passe en Quiz du dimanche).", "err"); return; }
+    if (typeQ === "lecon" && !leconId) { statusQ("Choisis la leçon à rattacher (ou passe en Quiz Libre).", "err"); return; }
 
     const quizData = {
       entreprise_id: ent,
@@ -314,7 +315,7 @@
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
       const estDim = q.type === "dimanche";
       return '<div class="quiz-item ' + q.filiere + '">'
-        + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="rainbow-badge">Dimanche</span>' : '') + '</b>'
+        + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="badge-libre">Libre</span>' : '') + '</b>'
         + '<span class="qi-meta">' + esc(q.matiere) + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + q.id + '">Modifier</button>'

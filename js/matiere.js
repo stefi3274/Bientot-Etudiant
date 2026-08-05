@@ -75,8 +75,8 @@
     const cartes = data.map(q => {
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
       const estDimanche = q.type === "dimanche";
-      return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' dimanche' : '') + '" href="quiz.html?id=' + q.id + '">'
-        + '<span class="lc-num">' + (estDimanche ? 'Quiz du dimanche' : 'Quiz') + '</span>'
+      return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' libre' : '') + '" href="quiz.html?id=' + q.id + '">'
+        + '<span class="lc-num">' + (estDimanche ? 'Quiz Libre' : 'Quiz') + '</span>'
         + '<h3>' + esc(q.titre) + '</h3>'
         + '<p>' + nbQ + ' questions \u00b7 ' + Math.round(q.duree_sec/60) + ' min chronom\u00e9tr\u00e9es</p>'
         + '<span class="lc-go">Relever le d\u00e9fi \u2192</span></a>';
