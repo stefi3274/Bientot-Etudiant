@@ -13,6 +13,7 @@
     philo: `<path ${P} d="M12 3a6 6 0 0 0-3 11.2V17a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8A6 6 0 0 0 12 3z"/><path ${P} d="M10 21h4"/>`,
     eco: `<path ${P} d="M4 19h16"/><rect ${P} x="6" y="12" width="3" height="7"/><rect ${P} x="11" y="8" width="3" height="11"/><rect ${P} x="16" y="4" width="3" height="15"/>`,
     bota: `<path ${P} d="M12 21V9"/><path ${P} d="M12 9c0-4-3-6-7-6 0 4 3 6 7 6z"/><path ${P} d="M12 13c0-4 3-6 7-6 0 4-3 6-7 6z"/>`,
+    droit: `<path ${P} d="M12 3v18"/><path ${P} d="M5 8h14"/><path ${P} d="M5 8 2 15a3 3 0 0 0 6 0z"/><path ${P} d="M19 8l-3 7a3 3 0 0 0 6 0z"/><path ${P} d="M9 21h6"/>`,
     // Filières
     med: `<path ${P} d="M12 4v6M9 7h6"/><circle ${P} cx="12" cy="15" r="5"/><path ${P} d="M12 13v4M10 15h4"/>`,
     gestion: `<rect ${P} x="4" y="9" width="16" height="11" rx="1.5"/><path ${P} d="M9 9V6a3 3 0 0 1 6 0v3"/><path ${P} d="M12 13v3"/>`,

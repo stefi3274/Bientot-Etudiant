@@ -9,7 +9,7 @@
   const MATIERES = {
     f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français", "Botanique"],
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
-    f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques"]
+    f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));

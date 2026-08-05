@@ -24,11 +24,15 @@
     "Philosophie": "var(--m-philo)",
     "Culture générale": "var(--m-cg)",
     "Créole": "var(--m-creole)",
-    "Économie et Gestion": "var(--m-eco)"
+    "Économie et Gestion": "var(--m-eco)",
+    "Droit": "var(--m-droit)"
   };
   const couleurDe = m => COULEUR_MATIERE[m] || "var(--ocre-d)";
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+  // Matières transversales : regroupées peu importe la filière dans laquelle elles ont été publiées
+  const TRANSVERSALES = ["Français", "Culture générale"];
 
   let tousLesQuiz = [];
   let filiereActuelle = null;
@@ -65,7 +69,7 @@
   }
 
   function afficher() {
-    const quiz = tousLesQuiz.filter(q => q.filiere === filiereActuelle);
+    const quiz = tousLesQuiz.filter(q => q.filiere === filiereActuelle || TRANSVERSALES.includes(q.matiere));
     if (!quiz.length) {
       const matBtns = document.getElementById("qlMatiereBtns");
       if (matBtns) matBtns.innerHTML = "";

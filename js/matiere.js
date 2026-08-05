@@ -11,6 +11,8 @@
   };
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  const TRANSVERSALES = ["Français", "Culture générale"];
+  const transversale = TRANSVERSALES.includes(m);
 
   document.title = m + " · Bientôt Étudiant";
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -39,10 +41,9 @@
 
   (async function () {
     if (typeof DB === "undefined" || !DB) { messageAttente(); return; }
-    const { data, error } = await DB.from("lecons")
-      .select("id, titre, apercu, ordre, pdf_url, auteur")
-      .eq("filiere", f).eq("matiere", m).eq("publie", true)
-      .order("ordre", { ascending: true });
+    let qLec = DB.from("lecons").select("id, titre, apercu, ordre, pdf_url, auteur").eq("matiere", m).eq("publie", true);
+    if (!transversale) qLec = qLec.eq("filiere", f);
+    const { data, error } = await qLec.order("ordre", { ascending: true });
 
     if (error || !data || data.length === 0) { messageAttente(); chargerQuiz(); return; }
 
@@ -66,10 +67,9 @@
   // ---------- Quiz de la matière (tous types : liés à une leçon + quiz du dimanche) ----------
   async function chargerQuiz() {
     if (typeof DB === "undefined" || !DB) return;
-    const { data } = await DB.from("quiz")
-      .select("id, titre, duree_sec, type, questions(count)")
-      .eq("filiere", f).eq("matiere", m).eq("publie", true)
-      .order("created_at", { ascending: false });
+    let qQz = DB.from("quiz").select("id, titre, duree_sec, type, questions(count)").eq("matiere", m).eq("publie", true);
+    if (!transversale) qQz = qQz.eq("filiere", f);
+    const { data } = await qQz.order("created_at", { ascending: false });
     if (!data || data.length === 0) return;
 
     const cartes = data.map(q => {

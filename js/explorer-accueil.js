@@ -15,10 +15,14 @@
   const MATIERES = {
     f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français", "Botanique"],
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
-    f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques"]
+    f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+  // Matières transversales : visibles/accessibles depuis n'importe quelle filière,
+  // tout leur contenu est regroupé peu importe sous quelle filière il a été publié.
+  const TRANSVERSALES = ["Français", "Culture générale"];
 
   const filBtns = document.getElementById("expFiliereBtns");
   const matBtns = document.getElementById("expMatiereBtns");
@@ -37,6 +41,12 @@
     disponibles = { f1: new Set(), f2: new Set(), f3: new Set() };
     (lecons || []).forEach(l => { if (disponibles[l.filiere]) disponibles[l.filiere].add(l.matiere); });
     (quiz || []).forEach(q => { if (disponibles[q.filiere]) disponibles[q.filiere].add(q.matiere); });
+
+    // Une matière transversale ayant du contenu QUELQUE PART devient disponible PARTOUT
+    TRANSVERSALES.forEach(m => {
+      const presentePart = Object.values(disponibles).some(set => set.has(m));
+      if (presentePart) Object.keys(disponibles).forEach(f => disponibles[f].add(m));
+    });
   }
 
   function filieresAvecContenu() {
@@ -84,15 +94,14 @@
     if (!matiereActuelle || typeof DB === "undefined" || !DB) return;
     zone.innerHTML = '<p class="exp-empty">Chargement…</p>';
 
-    const { data: lecons } = await DB.from("lecons")
-      .select("id, titre, apercu, ordre")
-      .eq("filiere", filiereActuelle).eq("matiere", matiereActuelle).eq("publie", true)
-      .order("ordre", { ascending: true });
+    const transversale = TRANSVERSALES.includes(matiereActuelle);
 
-    const { data: quiz } = await DB.from("quiz")
-      .select("id, titre, duree_sec, type, questions(count)")
-      .eq("filiere", filiereActuelle).eq("matiere", matiereActuelle).eq("publie", true)
-      .order("created_at", { ascending: false });
+    let qLecons = DB.from("lecons").select("id, titre, apercu, ordre, filiere").eq("matiere", matiereActuelle).eq("publie", true);
+    let qQuiz = DB.from("quiz").select("id, titre, duree_sec, type, filiere, questions(count)").eq("matiere", matiereActuelle).eq("publie", true);
+    if (!transversale) { qLecons = qLecons.eq("filiere", filiereActuelle); qQuiz = qQuiz.eq("filiere", filiereActuelle); }
+
+    const { data: lecons } = await qLecons.order("ordre", { ascending: true });
+    const { data: quiz } = await qQuiz.order("created_at", { ascending: false });
 
     if ((!lecons || !lecons.length) && (!quiz || !quiz.length)) {
       zone.innerHTML = '<p class="exp-empty">Pas encore de contenu pour ' + esc(matiereActuelle) + '.</p>';

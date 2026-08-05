@@ -39,6 +39,7 @@
   --m-creole:#d98a4b;
   --m-eco:#b8863b;
   --m-bota:#5a8f3c;
+  --m-droit:#6d5a8f;
 
   --serif:'Fraunces',Georgia,serif;
   --corps:'Inter',system-ui,sans-serif;
@@ -209,6 +210,7 @@ section{padding:88px 0}
 .mat.creole{--c:var(--m-creole);--c-bg:rgba(217,138,75,.12)}
 .mat.eco{--c:var(--m-eco);--c-bg:rgba(184,134,59,.12)}
 .mat.bota{--c:var(--m-bota);--c-bg:rgba(90,143,60,.12)}
+.mat.droit{--c:var(--m-droit);--c-bg:rgba(109,90,143,.12)}
 
 /* ============================================================
    BANDEAU CTA

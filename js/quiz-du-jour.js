@@ -1,7 +1,8 @@
 /* ============================================================
    Quiz du jour — page d'accueil
    Un quiz différent par filière, sélectionné de façon déterministe
-   (même quiz pour tout le monde le même jour, dans chaque filière).
+   (même quiz pour tout le monde le même jour, dans chaque filière),
+   parmi tous les quiz publiés disponibles pour cette filière.
    Si l'utilisateur est connecté, ne montre que le(s) quiz de SA/ses
    filière(s) ; sinon, montre une carte par filière disponible.
    ============================================================ */
