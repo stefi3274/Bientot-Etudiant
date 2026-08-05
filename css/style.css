@@ -552,7 +552,11 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .cls-th{background:var(--ardoise);color:var(--craie);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
 .cls-place{font-weight:700;font-size:1.1rem;color:var(--encre)}
 .cls-podium{background:rgba(232,184,75,.08)}
-.cls-podium .cls-place{font-size:1.4rem}
+.cls-place-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;
+  border-radius:50%;font-size:1.35rem;line-height:1}
+.cls-row.place-1 .cls-place-badge{background:linear-gradient(135deg,#f7e08a,#d4af37);box-shadow:0 3px 10px rgba(212,175,55,.45)}
+.cls-row.place-2 .cls-place-badge{background:linear-gradient(135deg,#eef0f2,#b7bcc2);box-shadow:0 3px 10px rgba(150,155,162,.4)}
+.cls-row.place-3 .cls-place-badge{background:linear-gradient(135deg,#e3a978,#a9622f);box-shadow:0 3px 10px rgba(169,98,47,.4)}
 .cls-nom{font-weight:600;color:var(--encre)}
 .cls-score{font-family:var(--serif);font-weight:600;color:var(--f1-d)}
 .cls-temps{color:var(--encre-2);font-variant-numeric:tabular-nums;font-size:.92rem}
@@ -681,4 +685,8 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
   border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:.95rem;color:var(--encre)}
 .defi-resultat{font-weight:700;font-size:1.05rem;margin-bottom:14px;padding:12px 16px;border-radius:12px;background:var(--craie2,#ede8da)}
 .defi-resultat.defi-gagne{background:rgba(63,160,106,.15);color:var(--f1-d)}
-.defi-resultat.defi-perdu{background:rgba(194,91,78,.1);color:var(--rouge)}
+.defi-resultat.defi-perdu{background:rgba(232,184,75,.15);color:var(--ocre-d)}
+
+/* ===== CARTE DE RÉSULTAT PARTAGEABLE ===== */
+.carte-resultat{margin:20px 0 26px;text-align:center}
+.carte-resultat-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}

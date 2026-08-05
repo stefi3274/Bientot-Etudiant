@@ -78,8 +78,9 @@
       + top.map((t, i) => {
           const place = i + 1;
           const medaille = place === 1 ? "🥇" : place === 2 ? "🥈" : place === 3 ? "🥉" : place;
-          return '<div class="cls-row' + (place<=3?' cls-podium':'') + '">'
-            + '<span class="cls-place">' + medaille + '</span>'
+          const placeHtml = place <= 3 ? '<span class="cls-place-badge">' + medaille + '</span>' : medaille;
+          return '<div class="cls-row' + (place<=3?' cls-podium place-'+place:'') + '">'
+            + '<span class="cls-place">' + placeHtml + '</span>'
             + '<span class="cls-nom">' + esc(t.nom || "Anonyme") + '</span>'
             + '<span class="cls-score">' + t.score + '/' + t.total + '</span>'
             + '<span class="cls-temps">' + fmtTemps(t.temps_sec) + '</span>'

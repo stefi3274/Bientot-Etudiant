@@ -13,6 +13,119 @@
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const fmtTemps = s => Math.floor(s/60) + ":" + String(s%60).padStart(2,"0");
 
+  // ---------- Carte de résultat partageable (Canvas) ----------
+  const CARTE = { taille: 1080, ardoise: "#14342b", craie: "#f7f4ec", craie2: "#ede8da" };
+  const ACCENTS = { f1: "#2a9d6f", f2: "#4a90c4", f3: "#c96b83" };
+  const FILIERES_LABEL = { f1: "Médecine, Agronomie & Vétérinaire", f2: "Sciences administratives, Économie & Génie", f3: "Sciences humaines et sociales" };
+  let logoImg = null;
+  function chargerLogo() {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => { logoImg = img; resolve(); };
+      img.onerror = () => resolve();
+      img.src = "img/logo.png";
+    });
+  }
+  function hexToRgba(hex, a) {
+    const n = parseInt(hex.replace("#", ""), 16);
+    return "rgba(" + [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(",") + "," + a + ")";
+  }
+  function rr(ctx, x, y, w, h, r) {
+    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+    else { ctx.beginPath(); ctx.rect(x, y, w, h); }
+  }
+  function decouperTexte(ctx, texte, maxWidth) {
+    const mots = (texte || "").split(/\s+/);
+    const lignes = []; let ligne = "";
+    mots.forEach(mot => {
+      const essai = ligne ? ligne + " " + mot : mot;
+      if (ctx.measureText(essai).width > maxWidth && ligne) { lignes.push(ligne); ligne = mot; }
+      else ligne = essai;
+    });
+    if (ligne) lignes.push(ligne);
+    return lignes;
+  }
+
+  async function genererCarteResultat(quiz, score, total, pct, prenom, infosDefi) {
+    if (!logoImg) await chargerLogo();
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+    const T = CARTE.taille;
+    const accent = ACCENTS[quiz.filiere] || CARTE.craie2;
+    const cv = document.createElement("canvas"); cv.width = T; cv.height = T;
+    const ctx = cv.getContext("2d");
+
+    ctx.fillStyle = CARTE.ardoise; ctx.fillRect(0, 0, T, T);
+    const glow = ctx.createRadialGradient(T*0.85, T*0.1, 0, T*0.85, T*0.1, T*0.75);
+    glow.addColorStop(0, hexToRgba(accent, 0.28)); glow.addColorStop(1, hexToRgba(accent, 0));
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, T, T);
+    ctx.fillStyle = accent; ctx.fillRect(0, 0, T, 8);
+
+    ctx.font = "700 24px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(247,244,236,.65)";
+    ctx.fillText("CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 80, 120);
+
+    ctx.fillStyle = CARTE.craie;
+    ctx.font = "600 46px Fraunces, Georgia, serif";
+    const nomLigne = prenom ? prenom + " a obtenu" : "J'ai obtenu";
+    ctx.fillText(nomLigne, 80, 200);
+
+    // Gros score au centre
+    ctx.textAlign = "center";
+    ctx.font = "700 220px Fraunces, Georgia, serif";
+    ctx.fillStyle = accent;
+    ctx.fillText(String(score), T/2 - 70, 470);
+    ctx.font = "600 70px Fraunces, Georgia, serif";
+    ctx.fillStyle = "rgba(247,244,236,.55)";
+    ctx.fillText("/ " + total, T/2 + 130, 470);
+    ctx.textAlign = "left";
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = CARTE.craie;
+    ctx.font = "700 34px Inter, system-ui, sans-serif";
+    ctx.fillText(pct + "% de bonnes réponses", T/2, 550);
+    ctx.textAlign = "left";
+
+    // Ligne défi fair-play (si cette partie répondait à un défi)
+    let yTitre = 660;
+    if (infosDefi) {
+      ctx.textAlign = "center";
+      ctx.font = "700 28px Inter, system-ui, sans-serif";
+      ctx.fillStyle = accent;
+      ctx.fillText(infosDefi, T/2, 600);
+      ctx.textAlign = "left";
+      yTitre = 680;
+    }
+
+    // Pastille titre du quiz
+    ctx.font = "600 30px Inter, system-ui, sans-serif";
+    const lignesTitre = decouperTexte(ctx, quiz.titre, T - 160);
+    let y = yTitre;
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(247,244,236,.85)";
+    lignesTitre.slice(0, 2).forEach(l => { ctx.fillText(l, T/2, y); y += 38; });
+    ctx.font = "500 26px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(247,244,236,.6)";
+    ctx.fillText(FILIERES_LABEL[quiz.filiere] || quiz.matiere, T/2, y + 10);
+    ctx.textAlign = "left";
+
+    // Pied de page
+    const py = T - 58;
+    ctx.strokeStyle = "rgba(247,244,236,.15)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(60, py - 30); ctx.lineTo(T - 60, py - 30); ctx.stroke();
+    if (logoImg) ctx.drawImage(logoImg, 60, py - 12, 34, 41);
+    ctx.fillStyle = CARTE.craie;
+    ctx.font = "600 26px Fraunces, Georgia, serif";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Bientôt Étudiant", logoImg ? 104 : 60, py + 8);
+    ctx.font = "500 19px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(247,244,236,.65)";
+    ctx.textAlign = "right";
+    ctx.fillText("bientot-etudiant.vercel.app", T - 60, py + 8);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+
+    return cv;
+  }
+
   let quiz = null, questions = [], reponses = {}, tempsRestant = 0, timer = null, tempsMis = 0, demarre = 0, eleveConnecte = null;
 
   if (!id) { zone.innerHTML = "<p style='text-align:center'>Quiz introuvable.</p>"; return; }
@@ -64,7 +177,7 @@
       ? '<a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="classement.html?quiz=' + quiz.id + '">Voir le classement</a>'
       : '<p class="qi-note" style="margin-top:14px">Tu peux faire ce quiz sans compte. <a href="inscription.html" style="font-weight:600">Crée un compte</a> pour enregistrer ta progression et apparaître au classement.</p>';
     const banniereDefi = (defiNom && defiScore !== null && defiTotal)
-      ? '<div class="defi-banniere">🎯 <b>' + esc(defiNom) + '</b> te défie avec un score de <b>' + defiScore + '/' + defiTotal + '</b>. À toi de faire mieux !</div>'
+      ? '<div class="defi-banniere">🎯 <b>' + esc(defiNom) + '</b> te lance un défi amical : <b>' + defiScore + '/' + defiTotal + '</b> à égaler ou dépasser. Bonne chance !</div>'
       : '';
     zone.innerHTML =
       '<div class="quiz-intro">'
@@ -194,11 +307,11 @@
     const lien = "https://bientot-etudiant.vercel.app/quiz.html?id=" + quiz.id
       + "&defiNom=" + encodeURIComponent(prenom || (eleveConnecte && eleveConnecte.nom) || "Un.e ami.e")
       + "&defiScore=" + score + "&defiTotal=" + questions.length;
-    const txtPartage = "Je te défie au quiz « " + quiz.titre + " » sur Bientôt Étudiant ! J'ai fait " + score + "/" + questions.length + ", sauras-tu faire mieux ? ";
+    const txtPartage = "Je te lance un défi amical sur Bientôt Étudiant ! Quiz « " + quiz.titre + " », j'ai fait " + score + "/" + questions.length + ". Prêt.e à essayer ? 💪 ";
     const encTxt = encodeURIComponent(txtPartage);
     const encLien = encodeURIComponent(lien);
     const partage =
-      '<div class="partage"><span class="pt-label">Défier un.e ami.e</span>'
+      '<div class="partage"><span class="pt-label">Ou envoyer le lien du défi directement</span>'
       + '<div class="pt-btns">'
       + '<a class="pt-btn wa" href="https://wa.me/?text=' + encTxt + encLien + '" target="_blank" rel="noopener">WhatsApp</a>'
       + '<a class="pt-btn fb" href="https://www.facebook.com/sharer/sharer.php?u=' + encLien + '" target="_blank" rel="noopener">Facebook</a>'
@@ -207,11 +320,12 @@
 
     // Comparaison si ce quiz a été ouvert via un lien de défi
     let compareDefi = "";
+    let infosDefiCarte = null;
     if (defiNom && defiScore !== null && defiTotal) {
       const pctDefi = Math.round(100 * defiScore / defiTotal);
-      if (pct > pctDefi) compareDefi = '<p class="defi-resultat defi-gagne">🏆 Tu as battu ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>';
-      else if (pct === pctDefi) compareDefi = '<p class="defi-resultat">🤝 Égalité avec ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>';
-      else compareDefi = '<p class="defi-resultat defi-perdu">' + esc(defiNom) + ' est devant (' + defiScore + '/' + defiTotal + '). Retente ta chance !</p>';
+      if (pct > pctDefi) { compareDefi = '<p class="defi-resultat defi-gagne">🏆 Belle performance, tu devances ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>'; infosDefiCarte = "🏆 Devant " + defiNom + " dans un défi amical"; }
+      else if (pct === pctDefi) { compareDefi = '<p class="defi-resultat">🤝 Égalité parfaite avec ' + esc(defiNom) + ' — bien joué à vous deux !</p>'; infosDefiCarte = "🤝 Égalité avec " + defiNom; }
+      else { compareDefi = '<p class="defi-resultat defi-perdu">👏 ' + esc(defiNom) + ' l\'emporte cette fois (' + defiScore + '/' + defiTotal + ') — belle occasion de retenter ta chance !</p>'; infosDefiCarte = "👏 Défi amical face à " + defiNom; }
     }
 
     const actionClassementOuCompte = eleveConnecte
@@ -225,6 +339,12 @@
       + '<h1>' + felic + '</h1>'
       + '<p class="score-meta">' + pct + '% de bonnes réponses · Temps : ' + fmtTemps(tempsMis) + '</p>'
       + compareDefi
+      + '<div class="carte-resultat" id="carteResultatZone">'
+      + '<img id="carteResultatImg" style="width:100%;max-width:320px;border-radius:16px;display:block;margin:0 auto 14px;box-shadow:0 8px 24px rgba(0,0,0,.15)" alt="Ma carte de résultat">'
+      + '<div class="carte-resultat-actions">'
+      + '<button class="btn btn-dark" id="telechargerCarteBtn">Télécharger ma carte <span>→</span></button>'
+      + '<button class="btn btn-ghost" id="partagerCarteBtn" style="display:none;color:var(--encre);border-color:var(--craie-2)">Partager <span>→</span></button>'
+      + '</div></div>'
       + partage
       + ratHtml
       + '<div class="quiz-result-actions">'
@@ -233,6 +353,42 @@
       + '<a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="matiere.html?f=' + quiz.filiere + '&m=' + encodeURIComponent(quiz.matiere) + '">Retour à la matière</a>'
       + '</div></div>';
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Génération asynchrone de la carte partageable
+    let carteCanvas = null;
+    genererCarteResultat(quiz, score, questions.length, pct, prenom, infosDefiCarte).then(cv => {
+      carteCanvas = cv;
+      const img = document.getElementById("carteResultatImg");
+      if (img) img.src = cv.toDataURL("image/png");
+
+      const btnPartager = document.getElementById("partagerCarteBtn");
+      if (btnPartager && navigator.share) {
+        cv.toBlob(blob => {
+          const fichier = new File([blob], "mon-resultat.png", { type: "image/png" });
+          if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+            btnPartager.style.display = "inline-flex";
+            btnPartager.addEventListener("click", () => {
+              navigator.share({
+                files: [fichier],
+                title: "Bientôt Étudiant",
+                text: "J'ai fait " + score + "/" + questions.length + " au quiz « " + quiz.titre + " » ! À toi de jouer 👉 bientot-etudiant.vercel.app"
+              }).catch(() => {});
+            });
+          }
+        }, "image/png");
+      }
+    });
+
+    const telechargerBtn = document.getElementById("telechargerCarteBtn");
+    if (telechargerBtn) telechargerBtn.addEventListener("click", async () => {
+      if (!carteCanvas) return;
+      const blob = await new Promise(res => carteCanvas.toBlob(res, "image/png"));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "mon-resultat-bientot-etudiant.png";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
 
     // Bouton copier
     const cp = document.getElementById("copyBtn");
