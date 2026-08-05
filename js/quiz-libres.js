@@ -14,11 +14,25 @@
     f2: "Sciences administratives, Économie & Génie",
     f3: "Sciences humaines et sociales"
   };
+  const COULEUR_MATIERE = {
+    "Mathématiques": "var(--m-math)",
+    "Physique": "var(--m-phys)",
+    "Chimie": "var(--m-chim)",
+    "Biologie": "var(--m-bio)",
+    "Botanique": "var(--m-bota)",
+    "Français": "var(--m-fr)",
+    "Philosophie": "var(--m-philo)",
+    "Culture générale": "var(--m-cg)",
+    "Créole": "var(--m-creole)",
+    "Économie et Gestion": "var(--m-eco)"
+  };
+  const couleurDe = m => COULEUR_MATIERE[m] || "var(--ocre-d)";
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
   let tousLesQuiz = [];
   let filiereActuelle = null;
+  let matiereActuelle = null; // null = "Toutes"
 
   function rendreFiliereBtns(filieresAffichees) {
     filBtns.innerHTML = filieresAffichees.map(f =>
@@ -26,34 +40,58 @@
     ).join("");
     filBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
       filiereActuelle = b.dataset.f;
+      matiereActuelle = null;
       rendreFiliereBtns(filieresAffichees);
       afficher();
     }));
   }
 
+  // Menu matière : uniquement les matières ayant au moins 2 quiz + un bouton "Toutes"
+  function rendreMatiereBtns(parMatiere) {
+    const matBtns = document.getElementById("qlMatiereBtns");
+    if (!matBtns) return;
+    const matieresAvecMenu = Object.keys(parMatiere).filter(m => parMatiere[m].length >= 2).sort();
+    if (!matieresAvecMenu.length) { matBtns.innerHTML = ""; return; }
+
+    matBtns.innerHTML =
+      '<button class="filter' + (matiereActuelle === null ? ' on' : '') + '" data-m="">Toutes</button>'
+      + matieresAvecMenu.map(m =>
+          '<button class="filter' + (m === matiereActuelle ? ' on' : '') + '" data-m="' + esc(m) + '">' + esc(m) + ' (' + parMatiere[m].length + ')</button>'
+        ).join("");
+    matBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
+      matiereActuelle = b.dataset.m || null;
+      afficher();
+    }));
+  }
+
   function afficher() {
-    document.body.setAttribute("data-filiere", filiereActuelle);
     const quiz = tousLesQuiz.filter(q => q.filiere === filiereActuelle);
     if (!quiz.length) {
+      const matBtns = document.getElementById("qlMatiereBtns");
+      if (matBtns) matBtns.innerHTML = "";
       zone.innerHTML = '<p class="empty" style="text-align:center;color:var(--encre-2)">Pas encore de Quiz Libre pour ' + esc(FILIERES[filiereActuelle]) + '.</p>';
       return;
     }
     const parMatiere = {};
     quiz.forEach(q => { (parMatiere[q.matiere] = parMatiere[q.matiere] || []).push(q); });
+    rendreMatiereBtns(parMatiere);
 
-    zone.innerHTML = Object.keys(parMatiere).map(m =>
-      '<div class="lecons-head" style="margin-top:28px"><h2>' + esc(m) + '</h2></div>'
+    const matieresAAfficher = matiereActuelle ? [matiereActuelle] : Object.keys(parMatiere).sort();
+
+    zone.innerHTML = matieresAAfficher.map(m => {
+      const c = couleurDe(m);
+      return '<div class="lecons-head" style="margin-top:28px"><h2 style="color:' + c + '">' + esc(m) + '</h2></div>'
       + '<div class="lecons-grid">'
       + parMatiere[m].map(q => {
           const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
-          return '<a class="lecon-carte quiz-carte libre" href="quiz.html?id=' + q.id + '">'
-            + '<span class="lc-num">Quiz Libre</span>'
+          return '<a class="lecon-carte quiz-carte libre" style="border-left-color:' + c + '" href="quiz.html?id=' + q.id + '">'
+            + '<span class="lc-num" style="color:' + c + '">Quiz Libre</span>'
             + '<h3>' + esc(q.titre) + '</h3>'
             + '<p>' + nbQ + ' questions · ' + Math.round(q.duree_sec / 60) + ' min chronométrées</p>'
-            + '<span class="lc-go">Relever le défi →</span></a>';
+            + '<span class="lc-go" style="color:' + c + '">Relever le défi →</span></a>';
         }).join("")
-      + '</div>'
-    ).join("");
+      + '</div>';
+    }).join("");
   }
 
   (async function init() {
