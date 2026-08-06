@@ -368,8 +368,8 @@
   async function chargerListeQuiz() {
     const sel = $("caQuiz");
     if (!sel || typeof DB === "undefined" || !DB) return;
-    const { data } = await DB.from("quiz").select("id, titre, matiere, filiere").order("created_at", { ascending: false });
-    sel.innerHTML = '<option value="">— Choisir un quiz —</option>'
+    const { data } = await DB.from("quiz").select("id, titre, matiere, filiere").eq("type", "gogo").order("created_at", { ascending: false });
+    sel.innerHTML = '<option value="">— Choisir un Quiz à Gogo —</option>'
       + (data || []).map(q => '<option value="' + q.id + '">' + q.titre.replace(/</g, "&lt;") + ' (' + q.matiere + ')</option>').join("");
   }
 

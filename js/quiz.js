@@ -9,9 +9,43 @@
   const defiNom = params.get("defiNom");
   const defiScore = params.get("defiScore") ? parseInt(params.get("defiScore"), 10) : null;
   const defiTotal = params.get("defiTotal") ? parseInt(params.get("defiTotal"), 10) : null;
+  const gogo = params.get("gogo") === "1";
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const fmtTemps = s => Math.floor(s/60) + ":" + String(s%60).padStart(2,"0");
+
+  // ---------- Suivi local (invités + mode Gogo) : fenêtre glissante de 24h ----------
+  function lireTableau(cle) {
+    try { return JSON.parse(localStorage.getItem(cle) || "[]"); } catch (e) { return []; }
+  }
+  function ecrireTableau(cle, arr) {
+    try { localStorage.setItem(cle, JSON.stringify(arr)); } catch (e) {}
+  }
+  function pruner24h(arr) {
+    const limite = Date.now() - 24 * 60 * 60 * 1000;
+    return arr.filter(r => r.ts > limite);
+  }
+  function compterMatiereLocal(matiere) {
+    return pruner24h(lireTableau("bq_hist_matiere")).filter(r => r.matiere === matiere).length;
+  }
+  function enregistrerMatiereLocal(matiere) {
+    const arr = pruner24h(lireTableau("bq_hist_matiere"));
+    arr.push({ matiere, ts: Date.now() });
+    ecrireTableau("bq_hist_matiere", arr);
+  }
+  async function compterMatiereDB(matiere, userId) {
+    const depuis = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data } = await DB.from("tentatives").select("id").eq("user_id", userId).eq("matiere", matiere).gte("created_at", depuis);
+    return (data || []).length;
+  }
+  function compterGogoLocal() {
+    return pruner24h(lireTableau("bq_hist_gogo")).length;
+  }
+  function enregistrerGogoLocal() {
+    const arr = pruner24h(lireTableau("bq_hist_gogo"));
+    arr.push({ ts: Date.now() });
+    ecrireTableau("bq_hist_gogo", arr);
+  }
 
   // ---------- Carte de résultat partageable (Canvas) ----------
   const CARTE = { taille: 1080, ardoise: "#14342b", craie: "#f7f4ec", craie2: "#ede8da" };
@@ -142,6 +176,13 @@
     const el = await eleveActuel();
     eleveConnecte = (el && el.nom) ? el : null;
 
+    // Restriction "même matière" — invité : 1/24h, connecté : 2/24h. Le mode Gogo l'ignore.
+    if (!gogo) {
+      const limite = eleveConnecte ? 2 : 1;
+      const compte = eleveConnecte ? await compterMatiereDB(quiz.matiere, eleveConnecte.user_id) : compterMatiereLocal(quiz.matiere);
+      if (compte >= limite) { ecranBloqueMatiere(quiz.matiere); return; }
+    }
+
     // Quiz lié à une leçon (pas un quiz libre "dimanche") -> proposer de lire la leçon d'abord
     const clefVue = "lecon_demandee_" + quiz.id;
     if (quiz.type !== "dimanche" && quiz.lecon_id && !sessionStorage.getItem(clefVue)) {
@@ -150,6 +191,29 @@
       ecranIntro();
     }
   })();
+
+  // ---------- Écran de blocage : limite de matière atteinte ----------
+  function ecranBloqueMatiere(matiere) {
+    if (!eleveConnecte) {
+      zone.innerHTML =
+        '<div class="quiz-intro restriction-bloc">'
+        + '<span class="qi-kicker">' + esc(matiere) + '</span>'
+        + '<h1>Tu as déjà fait un quiz de ' + esc(matiere) + ' aujourd\'hui</h1>'
+        + '<p class="qi-note">Sans compte, tu peux faire 1 quiz par matière toutes les 24h. Crée un compte gratuit pour t\'entraîner sans cette limite.</p>'
+        + '<a href="inscription.html" class="btn btn-dark">Créer un compte <span>→</span></a>'
+        + ' <a href="index.html#explorerSection" class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)">Essayer une autre matière</a>'
+        + '</div>';
+    } else {
+      zone.innerHTML =
+        '<div class="quiz-intro restriction-bloc">'
+        + '<span class="qi-kicker">' + esc(matiere) + '</span>'
+        + '<h1>Tu as fait le plein de ' + esc(matiere) + ' pour aujourd\'hui !</h1>'
+        + '<p class="qi-note">2 quiz de la même matière par 24h, c\'est le maximum, pour garder un bon rythme de révision. Reviens demain, ou entraîne-toi sur une autre matière en attendant.</p>'
+        + '<a href="index.html#explorerSection" class="btn btn-dark">Essayer une autre matière <span>→</span></a>'
+        + ' <a href="espace.html" class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)">Mon espace</a>'
+        + '</div>';
+    }
+  }
 
   // ---------- Proposer de lire la leçon avant le quiz ----------
   function ecranChoixLecon() {
@@ -181,6 +245,7 @@
       : '';
     zone.innerHTML =
       '<div class="quiz-intro">'
+      + (gogo ? '<span class="badge-gogo">🔥 Mode Gogo</span>' : '')
       + banniereDefi
       + '<span class="qi-kicker">' + esc(quiz.matiere) + '</span>'
       + '<h1>' + esc(quiz.titre) + '</h1>'
@@ -271,6 +336,17 @@
       if (window.majStreak) await window.majStreak(eleveConnecte);
     }
 
+    // Invité, hors mode Gogo : mémoriser localement pour la restriction par matière
+    if (!eleveConnecte && !gogo) enregistrerMatiereLocal(quiz.matiere);
+
+    // Mode Gogo : comptabiliser cette tentative dans la limite du jour
+    let gogoAuMax = false;
+    if (gogo) {
+      enregistrerGogoLocal();
+      const limiteGogo = eleveConnecte ? 5 : 2;
+      gogoAuMax = compterGogoLocal() >= limiteGogo;
+    }
+
     const pct = Math.round(100 * score / questions.length);
 
     // Correctum complet : toutes les questions, vert = bon, rouge = mauvais choix
@@ -332,6 +408,17 @@
       ? '<a class="btn btn-primary" href="classement.html?quiz=' + quiz.id + '">Voir le classement <span>→</span></a>'
       : '<a class="btn btn-primary" href="inscription.html">Créer un compte pour suivre ma progression <span>→</span></a>';
 
+    let gogoBloc = "";
+    if (gogo) {
+      if (gogoAuMax) {
+        gogoBloc = '<p class="qi-note restriction-note">' + (eleveConnecte
+          ? 'Tu as fait le plein de Quiz à Gogo pour aujourd\'hui (5/5). Reviens demain pour enchaîner à nouveau !'
+          : 'Tu as fait 2 Quiz à Gogo sans compte, le maximum du jour. <a href="inscription.html" style="font-weight:600">Crée un compte</a> pour enchaîner jusqu\'à 5 par jour !') + '</p>';
+      } else {
+        gogoBloc = '<button class="btn btn-dark" id="gogoSuivantBtn" style="margin:18px 0">Quiz suivant (Gogo) <span>→</span></button>';
+      }
+    }
+
     zone.innerHTML =
       '<div class="quiz-result">'
       + (tempsEcoule ? '<p class="temps-ecoule">⏱ Temps écoulé !</p>' : '')
@@ -339,6 +426,7 @@
       + '<h1>' + felic + '</h1>'
       + '<p class="score-meta">' + pct + '% de bonnes réponses · Temps : ' + fmtTemps(tempsMis) + '</p>'
       + compareDefi
+      + gogoBloc
       + '<div class="carte-resultat" id="carteResultatZone">'
       + '<img id="carteResultatImg" style="width:100%;max-width:320px;border-radius:16px;display:block;margin:0 auto 14px;box-shadow:0 8px 24px rgba(0,0,0,.15)" alt="Ma carte de résultat">'
       + '<div class="carte-resultat-actions">'
@@ -397,6 +485,17 @@
         cp.textContent = "Copié ✓";
         setTimeout(() => cp.textContent = "Copier", 2000);
       });
+    });
+
+    // Bouton "Quiz suivant" (mode Gogo) — reste dans le type "gogo" et la même matière
+    const gogoBtn = document.getElementById("gogoSuivantBtn");
+    if (gogoBtn) gogoBtn.addEventListener("click", async () => {
+      gogoBtn.disabled = true; gogoBtn.textContent = "Recherche du quiz suivant…";
+      const { data } = await DB.from("quiz").select("id").eq("publie", true).eq("type", "gogo")
+        .eq("matiere", quiz.matiere).neq("id", quiz.id);
+      if (!data || !data.length) { alert("Plus de Quiz à Gogo pour " + quiz.matiere + " pour l'instant. Reviens bientôt !"); location.href = "quiz-a-gogo.html"; return; }
+      const pick = data[Math.floor(Math.random() * data.length)];
+      location.href = "quiz.html?id=" + pick.id + "&gogo=1";
     });
 
     // Confettis si score correct

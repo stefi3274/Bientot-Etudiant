@@ -31,6 +31,21 @@
   let disponibles = {};   // { f1: Set(matières disponibles), f2: Set(...), f3: Set(...) }
   let filieresAffichees = ["f1", "f2", "f3"];
   let filiereActuelle = null, matiereActuelle = null;
+  let userId = null;
+  let doneQuizIds = new Set(), doneLeconIds = new Set();
+
+  async function chargerStatuts(uid) {
+    const [{ data: tentatives }, { data: vues }] = await Promise.all([
+      DB.from("tentatives").select("quiz_id").eq("user_id", uid),
+      DB.from("lecons_vues").select("lecon_id").eq("user_id", uid)
+    ]);
+    doneQuizIds = new Set((tentatives || []).map(t => t.quiz_id));
+    doneLeconIds = new Set((vues || []).map(v => v.lecon_id));
+  }
+
+  function badgeStatut(fait) {
+    return userId ? ('<span class="statut-badge ' + (fait ? "fait" : "a-faire") + '">' + (fait ? "✓ Déjà fait" : "À faire") + '</span>') : "";
+  }
 
   async function chargerDisponibilites() {
     if (typeof DB === "undefined" || !DB) return;
@@ -114,6 +129,7 @@
         + '<div class="lecons-grid">'
         + lecons.map(l =>
             '<a class="lecon-carte" href="lecon.html?id=' + l.id + '">'
+            + badgeStatut(doneLeconIds.has(l.id))
             + '<span class="lc-num">Leçon ' + (l.ordre || 1) + '</span>'
             + '<h3>' + esc(l.titre) + '</h3>'
             + (l.apercu ? '<p>' + esc(l.apercu) + '</p>' : '')
@@ -128,6 +144,7 @@
             const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
             const estDimanche = q.type === "dimanche";
             return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' libre' : '') + '" href="quiz.html?id=' + q.id + '">'
+              + badgeStatut(doneQuizIds.has(q.id))
               + '<span class="lc-num">' + (estDimanche ? "Quiz Libre" : "Quiz") + '</span>'
               + '<h3>' + esc(q.titre) + '</h3>'
               + '<p>' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min chronométrées</p>'
@@ -147,6 +164,7 @@
       try {
         const el = await eleveActuel();
         if (el && el.nom && el.filieres && el.filieres.length) filieresEtudiant = el.filieres;
+        if (el && el.nom && el.user_id) { userId = el.user_id; await chargerStatuts(userId); }
       } catch (e) { /* pas connecté ou erreur silencieuse */ }
     }
 

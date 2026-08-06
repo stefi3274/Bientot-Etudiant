@@ -597,8 +597,9 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .cx-mauvais .cx-t{color:var(--rouge)}
 .cx-mauvais .cx-m{color:var(--rouge)}
 
-/* Type de quiz (leçon / libre) */
+/* Type de quiz (leçon / libre / gogo) */
 .qz-type-choix{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qz-type-choix-3{grid-template-columns:1fr 1fr 1fr}
 .qz-type-opt{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border:1.5px solid var(--craie-2);
   border-radius:12px;cursor:pointer;background:#fff;transition:border-color .2s}
 .qz-type-opt span{font-weight:600;color:var(--encre)}
@@ -606,10 +607,11 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 .qz-type-opt input{display:none}
 .qz-type-opt:has(input:checked){border-color:var(--ardoise);background:var(--craie)}
 .qz-type-opt.libre:has(input:checked){border-color:var(--ocre-d)}
+.qz-type-opt.gogo:has(input:checked){border-color:#8257b5}
 body[data-filiere="f1"] .qz-type-opt.libre:has(input:checked){border-color:var(--f1)}
 body[data-filiere="f2"] .qz-type-opt.libre:has(input:checked){border-color:var(--f2)}
 body[data-filiere="f3"] .qz-type-opt.libre:has(input:checked){border-color:var(--f3)}
-@media (max-width:560px){.qz-type-choix{grid-template-columns:1fr}}
+@media (max-width:560px){.qz-type-choix,.qz-type-choix-3{grid-template-columns:1fr}}
 
 /* Badge et carte "Quiz Libre" — couleur de la filière (plus d'arc-en-ciel) */
 .badge-libre{display:inline-block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
@@ -692,3 +694,17 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
 /* ===== CARTE DE RÉSULTAT PARTAGEABLE ===== */
 .carte-resultat{margin:20px 0 26px;text-align:center}
 .carte-resultat-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ===== RESTRICTION PAR MATIÈRE / MODE GOGO ===== */
+.restriction-bloc{text-align:center}
+.restriction-note{background:rgba(232,184,75,.15);border:1px solid rgba(232,184,75,.4);
+  border-radius:12px;padding:14px 18px;margin:18px 0;font-size:.95rem;color:var(--encre);text-align:center}
+.badge-gogo{display:inline-block;background:var(--ardoise);color:var(--craie);font-weight:700;
+  font-size:.85rem;padding:6px 16px;border-radius:20px;margin-bottom:14px}
+
+/* ===== BADGES DE STATUT (déjà fait / pas encore) ===== */
+.statut-badge{position:absolute;top:12px;right:12px;font-size:.72rem;font-weight:700;
+  padding:4px 11px;border-radius:20px;color:#fff;letter-spacing:.02em;z-index:2}
+.statut-badge.fait{background:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5)}
+.statut-badge.a-faire{background:#6d5a8f}
+.lecon-carte{position:relative}

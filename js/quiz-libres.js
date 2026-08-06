@@ -37,6 +37,12 @@
   let tousLesQuiz = [];
   let filiereActuelle = null;
   let matiereActuelle = null; // null = "Toutes"
+  let userId = null;
+  let doneQuizIds = new Set();
+
+  function badgeStatut(fait) {
+    return userId ? ('<span class="statut-badge ' + (fait ? "fait" : "a-faire") + '">' + (fait ? "✓ Déjà fait" : "À faire") + '</span>') : "";
+  }
 
   function rendreFiliereBtns(filieresAffichees) {
     filBtns.innerHTML = filieresAffichees.map(f =>
@@ -89,6 +95,7 @@
       + parMatiere[m].map(q => {
           const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
           return '<a class="lecon-carte quiz-carte libre" style="border-left-color:' + c + '" href="quiz.html?id=' + q.id + '">'
+            + badgeStatut(doneQuizIds.has(q.id))
             + '<span class="lc-num" style="color:' + c + '">Quiz Libre</span>'
             + '<h3>' + esc(q.titre) + '</h3>'
             + '<p>' + nbQ + ' questions · ' + Math.round(q.duree_sec / 60) + ' min chronométrées</p>'
@@ -119,6 +126,11 @@
       try {
         const el = await eleveActuel();
         if (el && el.nom && el.filieres && el.filieres.length) filieresAffichees = el.filieres;
+        if (el && el.nom && el.user_id) {
+          userId = el.user_id;
+          const { data: tentatives } = await DB.from("tentatives").select("quiz_id").eq("user_id", userId);
+          doneQuizIds = new Set((tentatives || []).map(t => t.quiz_id));
+        }
       } catch (e) { /* invité */ }
     }
     if (!filieresAffichees.length) filieresAffichees = filieresDisponibles;

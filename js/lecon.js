@@ -24,6 +24,15 @@
     const bread = document.getElementById("lhBread");
     if (bread) bread.textContent = l.titre;
 
+    // Marquer cette leçon comme vue (compte connecté uniquement)
+    if (typeof eleveActuel === "function") {
+      eleveActuel().then(el => {
+        if (el && el.nom && el.user_id) {
+          DB.from("lecons_vues").upsert({ user_id: el.user_id, lecon_id: l.id }, { onConflict: "user_id,lecon_id" }).then(() => {});
+        }
+      }).catch(() => {});
+    }
+
     const retour = 'matiere.html?f=' + l.filiere + '&m=' + encodeURIComponent(l.matiere);
 
     // Chercher un quiz rattaché à cette leçon

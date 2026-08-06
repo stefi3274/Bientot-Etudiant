@@ -211,9 +211,10 @@
           <div class="status-msg" id="quizMsg"></div>
           <div class="le-field">
             <label>Type de quiz</label>
-            <div class="qz-type-choix">
+            <div class="qz-type-choix qz-type-choix-3">
               <label class="qz-type-opt"><input type="radio" name="qzType" value="lecon" checked><span>Quiz de leçon</span><small>Rattaché à une leçon</small></label>
               <label class="qz-type-opt libre"><input type="radio" name="qzType" value="dimanche"><span>Quiz Libre</span><small>Grand quiz spécial</small></label>
+              <label class="qz-type-opt gogo"><input type="radio" name="qzType" value="gogo"><span>Quiz à Gogo</span><small>10 questions, source des carousels</small></label>
             </div>
           </div>
           <div class="le-row">
@@ -301,10 +302,10 @@ Réponse: B"></textarea>
       <!-- ONGLET CAROUSELS -->
       <div id="tab-carousels" style="display:none">
         <div class="lecon-editor">
-          <h2>Carousel TikTok depuis un quiz</h2>
+          <h2>Carousel TikTok depuis un Quiz à Gogo</h2>
           <div class="status-msg" id="caMsg"></div>
           <div class="le-field">
-            <label>Quiz à transformer en carousel</label>
+            <label>Quiz à Gogo à transformer en carousel</label>
             <select id="caQuiz"><option value="">— Choisir un quiz —</option></select>
           </div>
           <button class="btn btn-dark" id="caGenerer">Générer les slides <span>→</span></button>

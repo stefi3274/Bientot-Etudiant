@@ -13,6 +13,10 @@
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const TRANSVERSALES = ["Français", "Culture générale"];
   const transversale = TRANSVERSALES.includes(m);
+  let userId = null, doneQuizIds = new Set(), doneLeconIds = new Set();
+  function badgeStatut(fait) {
+    return userId ? ('<span class="statut-badge ' + (fait ? "fait" : "a-faire") + '">' + (fait ? "✓ Déjà fait" : "À faire") + '</span>') : "";
+  }
 
   document.title = m + " · Bientôt Étudiant";
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -41,6 +45,22 @@
 
   (async function () {
     if (typeof DB === "undefined" || !DB) { messageAttente(); return; }
+
+    if (typeof eleveActuel === "function") {
+      try {
+        const el = await eleveActuel();
+        if (el && el.nom && el.user_id) {
+          userId = el.user_id;
+          const [{ data: tentatives }, { data: vues }] = await Promise.all([
+            DB.from("tentatives").select("quiz_id").eq("user_id", userId),
+            DB.from("lecons_vues").select("lecon_id").eq("user_id", userId)
+          ]);
+          doneQuizIds = new Set((tentatives || []).map(t => t.quiz_id));
+          doneLeconIds = new Set((vues || []).map(v => v.lecon_id));
+        }
+      } catch (e) { /* invité */ }
+    }
+
     let qLec = DB.from("lecons").select("id, titre, apercu, ordre, pdf_url, auteur").eq("matiere", m).eq("publie", true);
     if (!transversale) qLec = qLec.eq("filiere", f);
     const { data, error } = await qLec.order("ordre", { ascending: true });
@@ -49,6 +69,7 @@
 
     const cartes = data.map(l =>
       '<a class="lecon-carte" href="lecon.html?id=' + l.id + '">'
+      + badgeStatut(doneLeconIds.has(l.id))
       + '<span class="lc-num">Le\u00e7on ' + (l.ordre || 1) + '</span>'
       + '<h3>' + esc(l.titre) + '</h3>'
       + (l.apercu ? '<p>' + esc(l.apercu) + '</p>' : '')
@@ -76,6 +97,7 @@
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
       const estDimanche = q.type === "dimanche";
       return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' libre' : '') + '" href="quiz.html?id=' + q.id + '">'
+        + badgeStatut(doneQuizIds.has(q.id))
         + '<span class="lc-num">' + (estDimanche ? 'Quiz Libre' : 'Quiz') + '</span>'
         + '<h3>' + esc(q.titre) + '</h3>'
         + '<p>' + nbQ + ' questions \u00b7 ' + Math.round(q.duree_sec/60) + ' min chronom\u00e9tr\u00e9es</p>'
