@@ -305,19 +305,48 @@
   }
 
   // ---------- Liste des quiz ----------
+  let filtreQuiz = "all";
+  let selection = new Set();
+
+  document.querySelectorAll("#quizFilters .filter").forEach(b => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#quizFilters .filter").forEach(x => x.classList.toggle("on", x === b));
+      filtreQuiz = b.getAttribute("data-qf");
+      selection.clear();
+      chargerQuiz();
+    });
+  });
+
+  function majBarreSelection() {
+    const bar = $("quizSelectBar");
+    if (!bar) return;
+    if (selection.size > 0) {
+      bar.style.display = "flex";
+      $("quizSelectCount").textContent = selection.size + " quiz sélectionné" + (selection.size > 1 ? "s" : "");
+    } else {
+      bar.style.display = "none";
+    }
+    const toutCb = $("quizToutSelect");
+    if (toutCb) toutCb.checked = false;
+  }
+
   async function chargerQuiz() {
     const box = $("quizList");
     if (!box) return;
     box.innerHTML = "<p class='empty'>Chargement…</p>";
-    const { data, error } = await DB.from("quiz").select("*, questions(count)").order("created_at", { ascending: false });
+    let q = DB.from("quiz").select("*, questions(count)").order("created_at", { ascending: false });
+    if (filtreQuiz !== "all") q = q.eq("filiere", filtreQuiz);
+    const { data, error } = await q;
     if (error) { box.innerHTML = "<p class='empty'>Erreur de chargement.</p>"; return; }
-    if (!data.length) { box.innerHTML = "<p class='empty'>Aucun quiz pour l'instant.</p>"; return; }
+    if (!data.length) { box.innerHTML = "<p class='empty'>Aucun quiz pour l'instant.</p>"; majBarreSelection(); return; }
 
     box.innerHTML = data.map(q => {
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
       const estDim = q.type === "dimanche";
+      const estGogo = q.type === "gogo";
       return '<div class="quiz-item ' + q.filiere + '">'
-        + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="badge-libre">Libre</span>' : '') + '</b>'
+        + '<input type="checkbox" class="quiz-select-cb" data-id="' + q.id + '"' + (selection.has(q.id) ? ' checked' : '') + ' style="width:18px;height:18px;flex:0 0 auto;cursor:pointer">'
+        + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="badge-libre">Libre</span>' : '') + (estGogo ? ' <span class="badge-libre" style="background:#8257b5">Gogo</span>' : '') + '</b>'
         + '<span class="qi-meta">' + esc(q.matiere) + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + q.id + '">Modifier</button>'
@@ -327,7 +356,45 @@
 
     box.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => editQuiz(b.getAttribute("data-edit")));
     box.querySelectorAll("[data-del]").forEach(b => b.onclick = () => delQuiz(b.getAttribute("data-del")));
+    box.querySelectorAll(".quiz-select-cb").forEach(cb => cb.addEventListener("change", () => {
+      const id = cb.getAttribute("data-id");
+      if (cb.checked) selection.add(id); else selection.delete(id);
+      majBarreSelection();
+    }));
+    majBarreSelection();
   }
+
+  if ($("quizToutSelect")) $("quizToutSelect").addEventListener("change", function () {
+    document.querySelectorAll(".quiz-select-cb").forEach(cb => {
+      cb.checked = this.checked;
+      const id = cb.getAttribute("data-id");
+      if (this.checked) selection.add(id); else selection.delete(id);
+    });
+    const bar = $("quizSelectBar");
+    if (bar) {
+      if (selection.size > 0) { bar.style.display = "flex"; $("quizSelectCount").textContent = selection.size + " quiz sélectionné" + (selection.size > 1 ? "s" : ""); }
+      else bar.style.display = "none";
+    }
+  });
+
+  if ($("quizDeselectBtn")) $("quizDeselectBtn").addEventListener("click", () => {
+    selection.clear();
+    chargerQuiz();
+  });
+
+  if ($("quizDeplacerSelectionBtn")) $("quizDeplacerSelectionBtn").addEventListener("click", async () => {
+    if (!selection.size) return;
+    const dest = $("quizDestFiliere");
+    const libDest = dest.options[dest.selectedIndex].text.replace("→ ", "");
+    if (!confirm("Déplacer " + selection.size + " quiz sélectionné(s) vers \"" + libDest + "\" ?\n\nSi une leçon est rattachée à certains de ces quiz, elle ne sera PAS déplacée avec eux.")) return;
+
+    statusQ("Déplacement en cours…", "");
+    const { data, error } = await DB.from("quiz").update({ filiere: dest.value }).in("id", Array.from(selection)).select("id");
+    if (error) { statusQ("Erreur : " + error.message, "err"); return; }
+    statusQ((data || []).length + " quiz déplacé(s) vers " + libDest + ".", "ok");
+    selection.clear();
+    chargerQuiz();
+  });
 
   async function editQuiz(id) {
     const { data: q } = await DB.from("quiz").select("*").eq("id", id).single();
@@ -358,34 +425,4 @@
     if (editId === id) resetQuiz();
     chargerQuiz();
   }
-
-  // ---------- Déplacer des quiz en lot (correction d'erreur de filière) ----------
-  const depSelFil = $("depFiliereSource"), depSelMat = $("depMatiere");
-  const statusDep = (m, t) => { const el = $("depMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t || "ok"); } };
-  function majDepMat() {
-    if (!depSelFil || !depSelMat) return;
-    depSelMat.innerHTML = '<option value="">Toutes les matières</option>'
-      + (MATIERES[depSelFil.value] || []).map(m => '<option>' + esc(m) + '</option>').join("");
-  }
-  if (depSelFil) { depSelFil.addEventListener("change", majDepMat); majDepMat(); }
-
-  if ($("depDeplacerBtn")) $("depDeplacerBtn").addEventListener("click", async () => {
-    const source = $("depFiliereSource"), dest = $("depFiliereDest");
-    const matiere = $("depMatiere").value, type = $("depType").value;
-    if (source.value === dest.value) { statusDep("La filière de destination doit être différente de l'actuelle.", "err"); return; }
-
-    const libSource = source.options[source.selectedIndex].text;
-    const libDest = dest.options[dest.selectedIndex].text;
-    const quoi = (matiere || "toutes les matières") + (type ? " (" + $("depType").options[$("depType").selectedIndex].text + ")" : "");
-    if (!confirm('Déplacer "' + quoi + '" de "' + libSource + '" vers "' + libDest + '" ?\n\nSi une leçon est rattachée à certains de ces quiz, elle ne sera PAS déplacée avec eux — préfère cet outil pour les Quiz Libres et Quiz à Gogo.')) return;
-
-    statusDep("Déplacement en cours…", "");
-    let q = DB.from("quiz").update({ filiere: dest.value }).eq("filiere", source.value);
-    if (matiere) q = q.eq("matiere", matiere);
-    if (type) q = q.eq("type", type);
-    const { data, error } = await q.select("id");
-    if (error) { statusDep("Erreur : " + error.message, "err"); return; }
-    statusDep((data || []).length + " quiz déplacé(s) vers " + libDest + ".", "ok");
-    chargerQuiz();
-  });
 })();

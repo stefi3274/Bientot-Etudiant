@@ -293,48 +293,31 @@ Réponse: B"></textarea>
           </div>
         </div>
 
-        <div class="lecon-editor">
-          <h2>Déplacer des quiz en lot</h2>
-          <p class="qz-hint" style="margin-bottom:14px">Utile en cas d'erreur de filière (ex. 100 Quiz à Gogo publiés dans la mauvaise filière). Idéal pour les Quiz Libres et Quiz à Gogo (sans leçon rattachée).</p>
-          <div class="status-msg" id="depMsg"></div>
-          <div class="le-row">
-            <div class="le-field">
-              <label>Filière actuelle</label>
-              <select id="depFiliereSource">
-                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
-                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
-                <option value="f3">Sciences humaines et sociales</option>
-              </select>
-            </div>
-            <div class="le-field">
-              <label>Matière (facultatif)</label>
-              <select id="depMatiere"><option value="">Toutes les matières</option></select>
-            </div>
-          </div>
-          <div class="le-row">
-            <div class="le-field">
-              <label>Type (facultatif)</label>
-              <select id="depType">
-                <option value="">Tous les types</option>
-                <option value="gogo">Quiz à Gogo</option>
-                <option value="dimanche">Quiz Libre</option>
-                <option value="lecon">Quiz de leçon</option>
-              </select>
-            </div>
-            <div class="le-field">
-              <label>Nouvelle filière</label>
-              <select id="depFiliereDest">
-                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
-                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
-                <option value="f3">Sciences humaines et sociales</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn btn-dark" id="depDeplacerBtn">Déplacer <span>→</span></button>
-        </div>
-
         <div class="lecon-list-wrap">
           <h2>Quiz publiés</h2>
+          <div class="filters" id="quizFilters">
+            <button class="filter on" data-qf="all">Toutes filières</button>
+            <button class="filter" data-qf="f1">Médecine, Agro &amp; Véto</button>
+            <button class="filter" data-qf="f2">Sciences admin, Éco &amp; Génie</button>
+            <button class="filter" data-qf="f3">Sciences humaines et sociales</button>
+          </div>
+
+          <div id="quizSelectBar" style="display:none;align-items:center;gap:12px;flex-wrap:wrap;
+            background:var(--craie2,#ede8da);border-radius:12px;padding:12px 16px;margin-bottom:14px">
+            <span id="quizSelectCount" style="font-weight:600;font-size:.9rem"></span>
+            <select id="quizDestFiliere" style="padding:8px 12px;border-radius:8px;border:1px solid var(--craie-2);font-family:inherit">
+              <option value="f1">→ Médecine, Agro &amp; Véto</option>
+              <option value="f2">→ Sciences admin, Éco &amp; Génie</option>
+              <option value="f3">→ Sciences humaines et sociales</option>
+            </select>
+            <button class="btn btn-dark" id="quizDeplacerSelectionBtn" style="padding:9px 18px;font-size:.9rem">Déplacer la sélection <span>→</span></button>
+            <button class="btn btn-ghost" id="quizDeselectBtn" style="padding:9px 18px;font-size:.9rem;color:var(--encre);border-color:var(--craie-2)">Annuler</button>
+          </div>
+
+          <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--encre-2);margin-bottom:10px;cursor:pointer">
+            <input type="checkbox" id="quizToutSelect"> Tout sélectionner (dans le filtre actuel)
+          </label>
+
           <div id="quizList"><p class="empty">Chargement…</p></div>
         </div>
       </div>
