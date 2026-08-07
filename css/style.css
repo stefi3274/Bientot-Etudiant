@@ -46,6 +46,9 @@
 
   --max:1200px;
   --r:16px;
+  --r-sm:10px;
+  --r-lg:22px;
+  --ease:cubic-bezier(.22,1,.36,1);
 }
 
 html{scroll-behavior:smooth}
@@ -107,8 +110,9 @@ header{position:sticky;top:0;z-index:50;background:rgba(247,244,236,.9);
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap}
 
 .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:1rem;
-     padding:14px 28px;border-radius:12px;cursor:pointer;border:0;transition:transform .2s,background .2s,box-shadow .2s;font-family:var(--corps)}
+     padding:14px 28px;border-radius:12px;cursor:pointer;border:0;transition:transform .35s var(--ease),background .2s,box-shadow .35s var(--ease);font-family:var(--corps)}
 .btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.98)}
 .btn-primary{background:var(--ocre);color:var(--ardoise);box-shadow:0 6px 20px rgba(232,184,75,.3)}
 .btn-primary:hover{background:var(--ocre-d);box-shadow:0 10px 28px rgba(232,184,75,.4)}
 .btn-ghost{background:rgba(247,244,236,.08);color:var(--craie);border:1px solid rgba(247,244,236,.25)}
@@ -142,7 +146,7 @@ section{padding:88px 0}
 .filieres{background:var(--craie)}
 .fil-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .fil{border-radius:var(--r);padding:34px 30px 30px;color:#fff;position:relative;overflow:hidden;
-     min-height:280px;display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s;
+     min-height:280px;display:flex;flex-direction:column;transition:transform .45s var(--ease),box-shadow .45s var(--ease);
      cursor:pointer;border:0}
 .fil:hover{transform:translateY(-6px)}
 .fil.f1{background:linear-gradient(155deg,var(--f1),var(--f1-d))}
@@ -190,9 +194,9 @@ section{padding:88px 0}
 
 .mat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 .mat{display:block;color:inherit;text-decoration:none;background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;padding:22px 20px;
-     transition:transform .25s,box-shadow .25s,border-color .25s;position:relative;overflow:hidden}
+     transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .25s;position:relative;overflow:hidden}
 .mat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--ardoise))}
-.mat:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(20,52,43,.1)}
+.mat:hover{transform:translateY(-5px);box-shadow:0 16px 32px -6px rgba(20,52,43,.16)}
 .mat .m-ic{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;
            font-size:1.3rem;margin-bottom:14px;background:var(--c-bg,rgba(20,52,43,.08))}
 .mat h4{font-size:1.1rem;margin-bottom:6px}
@@ -410,7 +414,9 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .lecon-list-wrap{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:28px}
 .lecon-list-wrap h2{font-size:1.3rem;margin-bottom:16px}
 .lec-item{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;
-  padding:16px;border:1px solid var(--craie-2);border-radius:12px;margin-bottom:10px;border-left-width:4px}
+  padding:16px;border:1px solid var(--craie-2);border-radius:12px;margin-bottom:10px;border-left-width:4px;
+  transition:border-color .25s,box-shadow .25s;background:#fff}
+.lec-item:hover{box-shadow:0 4px 14px rgba(20,52,43,.07)}
 .lec-item.f1{border-left-color:var(--f1)}
 .lec-item.f2{border-left-color:var(--f2)}
 .lec-item.f3{border-left-color:var(--f3)}
@@ -419,8 +425,8 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .lec-act{display:flex;gap:7px;flex-wrap:wrap}
 .lec-act button{font-family:inherit;font-weight:600;font-size:.82rem;padding:8px 14px;border-radius:8px;
   cursor:pointer;border:1px solid var(--craie-2);background:none;color:var(--encre);transition:all .2s}
-.lec-act button:hover{border-color:var(--ocre)}
-.lec-act .del:hover{border-color:var(--rouge);color:var(--rouge)}
+.lec-act button:hover{border-color:var(--ocre);background:rgba(232,184,75,.08)}
+.lec-act .del:hover{border-color:var(--rouge);color:var(--rouge);background:rgba(194,91,78,.06)}
 
 /* ============================================================
    Leçons — liste dans la matière + lecture
@@ -429,11 +435,11 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .lecons-head h2{font-size:1.6rem}
 .lecons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
 .lecon-carte{display:block;background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;
-  padding:24px;border-left-width:4px;border-left-color:var(--ardoise);transition:transform .2s,box-shadow .2s;position:relative}
+  padding:24px;border-left-width:4px;border-left-color:var(--ardoise);transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .25s;position:relative}
 body[data-filiere="f1"] .lecon-carte{border-left-color:var(--f1)}
 body[data-filiere="f2"] .lecon-carte{border-left-color:var(--f2)}
 body[data-filiere="f3"] .lecon-carte{border-left-color:var(--f3)}
-.lecon-carte:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(20,52,43,.1)}
+.lecon-carte:hover{transform:translateY(-5px);box-shadow:0 16px 32px -6px rgba(20,52,43,.16)}
 .lc-num{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ocre-d)}
 .lecon-carte h3{font-size:1.25rem;margin:8px 0 10px}
 .lecon-carte p{color:var(--encre-2);font-size:.95rem;line-height:1.55;margin-bottom:16px}
@@ -478,7 +484,9 @@ body[data-filiere="f3"] .lc-go{color:var(--f3-d)}
 .qz-hint{font-size:.8rem;color:var(--encre-2);margin-top:6px}
 .qz-del-q{position:absolute;top:14px;right:14px;background:none;border:0;color:var(--rouge);cursor:pointer;font-size:.85rem;font-weight:600}
 .quiz-item{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;
-  padding:16px;border:1px solid var(--craie-2);border-radius:12px;margin-bottom:10px;border-left-width:4px}
+  padding:16px;border:1px solid var(--craie-2);border-radius:12px;margin-bottom:10px;border-left-width:4px;
+  transition:border-color .25s,box-shadow .25s;background:#fff}
+.quiz-item:hover{box-shadow:0 4px 14px rgba(20,52,43,.07)}
 .quiz-item.f1{border-left-color:var(--f1)}
 .quiz-item.f2{border-left-color:var(--f2)}
 .quiz-item.f3{border-left-color:var(--f3)}
@@ -526,11 +534,15 @@ body[data-filiere="f3"] .q-choix input:checked ~ .q-lettre{background:var(--f3)}
 /* Résultat */
 .quiz-result{max-width:640px;margin:0 auto;text-align:center}
 .temps-ecoule{color:var(--rouge);font-weight:600;margin-bottom:12px}
-.score-ring{width:130px;height:130px;border-radius:50%;margin:0 auto 20px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;border:6px solid var(--f1)}
-.score-ring.low{border-color:var(--ocre)}
-.score-ring b{font-family:var(--serif);font-size:2.6rem;line-height:1;color:var(--encre)}
-.score-ring span{font-size:.9rem;color:var(--encre-2)}
+.score-ring{width:148px;height:148px;border-radius:50%;margin:0 auto 22px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;position:relative;background:var(--craie);
+  box-shadow:0 0 0 6px var(--craie),0 14px 32px -8px rgba(20,52,43,.35);
+  animation:score-pop .55s var(--ease) both}
+.score-ring::before{content:"";position:absolute;inset:-6px;border-radius:50%;z-index:-1;background:var(--f1)}
+.score-ring.low::before{background:var(--ocre)}
+@keyframes score-pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06);opacity:1}100%{transform:scale(1)}}
+.score-ring b{font-family:var(--serif);font-size:2.7rem;line-height:1;color:var(--encre)}
+.score-ring span{font-size:.85rem;color:var(--encre-2)}
 .quiz-result h1{font-size:2rem;margin-bottom:8px}
 .score-meta{color:var(--encre-2);margin-bottom:28px}
 .parfait{background:rgba(63,160,106,.12);color:var(--f1-d);padding:16px;border-radius:12px;font-weight:600}
@@ -707,4 +719,3 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
   padding:4px 11px;border-radius:20px;color:#fff;letter-spacing:.02em;z-index:2}
 .statut-badge.fait{background:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5)}
 .statut-badge.a-faire{background:#6d5a8f}
-.lecon-carte{position:relative}

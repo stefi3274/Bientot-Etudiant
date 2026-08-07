@@ -358,4 +358,34 @@
     if (editId === id) resetQuiz();
     chargerQuiz();
   }
+
+  // ---------- Déplacer des quiz en lot (correction d'erreur de filière) ----------
+  const depSelFil = $("depFiliereSource"), depSelMat = $("depMatiere");
+  const statusDep = (m, t) => { const el = $("depMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t || "ok"); } };
+  function majDepMat() {
+    if (!depSelFil || !depSelMat) return;
+    depSelMat.innerHTML = '<option value="">Toutes les matières</option>'
+      + (MATIERES[depSelFil.value] || []).map(m => '<option>' + esc(m) + '</option>').join("");
+  }
+  if (depSelFil) { depSelFil.addEventListener("change", majDepMat); majDepMat(); }
+
+  if ($("depDeplacerBtn")) $("depDeplacerBtn").addEventListener("click", async () => {
+    const source = $("depFiliereSource"), dest = $("depFiliereDest");
+    const matiere = $("depMatiere").value, type = $("depType").value;
+    if (source.value === dest.value) { statusDep("La filière de destination doit être différente de l'actuelle.", "err"); return; }
+
+    const libSource = source.options[source.selectedIndex].text;
+    const libDest = dest.options[dest.selectedIndex].text;
+    const quoi = (matiere || "toutes les matières") + (type ? " (" + $("depType").options[$("depType").selectedIndex].text + ")" : "");
+    if (!confirm('Déplacer "' + quoi + '" de "' + libSource + '" vers "' + libDest + '" ?\n\nSi une leçon est rattachée à certains de ces quiz, elle ne sera PAS déplacée avec eux — préfère cet outil pour les Quiz Libres et Quiz à Gogo.')) return;
+
+    statusDep("Déplacement en cours…", "");
+    let q = DB.from("quiz").update({ filiere: dest.value }).eq("filiere", source.value);
+    if (matiere) q = q.eq("matiere", matiere);
+    if (type) q = q.eq("type", type);
+    const { data, error } = await q.select("id");
+    if (error) { statusDep("Erreur : " + error.message, "err"); return; }
+    statusDep((data || []).length + " quiz déplacé(s) vers " + libDest + ".", "ok");
+    chargerQuiz();
+  });
 })();

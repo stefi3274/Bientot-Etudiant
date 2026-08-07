@@ -293,6 +293,46 @@ Réponse: B"></textarea>
           </div>
         </div>
 
+        <div class="lecon-editor">
+          <h2>Déplacer des quiz en lot</h2>
+          <p class="qz-hint" style="margin-bottom:14px">Utile en cas d'erreur de filière (ex. 100 Quiz à Gogo publiés dans la mauvaise filière). Idéal pour les Quiz Libres et Quiz à Gogo (sans leçon rattachée).</p>
+          <div class="status-msg" id="depMsg"></div>
+          <div class="le-row">
+            <div class="le-field">
+              <label>Filière actuelle</label>
+              <select id="depFiliereSource">
+                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
+                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
+                <option value="f3">Sciences humaines et sociales</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière (facultatif)</label>
+              <select id="depMatiere"><option value="">Toutes les matières</option></select>
+            </div>
+          </div>
+          <div class="le-row">
+            <div class="le-field">
+              <label>Type (facultatif)</label>
+              <select id="depType">
+                <option value="">Tous les types</option>
+                <option value="gogo">Quiz à Gogo</option>
+                <option value="dimanche">Quiz Libre</option>
+                <option value="lecon">Quiz de leçon</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Nouvelle filière</label>
+              <select id="depFiliereDest">
+                <option value="f2">Sciences administratives, Économie &amp; Génie</option>
+                <option value="f1">Médecine, Agronomie &amp; Vétérinaire</option>
+                <option value="f3">Sciences humaines et sociales</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-dark" id="depDeplacerBtn">Déplacer <span>→</span></button>
+        </div>
+
         <div class="lecon-list-wrap">
           <h2>Quiz publiés</h2>
           <div id="quizList"><p class="empty">Chargement…</p></div>
