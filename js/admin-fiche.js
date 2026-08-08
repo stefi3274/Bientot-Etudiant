@@ -42,8 +42,18 @@
     }).join("\n");
   }
 
-  // Convertit le contenu en fiches (cartes) — même logique que l'onglet Leçons
-  function contenuVersFiches(txt) {
+  // Construit une carte "fiche" (couverture, contenu, ou fin) — un seul format partout.
+  function carteFiche(classeExtra, numero, total, titre, htmlInterieur) {
+    return '<div class="fiche' + (classeExtra ? " " + classeExtra : "") + '">'
+      + '<span class="fiche-num">' + numero + ' / ' + total + '</span>'
+      + '<h3>' + escHtml(titre) + '</h3>'
+      + htmlInterieur
+      + '</div>';
+  }
+
+  // Convertit le contenu en fiches (cartes) — couverture + fiches + fin construites
+  // ensemble en une seule passe (pas de recherche/remplacement fragile après coup).
+  function contenuVersFiches(txt, titreLecon, apercuLecon) {
     const regexFiches = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
     const matches = [...txt.matchAll(regexFiches)];
     if (!matches.length) {
@@ -58,34 +68,21 @@
       if (!contenuBrut) continue;
       fiches.push({ titre: matches[i][1].trim() || ("Fiche " + (fiches.length + 1)), contenu: contenuBrut });
     }
-    const cartes = fiches.map((f, i) =>
-      '<div class="fiche"><span class="fiche-num">' + (i + 1) + ' / ' + fiches.length + '</span>'
-      + '<h3>' + escHtml(f.titre) + '</h3>'
-      + texteVersHtmlSimple(f.contenu)
-      + '</div>'
-    ).join("\n");
+    if (!fiches.length) return { html: texteVersHtmlSimple(txt), nbFiches: 0 };
+
+    const total = fiches.length + 2;
+    const cartes = [
+      carteFiche("fiche-couverture", 1, total, titreLecon, apercuLecon ? "<p>" + escHtml(apercuLecon) + "</p>" : ""),
+      ...fiches.map((f, i) => carteFiche("", i + 2, total, f.titre, texteVersHtmlSimple(f.contenu))),
+      carteFiche("fiche-fin", total, total, "Rejoins la communauté !",
+        "<p>Crée un compte gratuit pour suivre ta progression et garder ta série de révision.</p>"
+        + "<p>Et maintenant... à toi de jouer : fais le quiz de cette leçon pour vérifier ce que tu as retenu 👇</p>")
+    ].join("\n");
+
     return {
       html: '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p><div class="fiches-carousel">' + cartes + '</div>',
       nbFiches: fiches.length
     };
-  }
-
-  // Ajoute automatiquement une fiche couverture (titre+aperçu) et une fiche de fin
-  // (invitation à rejoindre la communauté / faire le quiz) autour des fiches de contenu.
-  function ajouterCouvertureEtFin(html, nbFiches, titre, apercu) {
-    if (!nbFiches) return html; // rendu simple (rétrocompatible), on ne touche pas
-    const total = nbFiches + 2;
-    const couverture = '<div class="fiche fiche-couverture"><span class="fiche-num">1 / ' + total + '</span>'
-      + '<h3>' + escHtml(titre) + '</h3>'
-      + (apercu ? '<p>' + escHtml(apercu) + '</p>' : '')
-      + '</div>';
-    const fin = '<div class="fiche fiche-fin"><span class="fiche-num">' + total + ' / ' + total + '</span>'
-      + '<h3>Rejoins la communauté !</h3>'
-      + '<p>Crée un compte gratuit pour suivre ta progression et garder ta série de révision.</p>'
-      + '<p>Et maintenant... à toi de jouer : fais le quiz de cette leçon pour vérifier ce que tu as retenu 👇</p>'
-      + '</div>';
-    return html.replace('<div class="fiches-carousel">', '<div class="fiches-carousel">' + couverture)
-               .replace(/<\/div>\s*$/, fin + '</div>');
   }
 
   function parseQuestions(txt) {
@@ -136,12 +133,12 @@
 
     const titre = titreMatch[1].trim();
     const apercu = apercuMatch ? apercuMatch[1].trim() : "";
-    const fiches = contenuVersFiches(contenuBrut.trim());
+    const fiches = contenuVersFiches(contenuBrut.trim(), titre, apercu);
 
     return {
       titre,
       apercu,
-      contenu_html: ajouterCouvertureEtFin(fiches.html, fiches.nbFiches, titre, apercu),
+      contenu_html: fiches.html,
       questions
     };
   }

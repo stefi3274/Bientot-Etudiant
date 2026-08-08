@@ -50,14 +50,16 @@
     rte.addEventListener("paste", e => {
       const texte = (e.clipboardData || window.clipboardData).getData("text/plain");
       if (!texte || !/===\s*FICHE\s*:?/i.test(texte)) return; // collage normal, on laisse faire
-      const resultat = fichesVersCarouselHtml(texte);
+      const titreActuel = ($("leTitre").value || "").trim() || "Cette leçon";
+      const apercuActuel = ($("leApercu").value || "").trim();
+      const resultat = fichesVersCarouselHtml(texte, titreActuel, apercuActuel);
       if (!resultat) return;
       e.preventDefault();
       document.execCommand("insertHTML", false, resultat.html);
       const avertissement = resultat.quizIgnore
         ? " ⚠️ Un bloc ===QUIZ=== a été détecté et IGNORÉ (cet onglet ne crée pas de quiz)."
         : "";
-      statusL(resultat.nbFiches + " fiche(s) détectée(s) et converties automatiquement en cartes." + avertissement, resultat.quizIgnore ? "err" : "ok");
+      statusL(resultat.nbFiches + " fiche(s) détectée(s), converties en " + (resultat.nbFiches + 2) + " cartes (couverture+fin incluses)." + avertissement, resultat.quizIgnore ? "err" : "ok");
     });
   }
 
@@ -79,11 +81,21 @@
     }).join("\n");
   }
 
-  // Extrait les fiches (marqueurs ===FICHE:...===) d'un texte et produit le HTML carousel.
-  // Indépendant de TITRE:/APERCU: — utilisable aussi bien pour l'import complet que pour
-  // un simple collage direct dans l'éditeur. Si un bloc ===QUIZ=== traîne dans le texte
-  // (l'onglet Leçons ne crée pas de quiz), il est ignoré et jamais mélangé à une fiche.
-  function fichesVersCarouselHtml(texte) {
+  // Construit une carte "fiche" (couverture, contenu, ou fin) — un seul format partout.
+  function carteFiche(classeExtra, numero, total, titre, htmlInterieur) {
+    return '<div class="fiche' + (classeExtra ? " " + classeExtra : "") + '">'
+      + '<span class="fiche-num">' + numero + ' / ' + total + '</span>'
+      + '<h3>' + esc(titre) + '</h3>'
+      + htmlInterieur
+      + '</div>';
+  }
+
+  // Extrait les fiches (marqueurs ===FICHE:...===) d'un texte et produit le HTML carousel
+  // complet : couverture (titre+aperçu) + fiches de contenu + fin (invitation), construites
+  // ensemble en une seule passe (pas de recherche/remplacement fragile après coup).
+  // Si un bloc ===QUIZ=== traîne dans le texte (l'onglet Leçons ne crée pas de quiz),
+  // il est ignoré et jamais mélangé à une fiche.
+  function fichesVersCarouselHtml(texte, titre, apercu) {
     const idxQuiz = texte.search(/^\s*===\s*QUIZ\s*===\s*$/im);
     const quizDetecte = idxQuiz >= 0;
     const texteUtile = quizDetecte ? texte.slice(0, idxQuiz) : texte;
@@ -102,35 +114,20 @@
     }
     if (!fiches.length) return null;
 
-    const cartes = fiches.map((f, i) =>
-      '<div class="fiche"><span class="fiche-num">' + (i + 1) + ' / ' + fiches.length + '</span>'
-      + '<h3>' + esc(f.titre) + '</h3>'
-      + texteVersHtmlSimple(f.contenu)
-      + '</div>'
-    ).join("\n");
+    const total = fiches.length + 2;
+    const cartes = [
+      carteFiche("fiche-couverture", 1, total, titre, apercu ? "<p>" + esc(apercu) + "</p>" : ""),
+      ...fiches.map((f, i) => carteFiche("", i + 2, total, f.titre, texteVersHtmlSimple(f.contenu))),
+      carteFiche("fiche-fin", total, total, "Rejoins la communauté !",
+        "<p>Crée un compte gratuit pour suivre ta progression et garder ta série de révision.</p>"
+        + "<p>Et maintenant... à toi de jouer : fais le quiz de cette leçon pour vérifier ce que tu as retenu 👇</p>")
+    ].join("\n");
+
     return {
       html: '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p><div class="fiches-carousel">' + cartes + '</div>',
       nbFiches: fiches.length,
       quizIgnore: quizDetecte
     };
-  }
-
-  // Ajoute automatiquement une fiche couverture (titre+aperçu) et une fiche de fin
-  // (invitation à rejoindre la communauté / faire le quiz) autour des fiches de contenu.
-  function ajouterCouvertureEtFin(html, nbFiches, titre, apercu) {
-    const total = nbFiches + 2;
-    const couverture = '<div class="fiche fiche-couverture"><span class="fiche-num">1 / ' + total + '</span>'
-      + '<h3>' + esc(titre) + '</h3>'
-      + (apercu ? '<p>' + esc(apercu) + '</p>' : '')
-      + '</div>';
-    const fin = '<div class="fiche fiche-fin"><span class="fiche-num">' + total + ' / ' + total + '</span>'
-      + '<h3>Rejoins la communauté !</h3>'
-      + '<p>Crée un compte gratuit pour suivre ta progression et garder ta série de révision.</p>'
-      + '<p>Et maintenant... à toi de jouer : fais le quiz de cette leçon pour vérifier ce que tu as retenu 👇</p>'
-      + '</div>';
-    // On réinjecte dans le carousel déjà généré, avant la première fiche et après la dernière
-    return html.replace('<div class="fiches-carousel">', '<div class="fiches-carousel">' + couverture)
-               .replace(/<\/div>\s*$/, fin + '</div>');
   }
 
   function parseLeconEnFiches(texte) {
@@ -140,16 +137,16 @@
     const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
     if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
 
-    const resultat = fichesVersCarouselHtml(texte);
-    if (!resultat) throw new Error('Aucune fiche trouvée (marqueur "===FICHE: Titre===" manquant).');
-
     const titre = titreMatch[1].trim();
     const apercu = apercuMatch ? apercuMatch[1].trim() : "";
+
+    const resultat = fichesVersCarouselHtml(texte, titre, apercu);
+    if (!resultat) throw new Error('Aucune fiche trouvée (marqueur "===FICHE: Titre===" manquant).');
 
     return {
       titre,
       apercu,
-      html: ajouterCouvertureEtFin(resultat.html, resultat.nbFiches, titre, apercu),
+      html: resultat.html,
       nbFiches: resultat.nbFiches,
       quizIgnore: resultat.quizIgnore
     };
