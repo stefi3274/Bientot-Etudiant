@@ -43,6 +43,21 @@
   const rte = $("leContenu");
   const toolbar = $("rteToolbar");
 
+  // Filet de sécurité : si on colle directement dans l'éditeur un texte contenant
+  // des marqueurs ===FICHE:...===, on le convertit quand même en cartes au lieu
+  // de laisser passer le texte brut tel quel.
+  if (rte) {
+    rte.addEventListener("paste", e => {
+      const texte = (e.clipboardData || window.clipboardData).getData("text/plain");
+      if (!texte || !/===\s*FICHE\s*:?/i.test(texte)) return; // collage normal, on laisse faire
+      const resultat = fichesVersCarouselHtml(texte);
+      if (!resultat) return;
+      e.preventDefault();
+      document.execCommand("insertHTML", false, resultat.html);
+      statusL(resultat.nbFiches + " fiche(s) détectée(s) et converties automatiquement en cartes.", "ok");
+    });
+  }
+
   // ---------- Import "en fiches" (texte structuré -> HTML en cartes) ----------
   if ($("leVoirFormat")) $("leVoirFormat").addEventListener("click", e => {
     e.preventDefault();
@@ -61,16 +76,13 @@
     }).join("\n");
   }
 
-  function parseLeconEnFiches(texte) {
-    const marqueur = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/im;
-    const avant = texte.split(marqueur)[0];
-    const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
-    const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
-    if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
-
+  // Extrait les fiches (marqueurs ===FICHE:...===) d'un texte et produit le HTML carousel.
+  // Indépendant de TITRE:/APERCU: — utilisable aussi bien pour l'import complet que pour
+  // un simple collage direct dans l'éditeur.
+  function fichesVersCarouselHtml(texte) {
     const regexFiches = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
     const matches = [...texte.matchAll(regexFiches)];
-    if (!matches.length) throw new Error('Aucune fiche trouvée (marqueur "===FICHE: Titre===" manquant).');
+    if (!matches.length) return null;
 
     const fiches = [];
     for (let i = 0; i < matches.length; i++) {
@@ -80,7 +92,7 @@
       if (!contenuBrut) continue;
       fiches.push({ titre: matches[i][1].trim() || ("Fiche " + (fiches.length + 1)), contenu: contenuBrut });
     }
-    if (!fiches.length) throw new Error("Aucune fiche avec du contenu.");
+    if (!fiches.length) return null;
 
     const cartes = fiches.map((f, i) =>
       '<div class="fiche"><span class="fiche-num">' + (i + 1) + ' / ' + fiches.length + '</span>'
@@ -88,14 +100,27 @@
       + texteVersHtmlSimple(f.contenu)
       + '</div>'
     ).join("\n");
-    const html = '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p>'
-      + '<div class="fiches-carousel">' + cartes + '</div>';
+    return {
+      html: '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p><div class="fiches-carousel">' + cartes + '</div>',
+      nbFiches: fiches.length
+    };
+  }
+
+  function parseLeconEnFiches(texte) {
+    const marqueur = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/im;
+    const avant = texte.split(marqueur)[0];
+    const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
+    const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
+    if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
+
+    const resultat = fichesVersCarouselHtml(texte);
+    if (!resultat) throw new Error('Aucune fiche trouvée (marqueur "===FICHE: Titre===" manquant).');
 
     return {
       titre: titreMatch[1].trim(),
       apercu: apercuMatch ? apercuMatch[1].trim() : "",
-      html,
-      nbFiches: fiches.length
+      html: resultat.html,
+      nbFiches: resultat.nbFiches
     };
   }
 
