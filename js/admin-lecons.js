@@ -54,7 +54,10 @@
       if (!resultat) return;
       e.preventDefault();
       document.execCommand("insertHTML", false, resultat.html);
-      statusL(resultat.nbFiches + " fiche(s) détectée(s) et converties automatiquement en cartes.", "ok");
+      const avertissement = resultat.quizIgnore
+        ? " ⚠️ Un bloc ===QUIZ=== a été détecté et IGNORÉ (cet onglet ne crée pas de quiz)."
+        : "";
+      statusL(resultat.nbFiches + " fiche(s) détectée(s) et converties automatiquement en cartes." + avertissement, resultat.quizIgnore ? "err" : "ok");
     });
   }
 
@@ -78,17 +81,22 @@
 
   // Extrait les fiches (marqueurs ===FICHE:...===) d'un texte et produit le HTML carousel.
   // Indépendant de TITRE:/APERCU: — utilisable aussi bien pour l'import complet que pour
-  // un simple collage direct dans l'éditeur.
+  // un simple collage direct dans l'éditeur. Si un bloc ===QUIZ=== traîne dans le texte
+  // (l'onglet Leçons ne crée pas de quiz), il est ignoré et jamais mélangé à une fiche.
   function fichesVersCarouselHtml(texte) {
+    const idxQuiz = texte.search(/^\s*===\s*QUIZ\s*===\s*$/im);
+    const quizDetecte = idxQuiz >= 0;
+    const texteUtile = quizDetecte ? texte.slice(0, idxQuiz) : texte;
+
     const regexFiches = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
-    const matches = [...texte.matchAll(regexFiches)];
+    const matches = [...texteUtile.matchAll(regexFiches)];
     if (!matches.length) return null;
 
     const fiches = [];
     for (let i = 0; i < matches.length; i++) {
       const debut = matches[i].index + matches[i][0].length;
-      const fin = (i + 1 < matches.length) ? matches[i + 1].index : texte.length;
-      const contenuBrut = texte.slice(debut, fin).trim();
+      const fin = (i + 1 < matches.length) ? matches[i + 1].index : texteUtile.length;
+      const contenuBrut = texteUtile.slice(debut, fin).trim();
       if (!contenuBrut) continue;
       fiches.push({ titre: matches[i][1].trim() || ("Fiche " + (fiches.length + 1)), contenu: contenuBrut });
     }
@@ -102,8 +110,27 @@
     ).join("\n");
     return {
       html: '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p><div class="fiches-carousel">' + cartes + '</div>',
-      nbFiches: fiches.length
+      nbFiches: fiches.length,
+      quizIgnore: quizDetecte
     };
+  }
+
+  // Ajoute automatiquement une fiche couverture (titre+aperçu) et une fiche de fin
+  // (invitation à rejoindre la communauté / faire le quiz) autour des fiches de contenu.
+  function ajouterCouvertureEtFin(html, nbFiches, titre, apercu) {
+    const total = nbFiches + 2;
+    const couverture = '<div class="fiche fiche-couverture"><span class="fiche-num">1 / ' + total + '</span>'
+      + '<h3>' + esc(titre) + '</h3>'
+      + (apercu ? '<p>' + esc(apercu) + '</p>' : '')
+      + '</div>';
+    const fin = '<div class="fiche fiche-fin"><span class="fiche-num">' + total + ' / ' + total + '</span>'
+      + '<h3>Rejoins la communauté !</h3>'
+      + '<p>Crée un compte gratuit pour suivre ta progression et garder ta série de révision.</p>'
+      + '<p>Et maintenant... à toi de jouer : fais le quiz de cette leçon pour vérifier ce que tu as retenu 👇</p>'
+      + '</div>';
+    // On réinjecte dans le carousel déjà généré, avant la première fiche et après la dernière
+    return html.replace('<div class="fiches-carousel">', '<div class="fiches-carousel">' + couverture)
+               .replace(/<\/div>\s*$/, fin + '</div>');
   }
 
   function parseLeconEnFiches(texte) {
@@ -116,11 +143,15 @@
     const resultat = fichesVersCarouselHtml(texte);
     if (!resultat) throw new Error('Aucune fiche trouvée (marqueur "===FICHE: Titre===" manquant).');
 
+    const titre = titreMatch[1].trim();
+    const apercu = apercuMatch ? apercuMatch[1].trim() : "";
+
     return {
-      titre: titreMatch[1].trim(),
-      apercu: apercuMatch ? apercuMatch[1].trim() : "",
-      html: resultat.html,
-      nbFiches: resultat.nbFiches
+      titre,
+      apercu,
+      html: ajouterCouvertureEtFin(resultat.html, resultat.nbFiches, titre, apercu),
+      nbFiches: resultat.nbFiches,
+      quizIgnore: resultat.quizIgnore
     };
   }
 
@@ -137,7 +168,10 @@
     $("leTitre").value = resultat.titre;
     $("leApercu").value = resultat.apercu;
     rte.innerHTML = resultat.html;
-    statusL(resultat.nbFiches + " fiche(s) importée(s) dans le contenu. Vérifie, puis publie normalement.", "ok");
+    const avertissement = resultat.quizIgnore
+      ? " ⚠️ Un bloc ===QUIZ=== a été détecté et IGNORÉ ici (cet onglet ne crée pas de quiz). Utilise l'onglet Fiche pour leçon + quiz ensemble, ou l'onglet Quiz séparément."
+      : "";
+    statusL(resultat.nbFiches + " fiche(s) importée(s) + couverture et fin ajoutées (" + (resultat.nbFiches + 2) + " au total). Vérifie, puis publie normalement." + avertissement, resultat.quizIgnore ? "err" : "ok");
     $("leTexteImport").value = "";
   });
 
@@ -255,6 +289,7 @@
 
   // ---------- Liste des leçons ----------
   let filtreLecon = "all";
+  let derniereListe = [];
   document.querySelectorAll("#leconFilters .filter").forEach(b => {
     b.addEventListener("click", () => {
       document.querySelectorAll("#leconFilters .filter").forEach(x => x.classList.toggle("on", x === b));
@@ -262,6 +297,40 @@
       chargerLecons();
     });
   });
+
+  const normaliser = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if ($("leconRecherche")) $("leconRecherche").addEventListener("input", function () {
+    afficherListeLecons(derniereListe, this.value);
+  });
+
+  function afficherListeLecons(data, recherche) {
+    const box = $("leconList");
+    let liste = data;
+    if (recherche && recherche.trim()) {
+      const r = normaliser(recherche.trim());
+      liste = data.filter(l => normaliser(l.titre).includes(r) || normaliser(l.matiere).includes(r));
+    }
+    if (!liste.length) {
+      box.innerHTML = "<p class='empty'>" + (recherche ? "Aucune leçon ne correspond à \"" + esc(recherche) + "\"." : "Aucune leçon pour l'instant.") + "</p>";
+      return;
+    }
+    box.innerHTML = (recherche ? '<p style="color:var(--encre-2);font-size:.85rem;margin-bottom:10px">' + liste.length + ' résultat(s)</p>' : '')
+      + liste.map(l =>
+        '<div class="lec-item ' + l.filiere + '">'
+        + '<div class="lec-info"><b>' + esc(l.titre) + '</b>'
+        + '<span class="lec-meta">' + esc(l.matiere) + ' · Leçon ' + (l.ordre || 1)
+        + (l.pdf_url ? ' · PDF joint' : '') + (l.auteur ? ' · ' + esc(l.auteur) : '') + '</span></div>'
+        + '<div class="lec-act">'
+        + '<button data-edit="' + l.id + '">Modifier</button>'
+        + '<button class="del" data-del="' + l.id + '">Supprimer</button>'
+        + '</div></div>'
+      ).join("");
+
+    box.querySelectorAll("[data-edit]").forEach(b =>
+      b.onclick = () => editLecon(derniereListe.find(x => x.id === b.getAttribute("data-edit"))));
+    box.querySelectorAll("[data-del]").forEach(b =>
+      b.onclick = () => delLecon(b.getAttribute("data-del")));
+  }
 
   async function chargerLecons() {
     const box = $("leconList");
@@ -271,23 +340,8 @@
     if (filtreLecon !== "all") q = q.eq("filiere", filtreLecon);
     const { data, error } = await q;
     if (error) { box.innerHTML = "<p class='empty'>Erreur de chargement.</p>"; return; }
-    if (!data.length) { box.innerHTML = "<p class='empty'>Aucune leçon pour l'instant.</p>"; return; }
-
-    box.innerHTML = data.map(l =>
-      '<div class="lec-item ' + l.filiere + '">'
-      + '<div class="lec-info"><b>' + esc(l.titre) + '</b>'
-      + '<span class="lec-meta">' + esc(l.matiere) + ' · Leçon ' + (l.ordre || 1)
-      + (l.pdf_url ? ' · PDF joint' : '') + (l.auteur ? ' · ' + esc(l.auteur) : '') + '</span></div>'
-      + '<div class="lec-act">'
-      + '<button data-edit="' + l.id + '">Modifier</button>'
-      + '<button class="del" data-del="' + l.id + '">Supprimer</button>'
-      + '</div></div>'
-    ).join("");
-
-    box.querySelectorAll("[data-edit]").forEach(b =>
-      b.onclick = () => editLecon(data.find(x => x.id === b.getAttribute("data-edit"))));
-    box.querySelectorAll("[data-del]").forEach(b =>
-      b.onclick = () => delLecon(b.getAttribute("data-del")));
+    derniereListe = data || [];
+    afficherListeLecons(derniereListe, $("leconRecherche") ? $("leconRecherche").value : "");
   }
 
   function editLecon(l) {

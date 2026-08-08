@@ -48,7 +48,7 @@
     const matches = [...txt.matchAll(regexFiches)];
     if (!matches.length) {
       // Pas de marqueur ===FICHE:...=== : on garde l'ancien rendu simple (rétrocompatible)
-      return texteVersHtmlSimple(txt);
+      return { html: texteVersHtmlSimple(txt), nbFiches: 0 };
     }
     const fiches = [];
     for (let i = 0; i < matches.length; i++) {
@@ -64,8 +64,28 @@
       + texteVersHtmlSimple(f.contenu)
       + '</div>'
     ).join("\n");
-    return '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p>'
-      + '<div class="fiches-carousel">' + cartes + '</div>';
+    return {
+      html: '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p><div class="fiches-carousel">' + cartes + '</div>',
+      nbFiches: fiches.length
+    };
+  }
+
+  // Ajoute automatiquement une fiche couverture (titre+aperçu) et une fiche de fin
+  // (invitation à rejoindre la communauté / faire le quiz) autour des fiches de contenu.
+  function ajouterCouvertureEtFin(html, nbFiches, titre, apercu) {
+    if (!nbFiches) return html; // rendu simple (rétrocompatible), on ne touche pas
+    const total = nbFiches + 2;
+    const couverture = '<div class="fiche fiche-couverture"><span class="fiche-num">1 / ' + total + '</span>'
+      + '<h3>' + escHtml(titre) + '</h3>'
+      + (apercu ? '<p>' + escHtml(apercu) + '</p>' : '')
+      + '</div>';
+    const fin = '<div class="fiche fiche-fin"><span class="fiche-num">' + total + ' / ' + total + '</span>'
+      + '<h3>Rejoins la communauté !</h3>'
+      + '<p>Crée un compte gratuit pour suivre ta progression et garder ta série de révision.</p>'
+      + '<p>Et maintenant... à toi de jouer : fais le quiz de cette leçon pour vérifier ce que tu as retenu 👇</p>'
+      + '</div>';
+    return html.replace('<div class="fiches-carousel">', '<div class="fiches-carousel">' + couverture)
+               .replace(/<\/div>\s*$/, fin + '</div>');
   }
 
   function parseQuestions(txt) {
@@ -114,10 +134,14 @@
       }
     });
 
+    const titre = titreMatch[1].trim();
+    const apercu = apercuMatch ? apercuMatch[1].trim() : "";
+    const fiches = contenuVersFiches(contenuBrut.trim());
+
     return {
-      titre: titreMatch[1].trim(),
-      apercu: apercuMatch ? apercuMatch[1].trim() : "",
-      contenu_html: contenuVersFiches(contenuBrut.trim()),
+      titre,
+      apercu,
+      contenu_html: ajouterCouvertureEtFin(fiches.html, fiches.nbFiches, titre, apercu),
       questions
     };
   }
