@@ -386,4 +386,219 @@
     URL.revokeObjectURL(url);
     statusC("Zip téléchargé.", "ok");
   });
+
+  /* ============================================================
+     CAROUSEL DE LEÇON — 12 slides max : 1 couverture + jusqu'à 10
+     fiches + 1 page de fin (rejoindre la communauté / faire le quiz).
+     Réutilise le même système visuel (fond matière, texte noir).
+     ============================================================ */
+  const MAX_FICHES = 10;
+  const statusCL = (m, t) => { const el = $("calMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t || "ok"); } };
+
+  function extraireFiches(html) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html || "";
+    const blocs = tmp.querySelectorAll(".fiche");
+    const fiches = [];
+    blocs.forEach(bloc => {
+      const h3 = bloc.querySelector("h3");
+      const titre = h3 ? h3.textContent.trim() : "";
+      const paras = [...bloc.querySelectorAll("p, li")].map(p => p.textContent.trim()).filter(Boolean);
+      fiches.push({ titre, texte: paras.join(" ") });
+    });
+    return fiches;
+  }
+
+  function slideLeconCouverture(lecon, nbFiches) {
+    const cv = document.createElement("canvas"); cv.width = T; cv.height = T;
+    const ctx = cv.getContext("2d");
+    const couleur = couleurMatiere(lecon.matiere);
+    fondCommun(ctx, couleur);
+
+    ctx.font = "800 23px Inter, system-ui, sans-serif";
+    ctx.fillStyle = NOIR;
+    ctx.fillText("LEÇON · CONCOURS D'ENTRÉE", 64, 108);
+
+    pastille(ctx, FILIERES[lecon.filiere] || lecon.filiere || "", 64, 140, 21);
+    pastille(ctx, lecon.matiere || "", 64, 200, 21);
+
+    ctx.fillStyle = NOIR;
+    ctx.font = "800 68px Fraunces, Georgia, serif";
+    const lignesTitre = decouperTexte(ctx, lecon.titre, T - 128);
+    let y = 390;
+    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 76; });
+
+    if (lecon.apercu) {
+      ctx.font = "600 28px Inter, system-ui, sans-serif";
+      ctx.fillStyle = "rgba(22,22,22,.8)";
+      const lignesAp = decouperTexte(ctx, lecon.apercu, T - 128);
+      lignesAp.slice(0, 2).forEach(l => { ctx.fillText(l, 64, y + 10); y += 38; });
+    }
+
+    pastille(ctx, nbFiches + " fiches à réviser", 64, y + 30, 22);
+
+    const cta_y = T - 260;
+    ctx.fillStyle = BLANC;
+    rr(ctx, 64, cta_y, T - 128, 118, 20); ctx.fill();
+    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 118, 20); ctx.stroke();
+    ctx.fillStyle = NOIR;
+    ctx.textAlign = "center";
+    ctx.font = "800 30px Inter, system-ui, sans-serif";
+    ctx.fillText("Pour plus de leçons,", T / 2, cta_y + 46);
+    ctx.fillText("clique sur le lien en bio 👆", T / 2, cta_y + 86);
+    ctx.textAlign = "left";
+
+    piedDePage(ctx);
+    return cv;
+  }
+
+  function slideFiche(fiche, index, total, matiere) {
+    const cv = document.createElement("canvas"); cv.width = T; cv.height = T;
+    const ctx = cv.getContext("2d");
+    const couleur = couleurMatiere(matiere);
+    fondCommun(ctx, couleur);
+
+    const wPastille = pastille(ctx, "FICHE " + index + " / " + total, 64, 66, 22);
+    pastille(ctx, matiere || "", 64 + wPastille + 12, 66, 22);
+
+    ctx.fillStyle = NOIR;
+    ctx.font = "800 46px Fraunces, Georgia, serif";
+    const lignesTitre = decouperTexte(ctx, fiche.titre, T - 128);
+    let y = 240;
+    lignesTitre.slice(0, 3).forEach(l => { ctx.fillText(l, 64, y); y += 54; });
+
+    ctx.fillStyle = BLANC;
+    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 18); ctx.fill();
+    ctx.strokeStyle = "rgba(22,22,22,.15)"; ctx.lineWidth = 1.5;
+    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 18); ctx.stroke();
+
+    ctx.fillStyle = NOIR;
+    ctx.font = "500 30px Inter, system-ui, sans-serif";
+    const lignesTexte = decouperTexte(ctx, fiche.texte, T - 128 - 64);
+    let ty = y + 68;
+    lignesTexte.slice(0, 8).forEach(l => { ctx.fillText(l, 96, ty); ty += 40; });
+
+    piedDePage(ctx);
+    return cv;
+  }
+
+  function slideLeconFin(lecon) {
+    const cv = document.createElement("canvas"); cv.width = T; cv.height = T;
+    const ctx = cv.getContext("2d");
+    const couleur = couleurMatiere(lecon.matiere);
+    fondCommun(ctx, couleur);
+
+    pastille(ctx, "REJOINS-NOUS", 64, 90, 22);
+
+    ctx.fillStyle = NOIR;
+    ctx.font = "800 58px Fraunces, Georgia, serif";
+    let y = 260;
+    ["Rejoins la", "communauté !"].forEach(l => { ctx.fillText(l, 64, y); y += 66; });
+
+    ctx.font = "600 28px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(22,22,22,.85)";
+    const lignes = decouperTexte(ctx, "Crée un compte gratuit pour suivre ta progression, garder ta série de révision, et tester ce que tu viens d'apprendre.", T - 128);
+    y += 24;
+    lignes.forEach(l => { ctx.fillText(l, 64, y); y += 38; });
+
+    const cta_y = T - 300;
+    ctx.fillStyle = BLANC;
+    rr(ctx, 64, cta_y, T - 128, 100, 20); ctx.fill();
+    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 100, 20); ctx.stroke();
+    ctx.fillStyle = NOIR;
+    ctx.textAlign = "center";
+    ctx.font = "800 28px Inter, system-ui, sans-serif";
+    ctx.fillText("Fais le quiz de cette leçon 👉", T / 2, cta_y + 58);
+    ctx.textAlign = "left";
+
+    const cta2_y = T - 180;
+    ctx.fillStyle = NOIR;
+    rr(ctx, 64, cta2_y, T - 128, 90, 20); ctx.fill();
+    ctx.fillStyle = BLANC;
+    ctx.textAlign = "center";
+    ctx.font = "800 26px Inter, system-ui, sans-serif";
+    ctx.fillText("Lien dans la bio 👆", T / 2, cta2_y + 52);
+    ctx.textAlign = "left";
+
+    piedDePage(ctx);
+    return cv;
+  }
+
+  document.querySelectorAll('.adm-tab[data-tab="carousels"]').forEach(t => {
+    t.addEventListener("click", () => { if (typeof DB !== "undefined" && DB) chargerListeLecons(); });
+  });
+
+  async function chargerListeLecons() {
+    const sel = $("calLecon");
+    if (!sel || typeof DB === "undefined" || !DB) return;
+    const { data } = await DB.from("lecons").select("id, titre, matiere, filiere").eq("publie", true).order("created_at", { ascending: false });
+    sel.innerHTML = '<option value="">— Choisir une leçon —</option>'
+      + (data || []).map(l => '<option value="' + l.id + '">' + l.titre.replace(/</g, "&lt;") + ' (' + l.matiere + ')</option>').join("");
+  }
+
+  let slidesLeconActuelles = [];
+
+  if ($("calGenerer")) $("calGenerer").addEventListener("click", async () => {
+    const leconId = $("calLecon").value;
+    if (!leconId) { statusCL("Choisis une leçon.", "err"); return; }
+    if (typeof DB === "undefined" || !DB) { statusCL("Connexion Supabase indisponible.", "err"); return; }
+
+    statusCL("Génération des slides…", "");
+    $("calGenerer").disabled = true;
+    $("calApercu").style.display = "none";
+
+    try {
+      const { data: lecon, error } = await DB.from("lecons").select("*").eq("id", leconId).single();
+      if (error || !lecon) { statusCL("Leçon introuvable.", "err"); return; }
+
+      const toutesFiches = extraireFiches(lecon.contenu);
+      if (!toutesFiches.length) { statusCL("Cette leçon n'est pas en format fiches (voir l'onglet Leçons → Coller la leçon en fiches).", "err"); return; }
+      const fiches = toutesFiches.slice(0, MAX_FICHES);
+
+      if (!logoImg) await chargerLogo();
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+      slidesLeconActuelles = [];
+      slidesLeconActuelles.push(slideLeconCouverture(lecon, fiches.length));
+      fiches.forEach((f, i) => slidesLeconActuelles.push(slideFiche(f, i + 1, fiches.length, lecon.matiere)));
+      slidesLeconActuelles.push(slideLeconFin(lecon));
+
+      const zone = $("calSlides");
+      zone.innerHTML = "";
+      slidesLeconActuelles.forEach((cv, i) => {
+        const mini = document.createElement("img");
+        mini.src = cv.toDataURL("image/png");
+        mini.style.width = "100%";
+        mini.style.borderRadius = "10px";
+        mini.style.border = "1px solid var(--craie-2)";
+        mini.title = i === 0 ? "Couverture" : (i === slidesLeconActuelles.length - 1 ? "Page de fin" : "Fiche " + i);
+        zone.appendChild(mini);
+      });
+      $("calApercu").style.display = "block";
+      const note = toutesFiches.length > MAX_FICHES ? " (" + fiches.length + " premières sur " + toutesFiches.length + ")" : "";
+      statusCL(slidesLeconActuelles.length + " slides générées" + note + ".", "ok");
+    } catch (e) {
+      statusCL("Erreur : " + e.message, "err");
+    } finally {
+      $("calGenerer").disabled = false;
+    }
+  });
+
+  if ($("calTelecharger")) $("calTelecharger").addEventListener("click", async () => {
+    if (!slidesLeconActuelles.length || typeof JSZip === "undefined") return;
+    statusCL("Préparation du zip…", "");
+    const zip = new JSZip();
+    for (let i = 0; i < slidesLeconActuelles.length; i++) {
+      const blob = await new Promise(res => slidesLeconActuelles[i].toBlob(res, "image/png"));
+      const nom = i === 0 ? "01-couverture.png" : (i === slidesLeconActuelles.length - 1 ? String(i + 1).padStart(2, "0") + "-fin.png" : String(i + 1).padStart(2, "0") + "-fiche.png");
+      zip.file(nom, blob);
+    }
+    const contenu = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(contenu);
+    const a = document.createElement("a");
+    a.href = url; a.download = "carousel-lecon.zip";
+    a.click();
+    URL.revokeObjectURL(url);
+    statusCL("Zip téléchargé.", "ok");
+  });
 })();

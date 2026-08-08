@@ -49,6 +49,21 @@
         + '</div>';
     }
 
+    // Bloc "Rejoins la communauté" pour les invités (page de fin, comme le carousel)
+    let communauteBtn = "";
+    if (typeof eleveActuel === "function") {
+      try {
+        const el = await eleveActuel();
+        if (!el || !el.nom) {
+          communauteBtn = '<div class="lecon-communaute">'
+            + '<b>Rejoins la communauté</b>'
+            + '<p>Crée un compte gratuit pour suivre ta progression, garder ta série de révision, et tester ce que tu viens d\'apprendre.</p>'
+            + '<a class="btn btn-dark" href="inscription.html">Créer un compte <span>→</span></a>'
+            + '</div>';
+        }
+      } catch (e) { /* ignore */ }
+    }
+
     zone.innerHTML =
       '<div class="lecture-head">'
       + '<span class="lh-num">' + esc(l.matiere) + ' · Leçon ' + (l.ordre || 1) + '</span>'
@@ -62,6 +77,7 @@
             + '<a class="btn btn-dark" href="' + esc(l.pdf_url) + '" target="_blank" rel="noopener" download>Télécharger le PDF <span>→</span></a></div>'
           : '')
       + quizBtn
+      + communauteBtn
       + '<div class="lecture-nav"><a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="' + retour + '">← Toutes les leçons de ' + esc(l.matiere) + '</a></div>';
   })();
 })();

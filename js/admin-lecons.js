@@ -42,6 +42,78 @@
   // ---------- Éditeur riche ----------
   const rte = $("leContenu");
   const toolbar = $("rteToolbar");
+
+  // ---------- Import "en fiches" (texte structuré -> HTML en cartes) ----------
+  if ($("leVoirFormat")) $("leVoirFormat").addEventListener("click", e => {
+    e.preventDefault();
+    const ex = $("leExempleFormat");
+    ex.style.display = ex.style.display === "none" ? "block" : "none";
+  });
+
+  function texteVersHtmlSimple(txt) {
+    const paragraphes = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    return paragraphes.map(p => {
+      const lignes = p.split("\n").map(l => l.trim()).filter(Boolean);
+      if (lignes.length && lignes.every(l => /^[-*]\s+/.test(l))) {
+        return "<ul>" + lignes.map(l => "<li>" + esc(l.replace(/^[-*]\s+/, "")) + "</li>").join("") + "</ul>";
+      }
+      return "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>";
+    }).join("\n");
+  }
+
+  function parseLeconEnFiches(texte) {
+    const marqueur = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/im;
+    const avant = texte.split(marqueur)[0];
+    const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
+    const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
+    if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
+
+    const regexFiches = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
+    const matches = [...texte.matchAll(regexFiches)];
+    if (!matches.length) throw new Error('Aucune fiche trouvée (marqueur "===FICHE: Titre===" manquant).');
+
+    const fiches = [];
+    for (let i = 0; i < matches.length; i++) {
+      const debut = matches[i].index + matches[i][0].length;
+      const fin = (i + 1 < matches.length) ? matches[i + 1].index : texte.length;
+      const contenuBrut = texte.slice(debut, fin).trim();
+      if (!contenuBrut) continue;
+      fiches.push({ titre: matches[i][1].trim() || ("Fiche " + (fiches.length + 1)), contenu: contenuBrut });
+    }
+    if (!fiches.length) throw new Error("Aucune fiche avec du contenu.");
+
+    const html = fiches.map((f, i) =>
+      '<div class="fiche"><span class="fiche-num">Fiche ' + (i + 1) + ' / ' + fiches.length + '</span>'
+      + '<h3>' + esc(f.titre) + '</h3>'
+      + texteVersHtmlSimple(f.contenu)
+      + '</div>'
+    ).join("\n");
+
+    return {
+      titre: titreMatch[1].trim(),
+      apercu: apercuMatch ? apercuMatch[1].trim() : "",
+      html,
+      nbFiches: fiches.length
+    };
+  }
+
+  if ($("leImporterFiches")) $("leImporterFiches").addEventListener("click", () => {
+    const txt = ($("leTexteImport").value || "").trim();
+    if (!txt) { statusL("Colle d'abord ta leçon en fiches.", "err"); return; }
+    let resultat;
+    try {
+      resultat = parseLeconEnFiches(txt);
+    } catch (e) {
+      statusL("Erreur de format : " + e.message, "err");
+      return;
+    }
+    $("leTitre").value = resultat.titre;
+    $("leApercu").value = resultat.apercu;
+    rte.innerHTML = resultat.html;
+    statusL(resultat.nbFiches + " fiche(s) importée(s) dans le contenu. Vérifie, puis publie normalement.", "ok");
+    $("leTexteImport").value = "";
+  });
+
   if (toolbar && rte) {
     toolbar.querySelectorAll("button").forEach(b => {
       b.addEventListener("mousedown", e => e.preventDefault()); // garder le focus

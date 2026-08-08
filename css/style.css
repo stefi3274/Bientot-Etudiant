@@ -462,6 +462,17 @@ body[data-filiere="f3"] .lc-go{color:var(--f3-d)}
 .lecture-corps ul,.lecture-corps ol{margin:0 0 16px 24px}
 .lecture-corps li{margin-bottom:6px}
 .lecture-corps img{max-width:100%;border-radius:10px;margin:16px 0}
+
+/* Leçon en fiches */
+.lecture-corps .fiche{background:var(--craie);border:1px solid var(--craie-2);border-left-width:4px;
+  border-left-color:var(--ardoise);border-radius:14px;padding:24px 26px;margin-bottom:20px}
+body[data-filiere="f1"] .lecture-corps .fiche{border-left-color:var(--f1)}
+body[data-filiere="f2"] .lecture-corps .fiche{border-left-color:var(--f2)}
+body[data-filiere="f3"] .lecture-corps .fiche{border-left-color:var(--f3)}
+.lecture-corps .fiche-num{display:block;font-size:.78rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ocre-d);margin-bottom:6px}
+.lecture-corps .fiche h3{margin-top:0}
+.lecture-corps .fiche:last-child{margin-bottom:0}
 .lecture-pdf{margin-top:32px;padding:20px 24px;background:var(--craie-2);border-radius:14px;
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .lecture-pdf b{color:var(--encre)}
@@ -643,6 +654,11 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
 .lqc-txt b{font-family:var(--serif);font-size:1.35rem;color:var(--craie)}
 .lqc-meta{font-size:.88rem;color:rgba(247,244,236,.7)}
 .lecon-quiz-cta .btn-dark{background:var(--ocre);color:var(--ardoise)}
+
+.lecon-communaute{background:var(--craie2,#ede8da);border:1px solid var(--craie-2);border-radius:16px;
+  padding:24px 28px;margin-top:20px;text-align:center}
+.lecon-communaute b{display:block;font-family:var(--serif);font-size:1.3rem;margin-bottom:6px}
+.lecon-communaute p{color:var(--encre-2);margin-bottom:16px;font-size:.95rem}
 
 /* Partage du score */
 .partage{margin:24px 0 8px;padding:18px;background:var(--craie);border:1px solid var(--craie-2);border-radius:14px}

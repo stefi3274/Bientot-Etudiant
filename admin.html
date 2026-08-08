@@ -161,6 +161,33 @@
             <input type="text" id="leApercu" placeholder="En une phrase, de quoi parle cette leçon ?">
           </div>
           <div class="le-field">
+            <label>Coller la leçon en fiches (format ci-dessous) — <a href="#" id="leVoirFormat">voir un exemple</a></label>
+            <pre id="leExempleFormat" style="display:none;background:var(--craie-2);padding:14px;border-radius:10px;font-size:.82rem;white-space:pre-wrap;margin-bottom:10px">TITRE: La conscience
+APERCU: Une phrase qui résume la leçon
+---
+===FICHE: Qu'est-ce que la conscience ?===
+Contenu court de cette 1ère fiche, quelques phrases.
+
+===FICHE: Conscience psychologique vs morale===
+Contenu de la 2e fiche.
+
+===FICHE: Le cogito de Descartes===
+Contenu de la 3e fiche.
+
+(... jusqu'à 10 fiches, chacune avec son propre ===FICHE: Titre===)</pre>
+            <textarea id="leTexteImport" rows="14" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:ui-monospace,monospace;font-size:.88rem" placeholder="TITRE: ...
+APERCU: ...
+---
+===FICHE: Titre de la fiche 1===
+Contenu...
+
+===FICHE: Titre de la fiche 2===
+Contenu..."></textarea>
+            <button type="button" class="btn btn-ghost" id="leImporterFiches" style="color:var(--encre);border-color:var(--craie-2);margin-top:10px">Importer en fiches <span>→</span></button>
+            <p class="qz-hint">Remplit le titre, l'aperçu et le contenu ci-dessous (en fiches). Vérifie, puis publie normalement.</p>
+          </div>
+
+          <div class="le-field">
             <label>Contenu de la leçon</label>
             <div class="rte-toolbar" id="rteToolbar">
               <button type="button" data-cmd="bold" title="Gras"><b>B</b></button>
@@ -353,6 +380,23 @@ Réponse: B"></textarea>
               </div>
               <button class="btn btn-ghost" id="caPostCopier" style="color:var(--encre);border-color:var(--craie-2)">Copier le texte <span>→</span></button>
             </div>
+          </div>
+        </div>
+
+        <div class="lecon-editor">
+          <h2>Carousel TikTok depuis une leçon</h2>
+          <p class="qz-hint" style="margin-bottom:14px">Fonctionne uniquement pour les leçons publiées en fiches (voir l'onglet Leçons → "Coller la leçon en fiches").</p>
+          <div class="status-msg" id="calMsg"></div>
+          <div class="le-field">
+            <label>Leçon à transformer en carousel</label>
+            <select id="calLecon"><option value="">— Choisir une leçon —</option></select>
+          </div>
+          <button class="btn btn-dark" id="calGenerer">Générer les slides <span>→</span></button>
+
+          <div id="calApercu" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--craie-2)">
+            <h3 style="font-family:var(--serif);margin-bottom:12px">Aperçu (1080×1080, 12 slides max)</h3>
+            <div id="calSlides" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px"></div>
+            <button class="btn btn-ghost" id="calTelecharger" style="color:var(--encre);border-color:var(--craie-2)">Télécharger le zip <span>→</span></button>
           </div>
         </div>
       </div>
