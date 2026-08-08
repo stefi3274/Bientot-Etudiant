@@ -82,12 +82,14 @@
     }
     if (!fiches.length) throw new Error("Aucune fiche avec du contenu.");
 
-    const html = fiches.map((f, i) =>
-      '<div class="fiche"><span class="fiche-num">Fiche ' + (i + 1) + ' / ' + fiches.length + '</span>'
+    const cartes = fiches.map((f, i) =>
+      '<div class="fiche"><span class="fiche-num">' + (i + 1) + ' / ' + fiches.length + '</span>'
       + '<h3>' + esc(f.titre) + '</h3>'
       + texteVersHtmlSimple(f.contenu)
       + '</div>'
     ).join("\n");
+    const html = '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p>'
+      + '<div class="fiches-carousel">' + cartes + '</div>';
 
     return {
       titre: titreMatch[1].trim(),

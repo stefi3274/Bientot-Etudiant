@@ -31,16 +31,41 @@
   // ---------- Parsing du texte structuré ----------
   function escHtml(s) { return (s || "").replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c])); }
 
-  function texteVersHtml(txt) {
+  function texteVersHtmlSimple(txt) {
     const paragraphes = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     return paragraphes.map(p => {
       const lignes = p.split("\n").map(l => l.trim()).filter(Boolean);
       if (lignes.length && lignes.every(l => /^[-*]\s+/.test(l))) {
         return "<ul>" + lignes.map(l => "<li>" + escHtml(l.replace(/^[-*]\s+/, "")) + "</li>").join("") + "</ul>";
       }
-      if (/^##\s+/.test(p)) return "<h3>" + escHtml(p.replace(/^##\s+/, "")) + "</h3>";
       return "<p>" + escHtml(p).replace(/\n/g, "<br>") + "</p>";
     }).join("\n");
+  }
+
+  // Convertit le contenu en fiches (cartes) — même logique que l'onglet Leçons
+  function contenuVersFiches(txt) {
+    const regexFiches = /^\s*===\s*FICHE\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
+    const matches = [...txt.matchAll(regexFiches)];
+    if (!matches.length) {
+      // Pas de marqueur ===FICHE:...=== : on garde l'ancien rendu simple (rétrocompatible)
+      return texteVersHtmlSimple(txt);
+    }
+    const fiches = [];
+    for (let i = 0; i < matches.length; i++) {
+      const debut = matches[i].index + matches[i][0].length;
+      const fin = (i + 1 < matches.length) ? matches[i + 1].index : txt.length;
+      const contenuBrut = txt.slice(debut, fin).trim();
+      if (!contenuBrut) continue;
+      fiches.push({ titre: matches[i][1].trim() || ("Fiche " + (fiches.length + 1)), contenu: contenuBrut });
+    }
+    const cartes = fiches.map((f, i) =>
+      '<div class="fiche"><span class="fiche-num">' + (i + 1) + ' / ' + fiches.length + '</span>'
+      + '<h3>' + escHtml(f.titre) + '</h3>'
+      + texteVersHtmlSimple(f.contenu)
+      + '</div>'
+    ).join("\n");
+    return '<p class="fiches-hint">👉 Fais glisser pour voir toutes les fiches</p>'
+      + '<div class="fiches-carousel">' + cartes + '</div>';
   }
 
   function parseQuestions(txt) {
@@ -92,7 +117,7 @@
     return {
       titre: titreMatch[1].trim(),
       apercu: apercuMatch ? apercuMatch[1].trim() : "",
-      contenu_html: texteVersHtml(contenuBrut.trim()),
+      contenu_html: contenuVersFiches(contenuBrut.trim()),
       questions
     };
   }
