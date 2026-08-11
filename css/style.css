@@ -289,17 +289,21 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .btn-stat small{flex-basis:100%;text-align:center;font-size:.72rem;font-weight:500;opacity:.75}
 
 /* Quiz Libre : bleu ; Quiz à Gogo : orange feu — distincts entre eux et du bouton principal ocre */
-.btn-libre{background:rgba(74,144,196,.14);color:var(--craie);border:1.5px solid rgba(74,144,196,.55)}
-.btn-libre:hover{background:rgba(74,144,196,.24)}
-.btn-gogo{background:rgba(224,120,74,.16);color:var(--craie);border:1.5px solid rgba(224,120,74,.6)}
-.btn-gogo:hover{background:rgba(224,120,74,.26)}
+/* Quiz Libre : bleu vif plein ; Quiz à Gogo : orange feu plein — distincts entre eux et du bouton principal ocre */
+.btn-libre{background:linear-gradient(135deg,#5aa3dc,#2c6e8f);color:#fff;border:1.5px solid rgba(255,255,255,.25);
+  box-shadow:0 10px 26px -8px rgba(44,110,143,.65),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn-libre:hover{background:linear-gradient(135deg,#6bb0e8,#357c9e);box-shadow:0 14px 32px -8px rgba(44,110,143,.75),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-gogo{background:linear-gradient(135deg,#f3925a,#d9622a);color:#fff;border:1.5px solid rgba(255,255,255,.25);
+  box-shadow:0 10px 26px -8px rgba(217,98,42,.65),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn-gogo:hover{background:linear-gradient(135deg,#f6a06c,#e37136);box-shadow:0 14px 32px -8px rgba(217,98,42,.75),inset 0 1px 0 rgba(255,255,255,.25)}
 
-/* Petit splash qui invite à cliquer, posé sur le coin du bouton */
-.btn-splash{position:absolute;top:-14px;right:10px;background:var(--ocre);color:var(--ardoise);
-  font-size:.68rem;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;
-  box-shadow:0 4px 10px rgba(0,0,0,.25);animation:splash-bounce 1.8s ease-in-out infinite}
+/* Petit splash qui invite à cliquer, posé sous le bouton, centré */
+.hero-stats-actions{gap:36px}
+.btn-splash{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);background:var(--ocre);color:var(--ardoise);
+  font-size:.7rem;font-weight:800;padding:5px 13px;border-radius:20px;white-space:nowrap;
+  box-shadow:0 5px 12px rgba(0,0,0,.3);animation:splash-bounce 1.8s ease-in-out infinite}
 .btn-splash-gogo{background:#e0784a;color:#fff}
-@keyframes splash-bounce{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+@keyframes splash-bounce{0%,100%{transform:translateX(-50%) translateY(0) rotate(-3deg)}50%{transform:translateX(-50%) translateY(-4px) rotate(2deg)}}
 
 /* Mouvement discret sur les boutons qui invitent à l'action (faire le quiz,
    créer un compte, quiz à gogo) — respecte prefers-reduced-motion automatiquement */
