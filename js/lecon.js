@@ -35,18 +35,21 @@
 
     const retour = 'matiere.html?f=' + l.filiere + '&m=' + encodeURIComponent(l.matiere);
 
-    // Chercher un quiz rattaché à cette leçon
+    // Chercher le(s) quiz rattaché(s) à cette leçon — peut y en avoir plusieurs
     let quizBtn = "";
-    const { data: qz } = await DB.from("quiz").select("id, titre, duree_sec, questions(count)")
-      .eq("lecon_id", l.id).eq("publie", true).maybeSingle();
-    if (qz) {
-      const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
-      quizBtn = '<div class="lecon-quiz-cta">'
-        + '<div class="lqc-txt"><span class="lqc-kick">Teste-toi</span>'
-        + '<b>' + esc(qz.titre) + '</b>'
-        + '<span class="lqc-meta">' + nbQ + ' questions · ' + Math.round(qz.duree_sec/60) + ' min chronométrées</span></div>'
-        + '<a class="btn btn-dark btn-pulse" href="quiz.html?id=' + qz.id + '">Passer le quiz <span>→</span></a>'
-        + '</div>';
+    const { data: quizListe } = await DB.from("quiz").select("id, titre, duree_sec, questions(count)")
+      .eq("lecon_id", l.id).eq("publie", true).order("created_at", { ascending: true });
+    const qzListe = quizListe || [];
+    if (qzListe.length) {
+      quizBtn = qzListe.map((qz, i) => {
+        const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
+        return '<div class="lecon-quiz-cta">'
+          + '<div class="lqc-txt"><span class="lqc-kick">' + (qzListe.length > 1 ? "Teste-toi · " + (i+1) + "/" + qzListe.length : "Teste-toi") + '</span>'
+          + '<b>' + esc(qz.titre) + '</b>'
+          + '<span class="lqc-meta">' + nbQ + ' questions · ' + Math.round(qz.duree_sec/60) + ' min chronométrées</span></div>'
+          + '<a class="btn btn-dark btn-pulse" href="quiz.html?id=' + qz.id + '">Passer le quiz <span>→</span></a>'
+          + '</div>';
+      }).join("");
     }
 
     // Bloc "Rejoins la communauté" pour les invités (page de fin, comme le carousel)
@@ -80,22 +83,24 @@
       + communauteBtn
       + '<div class="lecture-nav"><a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="' + retour + '">← Toutes les leçons de ' + esc(l.matiere) + '</a></div>';
 
-    // Si la leçon est en fiches ET qu'un quiz y est rattaché : ajouter une vraie
-    // carte-action "Passer le quiz" à la toute fin du carousel glissant.
-    if (qz) {
+    // Si la leçon est en fiches ET qu'un/des quiz y sont rattachés : ajouter une vraie
+    // carte-action "Passer le quiz" (une par quiz) à la toute fin du carousel glissant.
+    if (qzListe.length) {
       const carousel = zone.querySelector(".fiches-carousel");
       if (carousel) {
-        const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
-        const carteQuiz = document.createElement("a");
-        carteQuiz.href = "quiz.html?id=" + qz.id;
-        carteQuiz.className = "fiche fiche-quiz-cta";
-        carteQuiz.innerHTML =
-          '<span class="fiche-num">✓</span>'
-          + '<h3>Teste-toi maintenant</h3>'
-          + '<p>' + esc(qz.titre) + '</p>'
-          + '<p style="font-size:.85rem;opacity:.75">' + nbQ + ' questions · ' + Math.round(qz.duree_sec / 60) + ' min chronométrées</p>'
-          + '<span class="btn btn-dark btn-pulse" style="margin-top:14px">Passer le quiz <span>→</span></span>';
-        carousel.appendChild(carteQuiz);
+        qzListe.forEach((qz, i) => {
+          const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
+          const carteQuiz = document.createElement("a");
+          carteQuiz.href = "quiz.html?id=" + qz.id;
+          carteQuiz.className = "fiche fiche-quiz-cta";
+          carteQuiz.innerHTML =
+            '<span class="fiche-num">✓</span>'
+            + '<h3>' + (qzListe.length > 1 ? "Teste-toi · Quiz " + (i + 1) : "Teste-toi maintenant") + '</h3>'
+            + '<p>' + esc(qz.titre) + '</p>'
+            + '<p style="font-size:.85rem;opacity:.75">' + nbQ + ' questions · ' + Math.round(qz.duree_sec / 60) + ' min chronométrées</p>'
+            + '<span class="btn btn-dark btn-pulse" style="margin-top:14px">Passer le quiz <span>→</span></span>';
+          carousel.appendChild(carteQuiz);
+        });
       }
     }
   })();

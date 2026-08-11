@@ -111,7 +111,7 @@
   // Si un bloc ===QUIZ=== traîne dans le texte (l'onglet Leçons ne crée pas de quiz),
   // il est ignoré et jamais mélangé à une fiche.
   function fichesVersCarouselHtml(texte, titre, apercu) {
-    const idxQuiz = texte.search(/^\s*===\s*QUIZ\s*===\s*$/im);
+    const idxQuiz = texte.search(/^\s*===\s*QUIZ[^\n=]*===\s*$/im);
     const quizDetecte = idxQuiz >= 0;
     const texteUtile = quizDetecte ? texte.slice(0, idxQuiz) : texte;
 

@@ -110,31 +110,32 @@
     const couleur = couleurMatiere(quiz.matiere);
     fondCommun(ctx, couleur);
 
-    ctx.font = "800 23px Inter, system-ui, sans-serif";
+    ctx.font = "800 24px Inter, system-ui, sans-serif";
     ctx.fillStyle = NOIR;
     ctx.fillText("CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 64, 108);
 
-    pastille(ctx, FILIERES[quiz.filiere] || quiz.filiere || "", 64, 140, 21);
-    pastille(ctx, quiz.matiere || "", 64, 200, 21);
+    pastille(ctx, FILIERES[quiz.filiere] || quiz.filiere || "", 64, 142, 22);
+    pastille(ctx, quiz.matiere || "", 64, 204, 22);
 
     ctx.fillStyle = NOIR;
-    ctx.font = "800 72px Fraunces, Georgia, serif";
+    ctx.font = "800 80px Fraunces, Georgia, serif";
     const lignesTitre = decouperTexte(ctx, quiz.titre, T - 128);
-    let y = 400;
-    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 80; });
+    let y = 410;
+    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 88; });
 
-    pastille(ctx, nbQ + " questions", 64, y + 40, 24);
+    pastille(ctx, nbQ + " questions", 64, y + 44, 26);
+    const finContenu = y + 44 + 74;
 
-    // Message d'appel à l'action (lien en bio)
-    const cta_y = T - 260;
+    // Message d'appel à l'action (lien en bio) — remonte si le titre est court, jamais plus bas que la zone sûre
+    const cta_y = Math.min(finContenu + 50, T - 250);
     ctx.fillStyle = BLANC;
-    rr(ctx, 64, cta_y, T - 128, 118, 20); ctx.fill();
-    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 118, 20); ctx.stroke();
+    rr(ctx, 64, cta_y, T - 128, 126, 22); ctx.fill();
+    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 126, 22); ctx.stroke();
     ctx.fillStyle = NOIR;
     ctx.textAlign = "center";
-    ctx.font = "800 30px Inter, system-ui, sans-serif";
-    ctx.fillText("Pour plus de quiz,", T / 2, cta_y + 46);
-    ctx.fillText("clique sur le lien en bio 👆", T / 2, cta_y + 86);
+    ctx.font = "800 32px Inter, system-ui, sans-serif";
+    ctx.fillText("Pour plus de quiz,", T / 2, cta_y + 50);
+    ctx.fillText("clique sur le lien en bio 👆", T / 2, cta_y + 92);
     ctx.textAlign = "left";
 
     piedDePage(ctx);
@@ -148,30 +149,35 @@
     const couleur = couleurMatiere(matiere);
     fondCommun(ctx, couleur);
 
-    const wPastille = pastille(ctx, "QUESTION " + index + " / " + total, 64, 66, 22);
-    pastille(ctx, matiere || "", 64 + wPastille + 12, 66, 22);
+    const wPastille = pastille(ctx, "QUESTION " + index + " / " + total, 64, 64, 23);
+    pastille(ctx, matiere || "", 64 + wPastille + 12, 64, 23);
 
     ctx.fillStyle = NOIR;
-    ctx.font = "800 54px Fraunces, Georgia, serif";
+    ctx.font = "800 60px Fraunces, Georgia, serif";
     const lignes = decouperTexte(ctx, q.enonce, T - 128);
-    let y = 230;
-    lignes.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 62; });
+    let y = 220;
+    lignes.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 68; });
 
-    // Zone des choix : position fixe pour garantir zéro débordement, quelle que soit la longueur de l'énoncé
+    // Zone des choix : quatre rangées pleine largeur qui s'étirent jusqu'au pied de page —
+    // presque plus d'espace vide en bas, tout en restant sûr contre le débordement.
     const choix = [["A", q.choix_a], ["B", q.choix_b], ["C", q.choix_c], ["D", q.choix_d]];
-    const rowH = 112, startY = 500;
-    ctx.font = "700 32px Inter, system-ui, sans-serif";
+    const startY = Math.min(y + 60, 470);
+    const zoneBas = T - 130; // juste au-dessus du pied de page
+    const rowGap = 14;
+    const rowH = (zoneBas - startY) / 4;
+    ctx.font = "700 36px Inter, system-ui, sans-serif";
     choix.forEach(([lettre, texte], i) => {
       const ry = startY + i * rowH;
+      const hBox = rowH - rowGap;
       ctx.fillStyle = BLANC;
-      rr(ctx, 64, ry, T - 128, rowH - 14, 16); ctx.fill();
+      rr(ctx, 64, ry, T - 128, hBox, 18); ctx.fill();
 
-      badgeLettre(ctx, 110, ry + (rowH - 14) / 2, 27, lettre);
+      badgeLettre(ctx, 114, ry + hBox / 2, 30, lettre);
 
       ctx.fillStyle = NOIR;
-      const ligneTxt = decouperTexte(ctx, texte || "", T - 128 - 130);
+      const ligneTxt = decouperTexte(ctx, texte || "", T - 128 - 140);
       ctx.textBaseline = "middle";
-      ctx.fillText(ligneTxt[0] || "", 158, ry + (rowH - 14) / 2 + 1);
+      ctx.fillText(ligneTxt[0] || "", 166, ry + hBox / 2 + 1);
       ctx.textBaseline = "alphabetic";
     });
 
@@ -186,34 +192,37 @@
     const couleur = couleurMatiere(matiere);
     fondCommun(ctx, couleur);
 
-    pastille(ctx, "CORRIGÉ", 64, 66, 22);
+    pastille(ctx, "CORRIGÉ", 64, 64, 23);
     ctx.fillStyle = NOIR;
-    ctx.font = "800 60px Fraunces, Georgia, serif";
-    ctx.fillText("Tu as tout bon ?", 64, 220);
+    ctx.font = "800 64px Fraunces, Georgia, serif";
+    ctx.fillText("Tu as tout bon ?", 64, 228);
 
     const parCol = Math.ceil(questions.length / 2);
-    const colW = (T - 128 - 30) / 2;
-    ctx.font = "700 30px Inter, system-ui, sans-serif";
+    const colW = (T - 128 - 32) / 2;
+    const startY = 320, zoneBas = T - 300;
+    const rowH = (zoneBas - startY) / parCol;
+    ctx.font = "700 32px Inter, system-ui, sans-serif";
     questions.forEach((q, i) => {
       const col = i < parCol ? 0 : 1;
       const ligne = i < parCol ? i : i - parCol;
-      const x = 64 + col * (colW + 30);
-      const yy = 300 + ligne * 84;
-      badgeLettre(ctx, x + 28, yy, 26, (q.bonne || "").toUpperCase());
+      const x = 64 + col * (colW + 32);
+      const yy = startY + ligne * rowH;
+      badgeLettre(ctx, x + 30, yy, 28, (q.bonne || "").toUpperCase());
       ctx.fillStyle = NOIR;
       ctx.textBaseline = "middle";
-      ctx.fillText("Question " + (i + 1), x + 72, yy + 1);
+      ctx.fillText("Question " + (i + 1), x + 76, yy + 1);
       ctx.textBaseline = "alphabetic";
     });
 
-    const cta_y = T - 230;
+    const cta_y = T - 250;
     ctx.fillStyle = BLANC;
-    rr(ctx, 64, cta_y, T - 128, 100, 20); ctx.fill();
-    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 100, 20); ctx.stroke();
+    rr(ctx, 64, cta_y, T - 128, 116, 22); ctx.fill();
+    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 116, 22); ctx.stroke();
     ctx.fillStyle = NOIR;
     ctx.textAlign = "center";
-    ctx.font = "800 28px Inter, system-ui, sans-serif";
-    ctx.fillText("Pour le quiz complet, lien en bio 👆", T / 2, cta_y + 58);
+    ctx.font = "800 30px Inter, system-ui, sans-serif";
+    ctx.fillText("Pour le quiz complet,", T / 2, cta_y + 46);
+    ctx.fillText("lien en bio 👆", T / 2, cta_y + 86);
     ctx.textAlign = "left";
 
     piedDePage(ctx);
@@ -415,37 +424,38 @@
     const couleur = couleurMatiere(lecon.matiere);
     fondCommun(ctx, couleur);
 
-    ctx.font = "800 23px Inter, system-ui, sans-serif";
+    ctx.font = "800 24px Inter, system-ui, sans-serif";
     ctx.fillStyle = NOIR;
     ctx.fillText("LEÇON · CONCOURS D'ENTRÉE", 64, 108);
 
-    pastille(ctx, FILIERES[lecon.filiere] || lecon.filiere || "", 64, 140, 21);
-    pastille(ctx, lecon.matiere || "", 64, 200, 21);
+    pastille(ctx, FILIERES[lecon.filiere] || lecon.filiere || "", 64, 142, 22);
+    pastille(ctx, lecon.matiere || "", 64, 204, 22);
 
     ctx.fillStyle = NOIR;
-    ctx.font = "800 68px Fraunces, Georgia, serif";
+    ctx.font = "800 76px Fraunces, Georgia, serif";
     const lignesTitre = decouperTexte(ctx, lecon.titre, T - 128);
-    let y = 390;
-    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 76; });
+    let y = 400;
+    lignesTitre.slice(0, 4).forEach(l => { ctx.fillText(l, 64, y); y += 84; });
 
     if (lecon.apercu) {
-      ctx.font = "600 28px Inter, system-ui, sans-serif";
+      ctx.font = "600 30px Inter, system-ui, sans-serif";
       ctx.fillStyle = "rgba(22,22,22,.8)";
       const lignesAp = decouperTexte(ctx, lecon.apercu, T - 128);
-      lignesAp.slice(0, 2).forEach(l => { ctx.fillText(l, 64, y + 10); y += 38; });
+      lignesAp.slice(0, 3).forEach(l => { ctx.fillText(l, 64, y + 12); y += 42; });
     }
 
-    pastille(ctx, nbFiches + " fiches à réviser", 64, y + 30, 22);
+    pastille(ctx, nbFiches + " fiches à réviser", 64, y + 34, 24);
+    const finContenu = y + 34 + 76;
 
-    const cta_y = T - 260;
+    const cta_y = Math.min(finContenu + 46, T - 250);
     ctx.fillStyle = BLANC;
-    rr(ctx, 64, cta_y, T - 128, 118, 20); ctx.fill();
-    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 118, 20); ctx.stroke();
+    rr(ctx, 64, cta_y, T - 128, 126, 22); ctx.fill();
+    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 126, 22); ctx.stroke();
     ctx.fillStyle = NOIR;
     ctx.textAlign = "center";
-    ctx.font = "800 30px Inter, system-ui, sans-serif";
-    ctx.fillText("Pour plus de leçons,", T / 2, cta_y + 46);
-    ctx.fillText("clique sur le lien en bio 👆", T / 2, cta_y + 86);
+    ctx.font = "800 32px Inter, system-ui, sans-serif";
+    ctx.fillText("Pour plus de leçons,", T / 2, cta_y + 50);
+    ctx.fillText("clique sur le lien en bio 👆", T / 2, cta_y + 92);
     ctx.textAlign = "left";
 
     piedDePage(ctx);
@@ -458,25 +468,25 @@
     const couleur = couleurMatiere(matiere);
     fondCommun(ctx, couleur);
 
-    const wPastille = pastille(ctx, "FICHE " + index + " / " + total, 64, 66, 22);
-    pastille(ctx, matiere || "", 64 + wPastille + 12, 66, 22);
+    const wPastille = pastille(ctx, "FICHE " + index + " / " + total, 64, 64, 23);
+    pastille(ctx, matiere || "", 64 + wPastille + 12, 64, 23);
 
     ctx.fillStyle = NOIR;
-    ctx.font = "800 46px Fraunces, Georgia, serif";
+    ctx.font = "800 52px Fraunces, Georgia, serif";
     const lignesTitre = decouperTexte(ctx, fiche.titre, T - 128);
-    let y = 240;
-    lignesTitre.slice(0, 3).forEach(l => { ctx.fillText(l, 64, y); y += 54; });
+    let y = 232;
+    lignesTitre.slice(0, 3).forEach(l => { ctx.fillText(l, 64, y); y += 60; });
 
     ctx.fillStyle = BLANC;
-    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 18); ctx.fill();
+    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 20); ctx.fill();
     ctx.strokeStyle = "rgba(22,22,22,.15)"; ctx.lineWidth = 1.5;
-    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 18); ctx.stroke();
+    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 20); ctx.stroke();
 
     ctx.fillStyle = NOIR;
-    ctx.font = "500 30px Inter, system-ui, sans-serif";
-    const lignesTexte = decouperTexte(ctx, fiche.texte, T - 128 - 64);
-    let ty = y + 68;
-    lignesTexte.slice(0, 8).forEach(l => { ctx.fillText(l, 96, ty); ty += 40; });
+    ctx.font = "500 34px Inter, system-ui, sans-serif";
+    const lignesTexte = decouperTexte(ctx, fiche.texte, T - 128 - 72);
+    let ty = y + 76;
+    lignesTexte.slice(0, 8).forEach(l => { ctx.fillText(l, 100, ty); ty += 46; });
 
     piedDePage(ctx);
     return cv;
@@ -488,36 +498,36 @@
     const couleur = couleurMatiere(lecon.matiere);
     fondCommun(ctx, couleur);
 
-    pastille(ctx, "REJOINS-NOUS", 64, 90, 22);
+    pastille(ctx, "REJOINS-NOUS", 64, 88, 23);
 
     ctx.fillStyle = NOIR;
-    ctx.font = "800 58px Fraunces, Georgia, serif";
-    let y = 260;
-    ["Rejoins la", "communauté !"].forEach(l => { ctx.fillText(l, 64, y); y += 66; });
+    ctx.font = "800 64px Fraunces, Georgia, serif";
+    let y = 268;
+    ["Rejoins la", "communauté !"].forEach(l => { ctx.fillText(l, 64, y); y += 72; });
 
-    ctx.font = "600 28px Inter, system-ui, sans-serif";
+    ctx.font = "600 31px Inter, system-ui, sans-serif";
     ctx.fillStyle = "rgba(22,22,22,.85)";
     const lignes = decouperTexte(ctx, "Crée un compte gratuit pour suivre ta progression, garder ta série de révision, et tester ce que tu viens d'apprendre.", T - 128);
-    y += 24;
-    lignes.forEach(l => { ctx.fillText(l, 64, y); y += 38; });
+    y += 30;
+    lignes.forEach(l => { ctx.fillText(l, 64, y); y += 42; });
 
-    const cta_y = T - 300;
+    const cta_y = T - 310;
     ctx.fillStyle = BLANC;
-    rr(ctx, 64, cta_y, T - 128, 100, 20); ctx.fill();
-    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 100, 20); ctx.stroke();
+    rr(ctx, 64, cta_y, T - 128, 110, 22); ctx.fill();
+    ctx.strokeStyle = NOIR; ctx.lineWidth = 2; rr(ctx, 64, cta_y, T - 128, 110, 22); ctx.stroke();
     ctx.fillStyle = NOIR;
     ctx.textAlign = "center";
-    ctx.font = "800 28px Inter, system-ui, sans-serif";
-    ctx.fillText("Fais le quiz de cette leçon 👉", T / 2, cta_y + 58);
+    ctx.font = "800 30px Inter, system-ui, sans-serif";
+    ctx.fillText("Fais le quiz de cette leçon 👉", T / 2, cta_y + 64);
     ctx.textAlign = "left";
 
     const cta2_y = T - 180;
     ctx.fillStyle = NOIR;
-    rr(ctx, 64, cta2_y, T - 128, 90, 20); ctx.fill();
+    rr(ctx, 64, cta2_y, T - 128, 100, 22); ctx.fill();
     ctx.fillStyle = BLANC;
     ctx.textAlign = "center";
-    ctx.font = "800 26px Inter, system-ui, sans-serif";
-    ctx.fillText("Lien dans la bio 👆", T / 2, cta2_y + 52);
+    ctx.font = "800 28px Inter, system-ui, sans-serif";
+    ctx.fillText("Lien dans la bio 👆", T / 2, cta2_y + 58);
     ctx.textAlign = "left";
 
     piedDePage(ctx);

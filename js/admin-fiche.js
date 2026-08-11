@@ -123,11 +123,31 @@
     return questions;
   }
 
+  // Détecte un ou plusieurs marqueurs ===QUIZ...=== (===QUIZ===, ===QUIZ 1===, ===QUIZ: Titre===...)
+  // et découpe le texte en autant de groupes de questions.
+  function detecterGroupesQuiz(texteApres) {
+    const regex = /^\s*===\s*QUIZ\s*:?\s*([^\n=]*?)\s*===\s*$/gim;
+    const matches = [...texteApres.matchAll(regex)];
+    if (!matches.length) return [{ sousTitre: "", texte: texteApres.trim() }];
+    const groupes = [];
+    for (let i = 0; i < matches.length; i++) {
+      const debut = matches[i].index + matches[i][0].length;
+      const fin = (i + 1 < matches.length) ? matches[i + 1].index : texteApres.length;
+      const morceau = texteApres.slice(debut, fin).trim();
+      if (!morceau) continue;
+      let sousTitre = matches[i][1].trim();
+      if (/^\d+$/.test(sousTitre)) sousTitre = "Quiz " + sousTitre;
+      if (!sousTitre) sousTitre = "Quiz " + (groupes.length + 1);
+      groupes.push({ sousTitre, texte: morceau });
+    }
+    return groupes;
+  }
+
   function parseUneLecon(bloc) {
-    const idxQuiz = bloc.search(/^===QUIZ===$/im);
+    const idxQuiz = bloc.search(/^\s*===\s*QUIZ[^\n=]*===\s*$/im);
     if (idxQuiz < 0) throw new Error("Marqueur ===QUIZ=== manquant.");
     const avant = bloc.slice(0, idxQuiz);
-    const apres = bloc.slice(idxQuiz).replace(/^===QUIZ===$/im, "").trim();
+    const apres = bloc.slice(idxQuiz);
 
     const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
     const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
@@ -138,15 +158,19 @@
     if (idxSep >= 0) contenuBrut = avant.slice(idxSep + 3);
     else contenuBrut = avant.replace(/^TITRE\s*:.*$/im, "").replace(/^APERCU\s*:.*$/im, "");
 
-    const questions = parseQuestions(apres);
-    if (!questions.length) throw new Error('Aucune question trouvée après "===QUIZ===" pour la leçon "' + titreMatch[1].trim() + '".');
-    questions.forEach((q, i) => {
-      if (!q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d) {
-        throw new Error("Question " + (i + 1) + ' de "' + titreMatch[1].trim() + '" : il manque un choix A/B/C/D (format "A) ...").');
-      }
+    const titre = titreMatch[1].trim();
+    const groupesQuiz = detecterGroupesQuiz(apres);
+    const quizzes = groupesQuiz.map(g => {
+      const questions = parseQuestions(g.texte);
+      if (!questions.length) throw new Error('Aucune question trouvée pour "' + g.sousTitre + '" de la leçon "' + titre + '".');
+      questions.forEach((q, i) => {
+        if (!q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d) {
+          throw new Error("Question " + (i + 1) + ' de "' + g.sousTitre + '" (' + titre + ') : il manque un choix A/B/C/D (format "A) ...").');
+        }
+      });
+      return { sousTitre: g.sousTitre, questions };
     });
 
-    const titre = titreMatch[1].trim();
     const apercu = apercuMatch ? apercuMatch[1].trim() : "";
     const fiches = contenuVersFiches(contenuBrut.trim(), titre, apercu);
 
@@ -154,7 +178,7 @@
       titre,
       apercu,
       contenu_html: fiches.html,
-      questions
+      quizzes
     };
   }
 
@@ -204,21 +228,26 @@
         if (eLec) throw new Error(eLec.message);
         ordre++;
 
-        const { data: qz, error: eQz } = await DB.from("quiz").insert({
-          entreprise_id: ent, filiere, matiere, titre: "Quiz — " + d.titre,
-          duree_sec: 600, type: "lecon", lecon_id: lec.id, publie: true
-        }).select("id").single();
-        if (eQz) throw new Error(eQz.message);
+        let totalQuestions = 0;
+        for (const qz of d.quizzes) {
+          const titreQuiz = d.quizzes.length > 1 ? qz.sousTitre + " — " + d.titre : "Quiz — " + d.titre;
+          const { data: qzRow, error: eQz } = await DB.from("quiz").insert({
+            entreprise_id: ent, filiere, matiere, titre: titreQuiz,
+            duree_sec: 600, type: "lecon", lecon_id: lec.id, publie: true
+          }).select("id").single();
+          if (eQz) throw new Error(eQz.message);
 
-        const rows = d.questions.map((q, i) => ({
-          quiz_id: qz.id, ordre: i + 1, enonce: q.enonce,
-          choix_a: q.choix_a, choix_b: q.choix_b, choix_c: q.choix_c, choix_d: q.choix_d, bonne: q.bonne
-        }));
-        const { error: eQ } = await DB.from("questions").insert(rows);
-        if (eQ) throw new Error(eQ.message);
+          const rows = qz.questions.map((q, i) => ({
+            quiz_id: qzRow.id, ordre: i + 1, enonce: q.enonce,
+            choix_a: q.choix_a, choix_b: q.choix_b, choix_c: q.choix_c, choix_d: q.choix_d, bonne: q.bonne
+          }));
+          const { error: eQ } = await DB.from("questions").insert(rows);
+          if (eQ) throw new Error(eQ.message);
+          totalQuestions += qz.questions.length;
+        }
 
         ok++;
-        resume.push("<li><b>" + esc(d.titre) + "</b> — " + d.questions.length + " questions</li>");
+        resume.push("<li><b>" + esc(d.titre) + "</b> — " + d.quizzes.length + " quiz, " + totalQuestions + " questions</li>");
       } catch (e) {
         erreurs.push(d.titre + " : " + e.message);
       }
