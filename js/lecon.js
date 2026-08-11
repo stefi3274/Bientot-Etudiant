@@ -45,7 +45,7 @@
         + '<div class="lqc-txt"><span class="lqc-kick">Teste-toi</span>'
         + '<b>' + esc(qz.titre) + '</b>'
         + '<span class="lqc-meta">' + nbQ + ' questions · ' + Math.round(qz.duree_sec/60) + ' min chronométrées</span></div>'
-        + '<a class="btn btn-dark" href="quiz.html?id=' + qz.id + '">Passer le quiz <span>→</span></a>'
+        + '<a class="btn btn-dark btn-pulse" href="quiz.html?id=' + qz.id + '">Passer le quiz <span>→</span></a>'
         + '</div>';
     }
 

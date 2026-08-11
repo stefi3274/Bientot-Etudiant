@@ -389,7 +389,7 @@
     const partage =
       '<div class="partage"><span class="pt-label">Ou envoyer le lien du défi directement</span>'
       + '<div class="pt-btns">'
-      + '<a class="pt-btn wa" href="https://wa.me/?text=' + encTxt + encLien + '" target="_blank" rel="noopener">WhatsApp</a>'
+      + '<a class="pt-btn wa btn-pulse" href="https://wa.me/?text=' + encTxt + encLien + '" target="_blank" rel="noopener">WhatsApp</a>'
       + '<a class="pt-btn fb" href="https://www.facebook.com/sharer/sharer.php?u=' + encLien + '" target="_blank" rel="noopener">Facebook</a>'
       + '<button class="pt-btn cp" id="copyBtn" data-txt="' + esc(txtPartage + lien) + '">Copier</button>'
       + '</div><p class="qi-note" style="margin-top:8px">Pas besoin de compte pour relever le défi.</p></div>';
@@ -406,7 +406,7 @@
 
     const actionClassementOuCompte = eleveConnecte
       ? '<a class="btn btn-primary" href="classement.html?quiz=' + quiz.id + '">Voir le classement <span>→</span></a>'
-      : '<a class="btn btn-primary" href="inscription.html">Créer un compte pour suivre ma progression <span>→</span></a>';
+      : '<a class="btn btn-primary btn-pulse" href="inscription.html">Créer un compte pour suivre ma progression <span>→</span></a>';
 
     let gogoBloc = "";
     if (gogo) {
