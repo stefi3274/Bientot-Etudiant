@@ -31,14 +31,29 @@
   // ---------- Parsing du texte structuré ----------
   function escHtml(s) { return (s || "").replace(/[&<>]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;" }[c])); }
 
+  // Échappe le texte tout en mettant en valeur guillemets/parenthèses (couleur + gras)
+  function embellirTexte(txt) {
+    const regex = /("[^"\n]+"|«[^»\n]+»|\([^)\n]+\))/g;
+    let resultat = "", dernier = 0, m;
+    while ((m = regex.exec(txt)) !== null) {
+      resultat += escHtml(txt.slice(dernier, m.index));
+      resultat += '<strong class="fiche-accent">' + escHtml(m[0]) + '</strong>';
+      dernier = m.index + m[0].length;
+    }
+    resultat += escHtml(txt.slice(dernier));
+    return resultat;
+  }
+
   function texteVersHtmlSimple(txt) {
     const paragraphes = txt.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     return paragraphes.map(p => {
       const lignes = p.split("\n").map(l => l.trim()).filter(Boolean);
       if (lignes.length && lignes.every(l => /^[-*]\s+/.test(l))) {
-        return "<ul>" + lignes.map(l => "<li>" + escHtml(l.replace(/^[-*]\s+/, "")) + "</li>").join("") + "</ul>";
+        return "<ul>" + lignes.map(l => "<li>" + embellirTexte(l.replace(/^[-*]\s+/, "")) + "</li>").join("") + "</ul>";
       }
-      return "<p>" + escHtml(p).replace(/\n/g, "<br>") + "</p>";
+      const estExemple = /^(exemple|ex\s*[:.])/i.test(p);
+      const contenu = embellirTexte(p).replace(/\n/g, "<br>");
+      return estExemple ? '<p class="fiche-exemple">' + contenu + '</p>' : "<p>" + contenu + "</p>";
     }).join("\n");
   }
 
@@ -174,7 +189,7 @@
 
     const filiere = selFil.value, matiere = selMat.value;
     const ent = await monEnt();
-    if (!ent) { statusFi("Entreprise introuvable.", "err"); $("fiPublier").disabled = false; return; }
+    if (!ent) { statusFi("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); $("fiPublier").disabled = false; return; }
 
     const { count } = await DB.from("lecons").select("id", { count: "exact", head: true }).eq("filiere", filiere).eq("matiere", matiere);
     let ordre = (count || 0) + 1;

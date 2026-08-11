@@ -79,5 +79,24 @@
       + quizBtn
       + communauteBtn
       + '<div class="lecture-nav"><a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="' + retour + '">← Toutes les leçons de ' + esc(l.matiere) + '</a></div>';
+
+    // Si la leçon est en fiches ET qu'un quiz y est rattaché : ajouter une vraie
+    // carte-action "Passer le quiz" à la toute fin du carousel glissant.
+    if (qz) {
+      const carousel = zone.querySelector(".fiches-carousel");
+      if (carousel) {
+        const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
+        const carteQuiz = document.createElement("a");
+        carteQuiz.href = "quiz.html?id=" + qz.id;
+        carteQuiz.className = "fiche fiche-quiz-cta";
+        carteQuiz.innerHTML =
+          '<span class="fiche-num">✓</span>'
+          + '<h3>Teste-toi maintenant</h3>'
+          + '<p>' + esc(qz.titre) + '</p>'
+          + '<p style="font-size:.85rem;opacity:.75">' + nbQ + ' questions · ' + Math.round(qz.duree_sec / 60) + ' min chronométrées</p>'
+          + '<span class="btn btn-dark btn-pulse" style="margin-top:14px">Passer le quiz <span>→</span></span>';
+        carousel.appendChild(carteQuiz);
+      }
+    }
   })();
 })();

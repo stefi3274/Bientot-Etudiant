@@ -160,7 +160,7 @@
 
     statusQ("Publication de " + groupes.length + " quiz…", "");
     const ent = await monEnt();
-    if (!ent) { statusQ("Entreprise introuvable.", "err"); return; }
+    if (!ent) { statusQ("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); return; }
     const dureeSec = (parseInt($("qzDuree").value) || 10) * 60;
     const typeChoisi = (document.querySelector('input[name="qzType"]:checked') || {}).value;
     const typeLot = typeChoisi === "gogo" ? "gogo" : "dimanche";
@@ -249,7 +249,7 @@
 
     statusQ("Enregistrement…", "");
     const ent = await monEnt();
-    if (!ent) { statusQ("Entreprise introuvable.", "err"); return; }
+    if (!ent) { statusQ("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); return; }
 
     const typeQ = (document.querySelector('input[name="qzType"]:checked') || {}).value || "lecon";
     const leconId = ($("qzLecon") && $("qzLecon").value) ? $("qzLecon").value : null;

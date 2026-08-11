@@ -106,7 +106,7 @@
 
     const bloc = document.createElement("div");
     bloc.innerHTML =
-      '<div class="lecons-head" style="margin-top:40px"><h2>Quiz disponibles</h2></div>'
+      '<div class="lecons-head" style="margin-top:40px"><h2>' + data.length + (data.length > 1 ? ' quiz disponibles' : ' quiz disponible') + '</h2></div>'
       + '<div class="lecons-grid">' + cartes + '</div>';
     zone.appendChild(bloc);
   }
