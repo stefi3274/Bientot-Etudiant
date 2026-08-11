@@ -285,14 +285,33 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 }
 
 /* Bouton avec petite statistique en dessous (ex: "20 questions · 10 min") */
-.btn-stat{flex-wrap:wrap;justify-content:center;row-gap:3px;padding-bottom:14px}
+.btn-stat{flex-wrap:wrap;justify-content:center;row-gap:3px;padding-bottom:14px;position:relative;overflow:visible}
 .btn-stat small{flex-basis:100%;text-align:center;font-size:.72rem;font-weight:500;opacity:.75}
+
+/* Quiz Libre : bleu ; Quiz à Gogo : orange feu — distincts entre eux et du bouton principal ocre */
+.btn-libre{background:rgba(74,144,196,.14);color:var(--craie);border:1.5px solid rgba(74,144,196,.55)}
+.btn-libre:hover{background:rgba(74,144,196,.24)}
+.btn-gogo{background:rgba(224,120,74,.16);color:var(--craie);border:1.5px solid rgba(224,120,74,.6)}
+.btn-gogo:hover{background:rgba(224,120,74,.26)}
+
+/* Petit splash qui invite à cliquer, posé sur le coin du bouton */
+.btn-splash{position:absolute;top:-14px;right:10px;background:var(--ocre);color:var(--ardoise);
+  font-size:.68rem;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;
+  box-shadow:0 4px 10px rgba(0,0,0,.25);animation:splash-bounce 1.8s ease-in-out infinite}
+.btn-splash-gogo{background:#e0784a;color:#fff}
+@keyframes splash-bounce{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(3deg)}}
 
 /* Mouvement discret sur les boutons qui invitent à l'action (faire le quiz,
    créer un compte, quiz à gogo) — respecte prefers-reduced-motion automatiquement */
 @keyframes btn-pulse{0%,100%{box-shadow:0 0 0 0 rgba(20,52,43,.22)}50%{box-shadow:0 0 0 9px rgba(20,52,43,0)}}
 .btn-pulse{animation:btn-pulse 2.4s ease-in-out infinite}
 .btn-pulse:hover{animation-play-state:paused}
+
+/* Grand titre du hero : entrée dynamique + petit accent sur le 2e groupe de mots */
+.reveal-word{display:inline-block;opacity:0;transform:translateY(18px);animation:titre-entree .7s ease forwards}
+.reveal-word-2{animation-delay:.18s}
+@keyframes titre-entree{to{opacity:1;transform:translateY(0)}}
+.hero h1 .pop{color:var(--ocre);position:relative}
 
 /* révélation au scroll */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
