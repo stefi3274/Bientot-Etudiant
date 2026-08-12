@@ -151,7 +151,8 @@
       return;
     }
 
-    // Plusieurs groupes ===QUIZ:...=== détectés : publication directe de N quiz séparés (type "dimanche", sans leçon)
+    // Plusieurs groupes ===QUIZ:...=== détectés : publication directe de N quiz séparés
+    // (respecte le type choisi — Libre, Gogo, ou Leçon avec rattachement à la leçon sélectionnée)
     const titreBase = ($("qzTitre").value || "").trim();
     if (!titreBase) { statusQ(groupes.length + " groupes détectés. Renseigne d'abord le grand titre (ex: \"Biologie Cellulaire\") avant d'importer.", "err"); return; }
     if (typeof DB === "undefined" || !DB) { statusQ("Connexion Supabase indisponible.", "err"); return; }
@@ -163,7 +164,9 @@
     if (!ent) { statusQ("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); return; }
     const dureeSec = (parseInt($("qzDuree").value) || 10) * 60;
     const typeChoisi = (document.querySelector('input[name="qzType"]:checked') || {}).value;
-    const typeLot = typeChoisi === "gogo" ? "gogo" : "dimanche";
+    const typeLot = typeChoisi === "gogo" ? "gogo" : (typeChoisi === "lecon" ? "lecon" : "dimanche");
+    const leconIdLot = (typeChoisi === "lecon" && $("qzLecon") && $("qzLecon").value) ? $("qzLecon").value : null;
+    if (typeChoisi === "lecon" && !leconIdLot) { statusQ("Choisis la leçon à rattacher avant d'importer (ou passe en Quiz Libre/Gogo).", "err"); return; }
 
     let ok = 0, erreurs = [];
     for (let i = 0; i < groupes.length; i++) {
@@ -175,7 +178,7 @@
       const { data: qz, error: eQz } = await DB.from("quiz").insert({
         entreprise_id: ent, filiere: selFil.value, matiere: selMat.value,
         titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
-        type: typeLot, lecon_id: null, publie: true
+        type: typeLot, lecon_id: leconIdLot, publie: true
       }).select("id").single();
       if (eQz) { erreurs.push(groupes[i].sousTitre + " : " + eQz.message); continue; }
 

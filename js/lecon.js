@@ -83,24 +83,20 @@
       + communauteBtn
       + '<div class="lecture-nav"><a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="' + retour + '">← Toutes les leçons de ' + esc(l.matiere) + '</a></div>';
 
-    // Si la leçon est en fiches ET qu'un/des quiz y sont rattachés : ajouter une vraie
-    // carte-action "Passer le quiz" (une par quiz) à la toute fin du carousel glissant.
+    // Si la leçon est en fiches ET qu'un/des quiz y sont rattachés : ajouter le(s)
+    // vrai(s) bouton(s) "Passer le quiz" directement DANS la fiche de fin (slide 12),
+    // au lieu de créer des cartes séparées après.
     if (qzListe.length) {
-      const carousel = zone.querySelector(".fiches-carousel");
-      if (carousel) {
-        qzListe.forEach((qz, i) => {
+      const ficheFin = zone.querySelector(".fiche-fin");
+      if (ficheFin) {
+        const boutons = qzListe.map((qz, i) => {
           const nbQ = (qz.questions && qz.questions[0]) ? qz.questions[0].count : 0;
-          const carteQuiz = document.createElement("a");
-          carteQuiz.href = "quiz.html?id=" + qz.id;
-          carteQuiz.className = "fiche fiche-quiz-cta";
-          carteQuiz.innerHTML =
-            '<span class="fiche-num">✓</span>'
-            + '<h3>' + (qzListe.length > 1 ? "Teste-toi · Quiz " + (i + 1) : "Teste-toi maintenant") + '</h3>'
-            + '<p>' + esc(qz.titre) + '</p>'
-            + '<p style="font-size:.85rem;opacity:.75">' + nbQ + ' questions · ' + Math.round(qz.duree_sec / 60) + ' min chronométrées</p>'
-            + '<span class="btn btn-dark btn-pulse" style="margin-top:14px">Passer le quiz <span>→</span></span>';
-          carousel.appendChild(carteQuiz);
-        });
+          const label = qzListe.length > 1 ? "Passer le quiz " + (i + 1) : "Passer le quiz";
+          return '<a class="btn btn-dark btn-pulse" style="margin-top:10px;width:100%;justify-content:center" href="quiz.html?id=' + qz.id + '">'
+            + label + ' <span>→</span></a>'
+            + '<p style="font-size:.8rem;opacity:.7;margin:4px 0 0">' + esc(qz.titre) + ' · ' + nbQ + ' questions</p>';
+        }).join("");
+        ficheFin.insertAdjacentHTML("beforeend", '<div style="margin-top:16px">' + boutons + '</div>');
       }
     }
   })();
