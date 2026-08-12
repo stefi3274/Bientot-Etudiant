@@ -44,6 +44,12 @@
     return userId ? ('<span class="statut-badge ' + (fait ? "fait" : "a-faire") + '">' + (fait ? "✓ Déjà fait" : "À faire") + '</span>') : "";
   }
 
+  function badgeNouveau(createdAt) {
+    if (!createdAt) return "";
+    const age = Date.now() - new Date(createdAt).getTime();
+    return age < 5 * 24 * 60 * 60 * 1000 ? '<span class="badge-nouveau">Nouveau</span>' : "";
+  }
+
   function rendreFiliereBtns(filieresAffichees) {
     filBtns.innerHTML = filieresAffichees.map(f =>
       '<button class="filter' + (f === filiereActuelle ? ' on' : '') + '" data-f="' + f + '">' + esc(FILIERES[f]) + '</button>'
@@ -95,6 +101,7 @@
       + parMatiere[m].map(q => {
           const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
           return '<a class="lecon-carte quiz-carte libre" style="border-left-color:' + c + '" href="quiz.html?id=' + q.id + '">'
+            + badgeNouveau(q.created_at)
             + badgeStatut(doneQuizIds.has(q.id))
             + '<span class="lc-num" style="color:' + c + '">Quiz Libre</span>'
             + '<h3>' + esc(q.titre) + '</h3>'
@@ -109,7 +116,7 @@
     if (typeof DB === "undefined" || !DB) { zone.innerHTML = "<p style='text-align:center'>Indisponible pour le moment.</p>"; return; }
 
     const { data } = await DB.from("quiz")
-      .select("id, titre, filiere, matiere, duree_sec, questions(count)")
+      .select("id, titre, filiere, matiere, duree_sec, created_at, questions(count)")
       .eq("publie", true).eq("type", "dimanche")
       .order("created_at", { ascending: false });
     tousLesQuiz = data || [];

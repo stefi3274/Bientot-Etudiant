@@ -399,9 +399,19 @@
     let infosDefiCarte = null;
     if (defiNom && defiScore !== null && defiTotal) {
       const pctDefi = Math.round(100 * defiScore / defiTotal);
-      if (pct > pctDefi) { compareDefi = '<p class="defi-resultat defi-gagne">🏆 Belle performance, tu devances ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>'; infosDefiCarte = "🏆 Devant " + defiNom + " dans un défi amical"; }
-      else if (pct === pctDefi) { compareDefi = '<p class="defi-resultat">🤝 Égalité parfaite avec ' + esc(defiNom) + ' — bien joué à vous deux !</p>'; infosDefiCarte = "🤝 Égalité avec " + defiNom; }
-      else { compareDefi = '<p class="defi-resultat defi-perdu">👏 ' + esc(defiNom) + ' l\'emporte cette fois (' + defiScore + '/' + defiTotal + ') — belle occasion de retenter ta chance !</p>'; infosDefiCarte = "👏 Défi amical face à " + defiNom; }
+      let resultat = "egalite";
+      if (pct > pctDefi) { compareDefi = '<p class="defi-resultat defi-gagne">🏆 Belle performance, tu devances ' + esc(defiNom) + ' (' + defiScore + '/' + defiTotal + ') !</p>'; infosDefiCarte = "🏆 Devant " + defiNom + " dans un défi amical"; resultat = "gagne"; }
+      else if (pct === pctDefi) { compareDefi = '<p class="defi-resultat">🤝 Égalité parfaite avec ' + esc(defiNom) + ' — bien joué à vous deux !</p>'; infosDefiCarte = "🤝 Égalité avec " + defiNom; resultat = "egalite"; }
+      else { compareDefi = '<p class="defi-resultat defi-perdu">👏 ' + esc(defiNom) + ' l\'emporte cette fois (' + defiScore + '/' + defiTotal + ') — belle occasion de retenter ta chance !</p>'; infosDefiCarte = "👏 Défi amical face à " + defiNom; resultat = "perdu"; }
+
+      // Garder une trace du duel pour "Mes duels" dans l'espace personnel (connecté uniquement)
+      if (eleveConnecte && DB) {
+        DB.from("duels").insert({
+          user_id: eleveConnecte.user_id, quiz_id: quiz.id, quiz_titre: quiz.titre,
+          adversaire_nom: defiNom, mon_score: score, mon_total: questions.length,
+          score_adversaire: defiScore, total_adversaire: defiTotal, resultat
+        }).then(() => {});
+      }
     }
 
     const actionClassementOuCompte = eleveConnecte

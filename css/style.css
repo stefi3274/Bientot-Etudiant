@@ -775,6 +775,20 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
 .db-activite .db-score.ok{color:var(--f1-d)}
 .db-activite .db-score.low{color:var(--rouge)}
 
+/* Badges de résultat de duel */
+.duel-badge{font-size:.76rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.duel-badge.gagne{background:rgba(63,160,106,.15);color:var(--f1-d)}
+.duel-badge.perdu{background:rgba(232,184,75,.15);color:var(--ocre-d)}
+.duel-badge.egalite{background:var(--craie-2);color:var(--encre-2)}
+
+/* Espace personnel : légère entrée dynamique des cartes */
+.espace-card{animation:carte-entree .5s var(--ease) backwards}
+.espace-card:nth-child(1){animation-delay:.05s}
+.espace-card:nth-child(2){animation-delay:.1s}
+.espace-card:nth-child(3){animation-delay:.15s}
+.espace-card:nth-child(4){animation-delay:.2s}
+@keyframes carte-entree{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
 /* ===== DÉFI ENTRE POSTULANTS ===== */
 .defi-banniere{background:rgba(232,184,75,.15);border:1px solid rgba(232,184,75,.4);
   border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:.95rem;color:var(--encre)}
@@ -798,3 +812,25 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
   padding:4px 11px;border-radius:20px;color:#fff;letter-spacing:.02em;z-index:2}
 .statut-badge.fait{background:linear-gradient(90deg,#e5484d,#e8b84b,#3fa06a,#2c6e8f,#8257b5)}
 .statut-badge.a-faire{background:#6d5a8f}
+
+/* Badge "Nouveau" sur le contenu récent (visible de tous, invités compris) */
+.badge-nouveau{position:absolute;top:12px;left:-8px;font-size:.7rem;font-weight:800;
+  padding:4px 12px 4px 16px;background:var(--rouge);color:#fff;border-radius:0 20px 20px 0;
+  letter-spacing:.03em;z-index:2;box-shadow:0 3px 8px rgba(194,91,78,.35)}
+
+/* Invitation flottante à créer un compte (invités) — glisse depuis le bas, flotte doucement */
+.invite-flottante{position:fixed;left:16px;right:16px;bottom:-160px;z-index:60;
+  background:var(--ardoise);color:var(--craie);border-radius:18px;padding:18px 44px 18px 18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  box-shadow:0 -8px 32px rgba(0,0,0,.28);max-width:520px;margin:0 auto;
+  transition:bottom .5s var(--ease);animation:invite-flotte 3.5s ease-in-out .8s infinite}
+.invite-flottante.in{bottom:16px}
+.invite-emoji{font-size:1.8rem;flex:0 0 auto}
+.invite-txt{display:flex;flex-direction:column;gap:2px;flex:1 1 160px}
+.invite-txt b{font-family:var(--serif);font-size:1.05rem}
+.invite-txt span{font-size:.85rem;color:rgba(247,244,236,.8)}
+.invite-fermer{position:absolute;top:10px;right:12px;background:none;border:0;color:rgba(247,244,236,.6);
+  font-size:.9rem;cursor:pointer;padding:4px;line-height:1}
+.invite-fermer:hover{color:var(--craie)}
+@keyframes invite-flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media (max-width:520px){.invite-flottante{padding:16px 40px 16px 16px}.invite-txt span{display:none}}

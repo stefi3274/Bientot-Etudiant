@@ -47,6 +47,13 @@
     return userId ? ('<span class="statut-badge ' + (fait ? "fait" : "a-faire") + '">' + (fait ? "✓ Déjà fait" : "À faire") + '</span>') : "";
   }
 
+  // "Nouveau" si publié il y a moins de 5 jours — visible de tous, invités compris
+  function badgeNouveau(createdAt) {
+    if (!createdAt) return "";
+    const age = Date.now() - new Date(createdAt).getTime();
+    return age < 5 * 24 * 60 * 60 * 1000 ? '<span class="badge-nouveau">Nouveau</span>' : "";
+  }
+
   async function chargerDisponibilites() {
     if (typeof DB === "undefined" || !DB) return;
     const [{ data: lecons }, { data: quiz }] = await Promise.all([
@@ -111,8 +118,8 @@
 
     const transversale = TRANSVERSALES.includes(matiereActuelle);
 
-    let qLecons = DB.from("lecons").select("id, titre, apercu, ordre, filiere").eq("matiere", matiereActuelle).eq("publie", true);
-    let qQuiz = DB.from("quiz").select("id, titre, duree_sec, type, filiere, questions(count)").eq("matiere", matiereActuelle).eq("publie", true);
+    let qLecons = DB.from("lecons").select("id, titre, apercu, ordre, filiere, created_at").eq("matiere", matiereActuelle).eq("publie", true);
+    let qQuiz = DB.from("quiz").select("id, titre, duree_sec, type, filiere, created_at, questions(count)").eq("matiere", matiereActuelle).eq("publie", true);
     if (!transversale) { qLecons = qLecons.eq("filiere", filiereActuelle); qQuiz = qQuiz.eq("filiere", filiereActuelle); }
 
     const { data: lecons } = await qLecons.order("ordre", { ascending: true });
@@ -129,6 +136,7 @@
         + '<div class="lecons-grid">'
         + lecons.map(l =>
             '<a class="lecon-carte" href="lecon.html?id=' + l.id + '">'
+            + badgeNouveau(l.created_at)
             + badgeStatut(doneLeconIds.has(l.id))
             + '<span class="lc-num">Leçon ' + (l.ordre || 1) + '</span>'
             + '<h3>' + esc(l.titre) + '</h3>'
@@ -144,6 +152,7 @@
             const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
             const estDimanche = q.type === "dimanche";
             return '<a class="lecon-carte quiz-carte' + (estDimanche ? ' libre' : '') + '" href="quiz.html?id=' + q.id + '">'
+              + badgeNouveau(q.created_at)
               + badgeStatut(doneQuizIds.has(q.id))
               + '<span class="lc-num">' + (estDimanche ? "Quiz Libre" : "Quiz") + '</span>'
               + '<h3>' + esc(q.titre) + '</h3>'

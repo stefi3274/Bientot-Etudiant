@@ -27,7 +27,37 @@ async function majMenuCompte() {
     zone.innerHTML = '<a href="espace.html" class="cta">Mon espace</a>';
   } else {
     zone.innerHTML = '<a href="connexion.html" class="cta">Se connecter</a>';
+    initInviteFlottante();
   }
+}
+
+// Invitation flottante en mouvement (invités uniquement) : glisse depuis le bas
+// après quelques secondes, pour inviter à créer un compte sans être intrusive.
+function initInviteFlottante() {
+  const page = location.pathname.split("/").pop();
+  const pagesExclues = ["connexion.html", "inscription.html", "admin.html", "quiz.html", "", "index.html"];
+  if (pagesExclues.includes(page)) return;
+  if (sessionStorage.getItem("invite_masquee")) return;
+  if (document.getElementById("inviteFlottante")) return;
+
+  setTimeout(() => {
+    const div = document.createElement("div");
+    div.id = "inviteFlottante";
+    div.className = "invite-flottante";
+    div.innerHTML =
+      '<button class="invite-fermer" aria-label="Fermer">✕</button>'
+      + '<span class="invite-emoji">🎓</span>'
+      + '<div class="invite-txt"><b>Progresse plus vite !</b><span>Crée un compte gratuit pour suivre tes leçons et quiz.</span></div>'
+      + '<a href="inscription.html" class="btn btn-dark" style="flex:0 0 auto">Créer un compte <span>→</span></a>';
+    document.body.appendChild(div);
+    requestAnimationFrame(() => div.classList.add("in"));
+
+    div.querySelector(".invite-fermer").addEventListener("click", () => {
+      div.classList.remove("in");
+      sessionStorage.setItem("invite_masquee", "1");
+      setTimeout(() => div.remove(), 400);
+    });
+  }, 4000);
 }
 
 /* ---------- INSCRIPTION ---------- */
@@ -163,6 +193,9 @@ async function initEspace() {
       .eq("user_id", el.user_id)
       .order("created_at", { ascending: false });
 
+    const { data: mesLeconsVues } = await DB.from("lecons_vues").select("id").eq("user_id", el.user_id);
+    const nbLeconsLues = (mesLeconsVues || []).length;
+
     if (!mesTentatives || !mesTentatives.length) {
       progZone.innerHTML =
         '<div class="wait-box">'
@@ -178,6 +211,7 @@ async function initEspace() {
         '<div class="db-grid" style="margin-bottom:22px">'
         + '<div class="db-carte"><div class="db-n">' + nb + '</div><div class="db-l">Quiz passés</div></div>'
         + '<div class="db-carte"><div class="db-n">' + moy + '%</div><div class="db-l">Score moyen</div></div>'
+        + '<div class="db-carte"><div class="db-n">' + nbLeconsLues + '</div><div class="db-l">Leçons lues</div></div>'
         + '</div>';
       const liste = mesTentatives.slice(0, 12).map(t => {
         const pct = t.total ? Math.round(100 * t.score / t.total) : 0;
@@ -188,6 +222,47 @@ async function initEspace() {
           + '</div>';
       }).join("");
       progZone.innerHTML = cartes + liste;
+    }
+  }
+
+  // Mes duels (défis relevés)
+  const duelsZone = document.getElementById("duelsZone");
+  if (duelsZone && typeof DB !== "undefined" && DB) {
+    const esc2 = s => (s || "").replace(/[&<>"']/g, c => (
+      { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    const dateFr2 = iso => new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+
+    const { data: mesDuels } = await DB.from("duels")
+      .select("quiz_titre, adversaire_nom, mon_score, mon_total, score_adversaire, total_adversaire, resultat, created_at")
+      .eq("user_id", el.user_id)
+      .order("created_at", { ascending: false })
+      .limit(12);
+
+    if (!mesDuels || !mesDuels.length) {
+      duelsZone.innerHTML =
+        '<div class="wait-box">'
+        + '<div class="wi" data-icon="progres"></div>'
+        + '<h3>Aucun duel pour l\'instant</h3>'
+        + '<p>Défie un.e ami.e depuis l\'écran de résultat d\'un quiz, ou relève un défi qu\'on t\'a envoyé !</p>'
+        + '</div>';
+    } else {
+      const nbGagnes = mesDuels.filter(d => d.resultat === "gagne").length;
+      duelsZone.innerHTML =
+        '<div class="db-grid" style="margin-bottom:22px">'
+        + '<div class="db-carte"><div class="db-n">' + mesDuels.length + '</div><div class="db-l">Duels joués</div></div>'
+        + '<div class="db-carte"><div class="db-n">🏆 ' + nbGagnes + '</div><div class="db-l">Duels gagnés</div></div>'
+        + '</div>'
+        + mesDuels.map(d => {
+            const badge = d.resultat === "gagne" ? '<span class="duel-badge gagne">🏆 Gagné</span>'
+              : d.resultat === "perdu" ? '<span class="duel-badge perdu">Perdu</span>'
+              : '<span class="duel-badge egalite">🤝 Égalité</span>';
+            return '<div class="db-activite">'
+              + '<span class="db-nom">vs ' + esc2(d.adversaire_nom) + '</span>'
+              + '<span style="font-size:.85rem;color:var(--encre-2)">' + d.mon_score + '/' + d.mon_total + ' — ' + esc2(d.quiz_titre || "") + '</span>'
+              + badge
+              + '<span style="color:var(--encre-2);font-size:.8rem">' + dateFr2(d.created_at) + '</span>'
+              + '</div>';
+          }).join("");
     }
   }
 
