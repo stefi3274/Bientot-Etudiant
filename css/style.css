@@ -465,6 +465,35 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
    Leçons — liste dans la matière + lecture
    ============================================================ */
 .lecons-head{margin-bottom:24px}
+.mat-onglets{display:flex;gap:8px;margin-bottom:28px;border-bottom:2px solid var(--craie-2)}
+.mat-onglet{background:none;border:0;padding:12px 20px;font-family:inherit;font-weight:700;font-size:.95rem;
+  color:var(--encre-2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+.mat-onglet:hover{color:var(--encre)}
+.mat-onglet.on{color:var(--ardoise);border-bottom-color:var(--ocre)}
+body[data-filiere="f1"] .mat-onglet.on{color:var(--f1);border-bottom-color:var(--f1)}
+body[data-filiere="f2"] .mat-onglet.on{color:var(--f2);border-bottom-color:var(--f2)}
+body[data-filiere="f3"] .mat-onglet.on{color:var(--f3);border-bottom-color:var(--f3)}
+
+/* Barres de progression par matière (matieres.html + matiere.html) */
+.m-progres{margin-top:10px}
+.m-progres-barre{height:6px;border-radius:4px;background:var(--craie-2);overflow:hidden}
+.m-progres-remplie{height:100%;background:var(--ocre);border-radius:4px;transition:width .5s var(--ease)}
+.m-progres-txt{display:block;font-size:.78rem;color:var(--encre-2);margin-top:5px}
+
+/* Carte "Reprendre où tu t'es arrêté" (accueil, connectés) */
+.reprise-carte{display:block;background:var(--ardoise);color:var(--craie);border-radius:18px;
+  padding:26px 28px;text-decoration:none;box-shadow:0 16px 36px -12px rgba(20,52,43,.35);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.reprise-carte:hover{transform:translateY(-4px)}
+.reprise-kick{display:block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ocre);margin-bottom:8px}
+.reprise-carte h3{font-family:var(--serif);font-size:1.4rem;color:var(--craie);margin:0 0 4px}
+.reprise-meta{display:block;font-size:.88rem;color:rgba(247,244,236,.7);margin-bottom:18px}
+.reprise-carte .btn{display:inline-flex}
+.chapitre-titre{font-family:var(--serif);font-size:1.2rem;color:var(--ardoise);
+  margin:32px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--craie-2);
+  display:flex;align-items:center;gap:10px}
+.chapitre-titre::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ocre);flex:0 0 auto}
+.lecons-head + .chapitre-titre{margin-top:8px}
 .lecons-head h2{font-size:1.6rem}
 .lecons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
 .lecon-carte{display:block;background:var(--craie);border:1px solid var(--craie-2);border-radius:14px;

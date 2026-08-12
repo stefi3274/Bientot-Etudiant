@@ -254,6 +254,7 @@
       filiere: selFil.value,
       matiere: selMat.value,
       titre: titre,
+      chapitre: $("leChapitre").value.trim() || null,
       apercu: $("leApercu").value.trim() || null,
       contenu: rte.innerHTML.trim() || null,
       auteur: $("leAuteur").value.trim() || null,
@@ -290,7 +291,7 @@
 
   function resetForm() {
     editId = null; pdfFile = null;
-    $("leTitre").value = ""; $("leApercu").value = ""; $("leAuteur").value = "";
+    $("leTitre").value = ""; $("leChapitre").value = ""; $("leApercu").value = ""; $("leAuteur").value = "";
     rte.innerHTML = "";
     pdfTxt.textContent = "Clique pour joindre un PDF (facultatif)";
     pdfDrop.classList.remove("has");
@@ -361,6 +362,7 @@
     editId = l.id;
     selFil.value = l.filiere; majMatieres(); selMat.value = l.matiere;
     $("leTitre").value = l.titre || "";
+    $("leChapitre").value = l.chapitre || "";
     $("leApercu").value = l.apercu || "";
     rte.innerHTML = l.contenu || "";
     $("leAuteur").value = l.auteur || "";

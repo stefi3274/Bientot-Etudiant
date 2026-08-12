@@ -150,15 +150,17 @@
     const apres = bloc.slice(idxQuiz);
 
     const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
+    const chapitreMatch = avant.match(/^CHAPITRE\s*:\s*(.+)$/im);
     const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
     if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
 
     let contenuBrut = avant;
     const idxSep = avant.search(/^---$/m);
     if (idxSep >= 0) contenuBrut = avant.slice(idxSep + 3);
-    else contenuBrut = avant.replace(/^TITRE\s*:.*$/im, "").replace(/^APERCU\s*:.*$/im, "");
+    else contenuBrut = avant.replace(/^TITRE\s*:.*$/im, "").replace(/^CHAPITRE\s*:.*$/im, "").replace(/^APERCU\s*:.*$/im, "");
 
     const titre = titreMatch[1].trim();
+    const chapitre = chapitreMatch ? chapitreMatch[1].trim() : "";
     const groupesQuiz = detecterGroupesQuiz(apres);
     const quizzes = groupesQuiz.map(g => {
       const questions = parseQuestions(g.texte);
@@ -176,6 +178,7 @@
 
     return {
       titre,
+      chapitre,
       apercu,
       contenu_html: fiches.html,
       quizzes
@@ -222,7 +225,7 @@
     for (const d of lecons) {
       try {
         const { data: lec, error: eLec } = await DB.from("lecons").insert({
-          entreprise_id: ent, filiere, matiere, titre: d.titre, apercu: d.apercu || null,
+          entreprise_id: ent, filiere, matiere, titre: d.titre, chapitre: d.chapitre || null, apercu: d.apercu || null,
           contenu: d.contenu_html, publie: true, ordre: ordre
         }).select("id").single();
         if (eLec) throw new Error(eLec.message);

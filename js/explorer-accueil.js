@@ -188,5 +188,45 @@
     filiereActuelle = filieresAffichees[0];
     rendreFiliereBtns();
     majMatieres();
+
+    if (userId) chargerReprise();
   })();
+
+  // "Reprendre où tu t'es arrêté" — dernière leçon lue, sinon dernier quiz passé
+  async function chargerReprise() {
+    const section = document.getElementById("repriseSection");
+    const zone = document.getElementById("repriseZone");
+    if (!section || !zone) return;
+
+    const { data: derniereLecon } = await DB.from("lecons_vues")
+      .select("lecon_id, created_at, lecons(id, titre, matiere, filiere)")
+      .eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+    if (derniereLecon && derniereLecon.lecons) {
+      const l = derniereLecon.lecons;
+      section.style.display = "block";
+      zone.innerHTML =
+        '<a class="reprise-carte" href="lecon.html?id=' + l.id + '">'
+        + '<span class="reprise-kick">Reprendre où tu t\'es arrêté.e</span>'
+        + '<h3>' + esc(l.titre) + '</h3>'
+        + '<span class="reprise-meta">' + esc(l.matiere) + '</span>'
+        + '<span class="btn btn-dark btn-pulse">Continuer <span>→</span></span>'
+        + '</a>';
+      return;
+    }
+
+    // Repli : dernière tentative de quiz
+    const { data: derniereTentative } = await DB.from("tentatives")
+      .select("quiz_id, matiere, created_at")
+      .eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (derniereTentative && derniereTentative.quiz_id) {
+      section.style.display = "block";
+      zone.innerHTML =
+        '<a class="reprise-carte" href="quiz.html?id=' + derniereTentative.quiz_id + '">'
+        + '<span class="reprise-kick">Continue sur ta lancée</span>'
+        + '<h3>Refaire un quiz de ' + esc(derniereTentative.matiere) + '</h3>'
+        + '<span class="btn btn-dark btn-pulse">Continuer <span>→</span></span>'
+        + '</a>';
+    }
+  }
 })();

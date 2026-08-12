@@ -1,4 +1,4 @@
-/* Page matière — affiche les leçons, ou le message d'attente */
+/* Page matière — onglets Leçons / Quiz, avec message d'attente si vide */
 (function () {
   const params = new URLSearchParams(location.search);
   const m = params.get("m") || "Matière";
@@ -30,11 +30,25 @@
   setTxt("mFiliere", filiereNoms[f] || "Matière");
   if (f) document.body.setAttribute("data-filiere", f);
 
-  const zone = document.getElementById("leconsZone");
-  if (!zone) return;
+  const zoneLecons = document.getElementById("leconsContenu");
+  const zoneQuiz = document.getElementById("quizContenu");
+  const onglets = document.getElementById("matOnglets");
+  if (!zoneLecons) return;
+
+  // Bascule entre les deux onglets (affichés seulement si les deux ont du contenu)
+  function activerOnglet(nom) {
+    document.querySelectorAll("#matOnglets .mat-onglet").forEach(b =>
+      b.classList.toggle("on", b.getAttribute("data-tab") === nom));
+    zoneLecons.style.display = nom === "lecons" ? "block" : "none";
+    zoneQuiz.style.display = nom === "quiz" ? "block" : "none";
+  }
+  if (onglets) {
+    onglets.querySelectorAll(".mat-onglet").forEach(b =>
+      b.addEventListener("click", () => activerOnglet(b.getAttribute("data-tab"))));
+  }
 
   function messageAttente() {
-    zone.innerHTML =
+    zoneLecons.innerHTML =
       '<div class="soon" id="soonBloc">'
       + '<span class="badge">En préparation</span>'
       + '<div class="m-emoji" data-icon="lecon"></div>'
@@ -47,6 +61,26 @@
       + '</div></div>';
     if (window.__renderIcons) window.__renderIcons();
   }
+
+  // Affiche les onglets seulement si leçons ET quiz ont du contenu — sinon,
+  // pas de bascule inutile, on montre simplement ce qu'il y a.
+  function majOngletsVisibles(nbLecons, nbQuiz) {
+    if (!onglets) return;
+    const labelLecons = onglets.querySelector('[data-tab="lecons"]');
+    const labelQuiz = onglets.querySelector('[data-tab="quiz"]');
+    if (labelLecons) labelLecons.textContent = "Leçons (" + nbLecons + ")";
+    if (labelQuiz) labelQuiz.textContent = "Quiz (" + nbQuiz + ")";
+    if (nbLecons > 0 && nbQuiz > 0) {
+      onglets.style.display = "flex";
+      activerOnglet("lecons");
+    } else {
+      onglets.style.display = "none";
+      zoneLecons.style.display = "block";
+      zoneQuiz.style.display = "block";
+    }
+  }
+
+  let dernierNbQuiz = 0;
 
   (async function () {
     if (typeof DB === "undefined" || !DB) { messageAttente(); return; }
@@ -66,13 +100,13 @@
       } catch (e) { /* invité */ }
     }
 
-    let qLec = DB.from("lecons").select("id, titre, apercu, ordre, pdf_url, auteur, created_at").eq("matiere", m).eq("publie", true);
+    let qLec = DB.from("lecons").select("id, titre, chapitre, apercu, ordre, pdf_url, auteur, created_at").eq("matiere", m).eq("publie", true);
     if (!transversale) qLec = qLec.eq("filiere", f);
     const { data, error } = await qLec.order("ordre", { ascending: true });
 
-    if (error || !data || data.length === 0) { messageAttente(); chargerQuiz(); return; }
+    if (error || !data || data.length === 0) { messageAttente(); await chargerQuiz(); majOngletsVisibles(0, dernierNbQuiz); afficherProgres(0, 0, dernierNbQuiz, doneQuizIds.size); return; }
 
-    const cartes = data.map(l =>
+    const carteLecon = l =>
       '<a class="lecon-carte" href="lecon.html?id=' + l.id + '">'
       + badgeNouveau(l.created_at)
       + badgeStatut(doneLeconIds.has(l.id))
@@ -81,15 +115,45 @@
       + (l.apercu ? '<p>' + esc(l.apercu) + '</p>' : '')
       + '<span class="lc-go">Lire la le\u00e7on \u2192</span>'
       + (l.pdf_url ? '<span class="lc-pdf">PDF disponible</span>' : '')
-      + '</a>'
-    ).join("");
+      + '</a>';
 
-    zone.innerHTML =
-      '<div class="lecons-head"><h2>' + data.length + (data.length > 1 ? ' le\u00e7ons disponibles' : ' le\u00e7on disponible') + '</h2></div>'
-      + '<div class="lecons-grid">' + cartes + '</div>';
+    const entete = '<div class="lecons-head"><h2>' + data.length + (data.length > 1 ? ' le\u00e7ons disponibles' : ' le\u00e7on disponible') + '</h2></div>';
+    const aDesChapitres = data.some(l => l.chapitre);
 
-    chargerQuiz();
+    if (!aDesChapitres) {
+      zoneLecons.innerHTML = entete + '<div class="lecons-grid">' + data.map(carteLecon).join("") + '</div>';
+    } else {
+      // Regrouper par chapitre en gardant l'ordre d'apparition ; les leçons sans
+      // chapitre sont rassemblées dans un groupe générique.
+      const groupes = []; const index = {};
+      data.forEach(l => {
+        const cle = l.chapitre || "Autres le\u00e7ons";
+        if (!(cle in index)) { index[cle] = groupes.length; groupes.push({ nom: cle, lecons: [] }); }
+        groupes[index[cle]].lecons.push(l);
+      });
+      zoneLecons.innerHTML = entete + groupes.map(g =>
+        '<h3 class="chapitre-titre">' + esc(g.nom) + '</h3>'
+        + '<div class="lecons-grid">' + g.lecons.map(carteLecon).join("") + '</div>'
+      ).join("");
+    }
+
+    await chargerQuiz();
+    majOngletsVisibles(data.length, dernierNbQuiz);
+    afficherProgres(data.length, doneLeconIds.size, dernierNbQuiz, doneQuizIds.size);
   })();
+
+  function afficherProgres(totalL, faitL, totalQ, faitQ) {
+    const zone = document.getElementById("mProgres");
+    if (!zone || !userId) return;
+    const total = totalL + totalQ, fait = faitL + faitQ;
+    if (!total) return;
+    const pct = Math.round(100 * fait / total);
+    zone.innerHTML =
+      '<div class="m-progres" style="max-width:360px;margin-top:14px">'
+      + '<div class="m-progres-barre"><div class="m-progres-remplie" style="width:' + pct + '%"></div></div>'
+      + '<span class="m-progres-txt">' + faitL + '/' + totalL + ' le\u00e7ons \u00b7 ' + faitQ + '/' + totalQ + ' quiz \u00b7 ' + pct + '%</span>'
+      + '</div>';
+  }
 
   // ---------- Quiz de la matière (tous types : liés à une leçon + quiz du dimanche) ----------
   async function chargerQuiz() {
@@ -97,7 +161,8 @@
     let qQz = DB.from("quiz").select("id, titre, duree_sec, type, created_at, questions(count)").eq("matiere", m).eq("publie", true);
     if (!transversale) qQz = qQz.eq("filiere", f);
     const { data } = await qQz.order("created_at", { ascending: false });
-    if (!data || data.length === 0) return;
+    dernierNbQuiz = (data || []).length;
+    if (!data || data.length === 0) { zoneQuiz.innerHTML = ""; return; }
 
     const cartes = data.map(q => {
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
@@ -111,10 +176,8 @@
         + '<span class="lc-go">Relever le d\u00e9fi \u2192</span></a>';
     }).join("");
 
-    const bloc = document.createElement("div");
-    bloc.innerHTML =
-      '<div class="lecons-head" style="margin-top:40px"><h2>' + data.length + (data.length > 1 ? ' quiz disponibles' : ' quiz disponible') + '</h2></div>'
+    zoneQuiz.innerHTML =
+      '<div class="lecons-head"><h2>' + data.length + (data.length > 1 ? ' quiz disponibles' : ' quiz disponible') + '</h2></div>'
       + '<div class="lecons-grid">' + cartes + '</div>';
-    zone.appendChild(bloc);
   }
 })();

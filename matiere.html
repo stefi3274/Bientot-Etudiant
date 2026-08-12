@@ -58,15 +58,22 @@
     <span class="eyebrow" id="mFiliere">Matière</span>
     <h1 id="mTitre">Matière</h1>
     <div class="breadcrumb"><a href="index.html">Accueil</a> › <a href="matieres.html">Matières</a> › <span id="mBread">Matière</span></div>
+    <div id="mProgres"></div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
+    <div class="mat-onglets" id="matOnglets" style="display:none">
+      <button class="mat-onglet on" data-tab="lecons">Leçons</button>
+      <button class="mat-onglet" data-tab="quiz">Quiz</button>
+    </div>
     <!-- Liste des leçons (remplie par matiere.js) ou message d'attente -->
-    <div id="leconsZone">
+    <div id="leconsContenu">
       <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
     </div>
+    <!-- Liste des quiz de la matière (remplie par matiere.js) -->
+    <div id="quizContenu"></div>
   </div>
 </section>
 
