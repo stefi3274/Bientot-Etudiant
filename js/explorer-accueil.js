@@ -17,6 +17,14 @@
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
+  const FILIERES_COULEUR = { f1: "var(--f1)", f2: "var(--f2)", f3: "var(--f3)" };
+  const COULEUR_MATIERE = {
+    "Mathématiques": "var(--m-math)", "Physique": "var(--m-phys)", "Chimie": "var(--m-chim)",
+    "Biologie": "var(--m-bio)", "Botanique": "var(--m-bota)", "Français": "var(--m-fr)",
+    "Philosophie": "var(--m-philo)", "Culture générale": "var(--m-cg)", "Créole": "var(--m-creole)",
+    "Économie et Gestion": "var(--m-eco)", "Droit": "var(--m-droit)"
+  };
+  const couleurDe = m => COULEUR_MATIERE[m] || "var(--ocre-d)";
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
@@ -76,9 +84,13 @@
   }
 
   function rendreFiliereBtns() {
-    filBtns.innerHTML = filieresAffichees.map((f, i) =>
-      '<button class="filter' + (f === filiereActuelle ? ' on' : '') + '" data-f="' + f + '">' + esc(FILIERES[f]) + '</button>'
-    ).join("");
+    filBtns.innerHTML = filieresAffichees.map((f, i) => {
+      const on = f === filiereActuelle;
+      const c = FILIERES_COULEUR[f];
+      return '<button class="filter' + (on ? ' on' : '') + '" data-f="' + f + '"'
+        + (on ? ' style="background:' + c + ';border-color:' + c + '"' : '')
+        + '>' + esc(FILIERES[f]) + '</button>';
+    }).join("");
     filBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
       filiereActuelle = b.dataset.f;
       rendreFiliereBtns();
@@ -99,13 +111,18 @@
       return;
     }
 
-    matBtns.innerHTML = matieresDisponibles.map((m, i) =>
-      '<button class="filter' + (i === 0 ? ' on' : '') + '" data-m="' + esc(m) + '">' + esc(m) + '</button>'
-    ).join("");
+    matBtns.innerHTML = matieresDisponibles.map((m, i) => {
+      const c = couleurDe(m);
+      return '<button class="filter' + (i === 0 ? ' on' : '') + '" data-m="' + esc(m) + '"'
+        + (i === 0 ? ' style="background:' + c + ';border-color:' + c + ';color:#fff"' : '')
+        + '>' + esc(m) + '</button>';
+    }).join("");
     matiereActuelle = matieresDisponibles[0];
     matBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
-      matBtns.querySelectorAll(".filter").forEach(x => x.classList.remove("on"));
+      matBtns.querySelectorAll(".filter").forEach(x => { x.classList.remove("on"); x.style.background = ""; x.style.borderColor = ""; x.style.color = ""; });
       b.classList.add("on");
+      const c = couleurDe(b.dataset.m);
+      b.style.background = c; b.style.borderColor = c; b.style.color = "#fff";
       matiereActuelle = b.dataset.m;
       charger();
     }));

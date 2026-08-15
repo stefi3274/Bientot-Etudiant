@@ -17,6 +17,7 @@
     f2: "Sciences administratives, Économie & Génie",
     f3: "Sciences humaines et sociales"
   };
+  const FILIERES_COULEUR = { f1: "var(--f1)", f2: "var(--f2)", f3: "var(--f3)" };
   const COULEUR_MATIERE = {
     "Mathématiques": "var(--m-math)", "Physique": "var(--m-phys)", "Chimie": "var(--m-chim)",
     "Biologie": "var(--m-bio)", "Botanique": "var(--m-bota)", "Français": "var(--m-fr)",
@@ -41,9 +42,13 @@
   let connecte = null;
 
   function rendreFiliereBtns(filieresAffichees) {
-    filBtns.innerHTML = filieresAffichees.map(f =>
-      '<button class="filter' + (f === filiereActuelle ? ' on' : '') + '" data-f="' + f + '">' + esc(FILIERES[f]) + '</button>'
-    ).join("");
+    filBtns.innerHTML = filieresAffichees.map(f => {
+      const on = f === filiereActuelle;
+      const c = FILIERES_COULEUR[f];
+      return '<button class="filter' + (on ? ' on' : '') + '" data-f="' + f + '"'
+        + (on ? ' style="background:' + c + ';border-color:' + c + '"' : '')
+        + '>' + esc(FILIERES[f]) + '</button>';
+    }).join("");
     filBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
       filiereActuelle = b.dataset.f;
       matiereActuelle = null;

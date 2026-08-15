@@ -32,7 +32,7 @@
   --m-phys:#e07a3c;
   --m-chim:#c94f4f;
   --m-bio:#3fa06a;
-  --m-fr:#8257b5;
+  --m-fr:#a78bda;
   --m-philo:#5b5fc7;
   --m-hist:#9c6b42;
   --m-cg:#3aa5b0;
@@ -207,7 +207,7 @@ section{padding:88px 0}
 .mat.phys{--c:var(--m-phys);--c-bg:rgba(224,122,60,.12)}
 .mat.chim{--c:var(--m-chim);--c-bg:rgba(201,79,79,.12)}
 .mat.bio{--c:var(--m-bio);--c-bg:rgba(63,160,106,.12)}
-.mat.fr{--c:var(--m-fr);--c-bg:rgba(130,87,181,.12)}
+.mat.fr{--c:var(--m-fr);--c-bg:rgba(167,139,218,.12)}
 .mat.philo{--c:var(--m-philo);--c-bg:rgba(91,95,199,.12)}
 .mat.hist{--c:var(--m-hist);--c-bg:rgba(156,107,66,.12)}
 .mat.cg{--c:var(--m-cg);--c-bg:rgba(58,165,176,.12)}

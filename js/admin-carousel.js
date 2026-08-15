@@ -18,7 +18,7 @@
   const FILIERES = { f1: "Médecine, Agronomie & Vétérinaire", f2: "Sciences administratives, Économie & Génie", f3: "Sciences humaines et sociales" };
   const COULEUR_MATIERE = {
     "Mathématiques": "#3b6ea5", "Physique": "#e07a3c", "Chimie": "#c94f4f", "Biologie": "#3fa06a",
-    "Botanique": "#5a8f3c", "Français": "#8257b5", "Philosophie": "#5b5fc7", "Culture générale": "#3aa5b0",
+    "Botanique": "#5a8f3c", "Français": "#a78bda", "Philosophie": "#5b5fc7", "Culture générale": "#3aa5b0",
     "Créole": "#d98a4b", "Économie et Gestion": "#b8863b", "Droit": "#6d5a8f"
   };
   const couleurMatiere = m => COULEUR_MATIERE[m] || "#4a5f73";
@@ -477,16 +477,28 @@
     let y = 232;
     lignesTitre.slice(0, 3).forEach(l => { ctx.fillText(l, 64, y); y += 60; });
 
+    // Boîte de texte : dimensionnée pour le contenu réel (pas étirée jusqu'en bas),
+    // puis centrée dans l'espace restant — quasiment plus d'espace blanc inutilisé.
+    const zoneHaut = y + 20, zoneBas = T - 130;
+    const padding = 44, tailleTexte = 42, ligneHauteur = 54;
+    ctx.font = "600 " + tailleTexte + "px Inter, system-ui, sans-serif";
+    const largeurTexte = T - 128 - padding * 2;
+    let lignesTexte = decouperTexte(ctx, fiche.texte, largeurTexte);
+
+    const maxLignesPossibles = Math.max(3, Math.floor((zoneBas - zoneHaut - padding * 2) / ligneHauteur));
+    if (lignesTexte.length > maxLignesPossibles) lignesTexte = lignesTexte.slice(0, maxLignesPossibles);
+
+    const boiteHauteur = Math.min(zoneBas - zoneHaut, padding * 2 + lignesTexte.length * ligneHauteur);
+    const boiteY = zoneHaut + Math.max(0, (zoneBas - zoneHaut - boiteHauteur) / 2);
+
     ctx.fillStyle = BLANC;
-    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 20); ctx.fill();
+    rr(ctx, 64, boiteY, T - 128, boiteHauteur, 22); ctx.fill();
     ctx.strokeStyle = "rgba(22,22,22,.15)"; ctx.lineWidth = 1.5;
-    rr(ctx, 64, y + 20, T - 128, T - (y + 20) - 130, 20); ctx.stroke();
+    rr(ctx, 64, boiteY, T - 128, boiteHauteur, 22); ctx.stroke();
 
     ctx.fillStyle = NOIR;
-    ctx.font = "500 34px Inter, system-ui, sans-serif";
-    const lignesTexte = decouperTexte(ctx, fiche.texte, T - 128 - 72);
-    let ty = y + 76;
-    lignesTexte.slice(0, 8).forEach(l => { ctx.fillText(l, 100, ty); ty += 46; });
+    let ty = boiteY + padding + tailleTexte * 0.72;
+    lignesTexte.forEach(l => { ctx.fillText(l, 64 + padding, ty); ty += ligneHauteur; });
 
     piedDePage(ctx);
     return cv;
