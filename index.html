@@ -60,7 +60,7 @@
     <h1 class="hero-title"><span class="reveal-word">Prépare <span class="chalk">aujourd'hui</span>.</span><br><span class="reveal-word reveal-word-2">Réussis <span class="pop">demain</span>.</span></h1>
     <p>La plateforme qui accompagne les postulant.e.s haïtien.ne.s vers la faculté.</p>
     <div class="hero-actions">
-      <a href="#explorerSection" class="btn btn-primary">Voir les leçons et quiz <span>→</span></a>
+      <a href="#universSection" class="btn btn-primary">Voir les leçons et quiz <span>→</span></a>
     </div>
     <div class="hero-actions hero-stats-actions" style="margin-top:12px">
       <a href="quiz-libres.html" class="btn btn-stat btn-libre">Voir les Quiz Libres <span>→</span><small>20 questions · 10 min</small>
@@ -86,12 +86,43 @@
 </section>
 
 <!-- ===== EXPLORER LES LEÇONS/QUIZ ===== -->
+<!-- ===== CHOISIS TON UNIVERS ===== -->
+<section id="universSection">
+  <div class="wrap">
+    <h2 class="univers-titre">Choisis ton univers</h2>
+    <div class="univers-choix">
+      <button class="univers-carte univ-universite on" data-univers="universite">
+        <span class="univers-emoji">🎓</span>
+        <span class="univers-nom">Université</span>
+        <span class="univers-desc">Concours d'entrée · par filière</span>
+      </button>
+      <button class="univers-carte univ-secondaire" data-univers="secondaire">
+        <span class="univers-emoji">📘</span>
+        <span class="univers-nom">Secondaire</span>
+        <span class="univers-desc">4e à Terminale · par niveau</span>
+      </button>
+    </div>
+  </div>
+</section>
+
 <section class="explorer" id="explorerSection">
   <div class="wrap">
     <div class="filters" id="expFiliereBtns"></div>
     <p class="exp-filiere-label" id="expFiliereLabel"></p>
     <div class="filters" id="expMatiereBtns"></div>
     <div id="expZone"></div>
+  </div>
+</section>
+
+<!-- ===== SECONDAIRE, intégré à l'accueil (même contenu que secondaire.html) ===== -->
+<section class="explorer" id="secondaireHomeSection" style="display:none">
+  <div class="wrap">
+    <div class="filters" id="secNiveauBtns"></div>
+    <div class="filters" id="secSerieBtns"></div>
+    <div class="filters" id="secMatiereBtns"></div>
+    <div id="secZone">
+      <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
+    </div>
   </div>
 </section>
 
@@ -127,11 +158,26 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js?v=20260811"></script>
-<script src="js/main.js?v=20260811"></script>
-<script src="js/eleve.js?v=20260811"></script>
-<script src="js/quiz-du-jour.js?v=20260811"></script>
-<script src="js/explorer-accueil.js?v=20260811"></script>
-<script src="js/icons.js?v=20260811"></script>
+<script src="js/supabase-config.js?v=20260817"></script>
+<script src="js/main.js?v=20260817"></script>
+<script src="js/eleve.js?v=20260817"></script>
+<script src="js/quiz-du-jour.js?v=20260817"></script>
+<script src="js/explorer-accueil.js?v=20260817"></script>
+<script src="js/secondaire.js?v=20260817"></script>
+<script src="js/icons.js?v=20260817"></script>
+<script>
+(function () {
+  const boutons = document.querySelectorAll("#universSection .univers-carte");
+  const secExplorer = document.getElementById("explorerSection");
+  const secSecondaire = document.getElementById("secondaireHomeSection");
+  boutons.forEach(b => b.addEventListener("click", () => {
+    boutons.forEach(x => x.classList.toggle("on", x === b));
+    const univ = b.dataset.univers;
+    secExplorer.style.display = univ === "universite" ? "block" : "none";
+    secSecondaire.style.display = univ === "secondaire" ? "block" : "none";
+    document.body.setAttribute("data-univers-accueil", univ);
+  }));
+})();
+</script>
 </body>
 </html>
