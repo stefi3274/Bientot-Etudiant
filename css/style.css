@@ -12,6 +12,12 @@
   --ardoise-2:#1c443a;     /* ardoise plus claire */
   --ardoise-3:#245043;     /* bordures sur fond sombre */
   --craie:#f7f4ec;         /* blanc craie — fond clair */
+  --secondaire:#7d6fb3;    /* accent générique section Secondaire (listes admin) */
+  --niv-9e:#d4a24c;
+  --niv-ns1:#7ba05b;
+  --niv-ns2:#4f9d9d;
+  --niv-ns3:#7d6fb3;
+  --niv-ns4:#b5566a;
   --craie-2:#ede8da;       /* craie ombrée — cartes, séparateurs */
   --ocre:#e8b84b;          /* jaune craie — l'accent */
   --ocre-d:#d4a336;
@@ -409,11 +415,25 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 /* ============================================================
    Admin — onglets + éditeur de leçons
    ============================================================ */
-.adm-tabs{display:flex;gap:6px}
+.adm-tabs{display:flex;gap:6px;flex-wrap:wrap}
 .adm-tab{background:none;border:1px solid var(--craie-2);color:var(--encre-2);font-family:var(--serif);
   font-weight:600;font-size:1.1rem;padding:9px 20px;border-radius:10px;cursor:pointer;transition:all .2s}
 .adm-tab:hover{border-color:var(--ocre)}
 .adm-tab.on{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
+
+/* Univers Université (vert ardoise, thème habituel) et Secondaire (violet) */
+.univers-univ.on,.univers-univ.actif{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
+.univers-sec.on,.univers-sec.actif{background:var(--secondaire);color:#fff;border-color:var(--secondaire)}
+
+.adm-sub-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:14px 0 6px;padding:12px 14px;
+  border-radius:12px;background:var(--craie-2)}
+.adm-sub-tabs .adm-tab{font-size:1rem;padding:7px 16px;background:#fff}
+.adm-sub-tabs .adm-tab.on{background:var(--ardoise);color:var(--craie)}
+body[data-univers="sec"] .adm-sub-tabs{background:rgba(125,111,179,.12)}
+body[data-univers="sec"] .adm-sub-tabs .adm-tab.on{background:var(--secondaire);color:#fff}
+.adm-univers-badge{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  padding:5px 12px;border-radius:20px;background:var(--ardoise);color:var(--craie);margin-right:6px}
+body[data-univers="sec"] .adm-univers-badge{background:var(--secondaire)}
 
 .lecon-editor{background:var(--craie);border:1px solid var(--craie-2);border-radius:var(--r);padding:28px;margin-bottom:24px}
 .lecon-editor h2{font-size:1.4rem;margin-bottom:16px}
@@ -453,6 +473,7 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .lec-item.f1{border-left-color:var(--f1)}
 .lec-item.f2{border-left-color:var(--f2)}
 .lec-item.f3{border-left-color:var(--f3)}
+.lec-item.sec{border-left-color:var(--secondaire)}
 .lec-info b{display:block;font-family:var(--serif);font-size:1.1rem;color:var(--encre)}
 .lec-info .lec-meta{font-size:.82rem;color:var(--encre-2);margin-top:3px}
 .lec-act{display:flex;gap:7px;flex-wrap:wrap}
@@ -593,6 +614,7 @@ body[data-filiere="f3"] .fiche-num{background:var(--f3)}
 .quiz-item.f1{border-left-color:var(--f1)}
 .quiz-item.f2{border-left-color:var(--f2)}
 .quiz-item.f3{border-left-color:var(--f3)}
+.quiz-item.sec{border-left-color:var(--secondaire)}
 .quiz-item .qi-info b{display:block;font-family:var(--serif);font-size:1.1rem}
 .quiz-item .qi-meta{font-size:.82rem;color:var(--encre-2);margin-top:3px}
 

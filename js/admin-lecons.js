@@ -11,24 +11,68 @@
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
+  const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
+  // Tronc commun (9e, NS1, NS2) — pas de filière avant le NS3
+  const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
+    "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+  // Séries du Nouveau Secondaire (NS3/NS4), chacune avec ses matières fixes — MENFP
+  const SERIES_MATIERES = {
+    svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
+    smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
+    ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
+    lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+  };
+  const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-  // ---------- Onglets admin (gère les 3 : contrib, lecons, quiz) ----------
-  document.querySelectorAll(".adm-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      const t = tab.getAttribute("data-tab");
-      document.querySelectorAll(".adm-tab").forEach(x => x.classList.toggle("on", x === tab));
-      ["dashboard", "contrib", "lecons", "quiz", "carousels", "fiche"].forEach(k => {
-        const el = $("tab-" + k);
-        if (el) el.style.display = (t === k) ? "block" : "none";
-      });
-      if (t === "lecons" && typeof DB !== "undefined" && DB) chargerLecons();
-      if (t === "dashboard" && typeof DB !== "undefined" && DB && window.chargerDashboard) window.chargerDashboard();
+  // ---------- Navigation admin : onglets simples + univers (Université/Secondaire) + sous-onglets ----------
+  window.adminUnivers = "univ";
+  const subTabs = $("admSubTabs"), universBadge = $("admUniversBadge");
+
+  function clearTopOn() {
+    document.querySelectorAll(".adm-tabs > .adm-tab").forEach(x => x.classList.remove("on"));
+  }
+  function majAffichageOnglet(t) {
+    ["dashboard", "contrib", "lecons", "quiz", "carousels", "fiche"].forEach(k => {
+      const el = $("tab-" + k);
+      if (el) el.style.display = (t === k) ? "block" : "none";
+    });
+    if (t === "lecons" && typeof DB !== "undefined" && DB) chargerLecons();
+    if (t === "dashboard" && typeof DB !== "undefined" && DB && window.chargerDashboard) window.chargerDashboard();
+  }
+  function ouvrirSousOnglet(t) {
+    document.querySelectorAll("#admSubTabs .adm-tab").forEach(x => x.classList.toggle("on", x.dataset.tab === t));
+    majAffichageOnglet(t);
+  }
+  function ouvrirUnivers(u, sousTab) {
+    window.adminUnivers = u;
+    document.body.setAttribute("data-univers", u);
+    clearTopOn();
+    document.querySelectorAll(".adm-tab[data-univers]").forEach(x => x.classList.toggle("on", x.dataset.univers === u));
+    if (subTabs) subTabs.style.display = "flex";
+    if (universBadge) universBadge.textContent = u === "sec" ? "Secondaire" : "Université";
+    ouvrirSousOnglet(sousTab || "lecons");
+    document.dispatchEvent(new CustomEvent("univers-change", { detail: u }));
+  }
+  window.ouvrirUnivers = ouvrirUnivers;
+  window.ouvrirSousOnglet = ouvrirSousOnglet;
+  document.querySelectorAll(".adm-tab[data-univers]").forEach(btn => {
+    btn.addEventListener("click", () => ouvrirUnivers(btn.dataset.univers));
+  });
+  document.querySelectorAll("#admSubTabs .adm-tab[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => ouvrirSousOnglet(btn.dataset.tab));
+  });
+  document.querySelectorAll(".adm-tabs > .adm-tab[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      clearTopOn();
+      btn.classList.add("on");
+      if (subTabs) subTabs.style.display = "none";
+      majAffichageOnglet(btn.dataset.tab);
     });
   });
 
-  // ---------- Matières selon la filière (indépendant de Supabase) ----------
+  // ---------- Matières selon la filière univ (indépendant de Supabase) ----------
   const selFil = $("leFiliere"), selMat = $("leMatiere");
   function majMatieres() {
     if (!selFil || !selMat) return;
@@ -36,6 +80,31 @@
     selMat.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
   }
   if (selFil) { selFil.addEventListener("change", majMatieres); majMatieres(); }
+
+  // ---------- Secondaire : niveau -> (série si NS3/NS4) -> matières fixes ----------
+  const filiereWrap = $("leFiliereWrap"), niveauWrap = $("leNiveauWrap");
+  const selNiveau = $("leNiveau"), serieWrap = $("leSerieWrap"), selSerie = $("leSerie"), selMatSec = $("leMatiereSec");
+
+  function sectionActuelle() { return window.adminUnivers || "univ"; }
+
+  function majMatieresSecondaire() {
+    if (!selNiveau || !selMatSec) return;
+    const avecSerie = NIVEAUX_AVEC_SERIE.includes(selNiveau.value);
+    if (serieWrap) serieWrap.style.display = avecSerie ? "block" : "none";
+    const opts = avecSerie ? (SERIES_MATIERES[selSerie.value] || []) : TRONC_COMMUN;
+    selMatSec.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
+  }
+  if (selNiveau) selNiveau.addEventListener("change", majMatieresSecondaire);
+  if (selSerie) selSerie.addEventListener("change", majMatieresSecondaire);
+
+  function majSection() {
+    const sec = sectionActuelle() === "sec";
+    if (filiereWrap) filiereWrap.style.display = sec ? "none" : "flex";
+    if (niveauWrap) niveauWrap.style.display = sec ? "flex" : "none";
+    if (sec) majMatieresSecondaire();
+  }
+  document.addEventListener("univers-change", majSection);
+  majSection();
 
   if (typeof DB === "undefined" || !DB) return;
 
@@ -249,10 +318,17 @@
     const ent = await monEnt();
     if (!ent) { statusL("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); return; }
 
+    const estSecondaire = sectionActuelle() === "sec";
+    const niveauChoisi = estSecondaire ? selNiveau.value : null;
+    const avecSerie = estSecondaire && NIVEAUX_AVEC_SERIE.includes(niveauChoisi);
+    const matiereChoisie = estSecondaire ? selMatSec.value : selMat.value;
+    if (estSecondaire && !matiereChoisie) { statusL("La matière est requise.", "err"); return; }
+
     const champs = {
       entreprise_id: ent,
-      filiere: selFil.value,
-      matiere: selMat.value,
+      filiere: estSecondaire ? (avecSerie ? selSerie.value : null) : selFil.value,
+      niveau: niveauChoisi,
+      matiere: matiereChoisie,
       titre: titre,
       chapitre: $("leChapitre").value.trim() || null,
       apercu: $("leApercu").value.trim() || null,
@@ -292,6 +368,8 @@
   function resetForm() {
     editId = null; pdfFile = null;
     $("leTitre").value = ""; $("leChapitre").value = ""; $("leApercu").value = ""; $("leAuteur").value = "";
+    if (selNiveau) selNiveau.value = "9e";
+    majMatieresSecondaire();
     rte.innerHTML = "";
     pdfTxt.textContent = "Clique pour joindre un PDF (facultatif)";
     pdfDrop.classList.remove("has");
@@ -329,9 +407,9 @@
     }
     box.innerHTML = (recherche ? '<p style="color:var(--encre-2);font-size:.85rem;margin-bottom:10px">' + liste.length + ' résultat(s)</p>' : '')
       + liste.map(l =>
-        '<div class="lec-item ' + l.filiere + '">'
+        '<div class="lec-item ' + (l.filiere || "sec") + '">'
         + '<div class="lec-info"><b>' + esc(l.titre) + '</b>'
-        + '<span class="lec-meta">' + esc(l.matiere) + ' · Leçon ' + (l.ordre || 1)
+        + '<span class="lec-meta">' + esc(l.matiere) + (l.niveau ? ' · ' + esc(NIVEAUX[l.niveau] || l.niveau) + (l.filiere && NIVEAUX_AVEC_SERIE.includes(l.niveau) ? ' · ' + l.filiere.toUpperCase() : '') : '') + ' · Leçon ' + (l.ordre || 1)
         + (l.pdf_url ? ' · PDF joint' : '') + (l.auteur ? ' · ' + esc(l.auteur) : '') + '</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + l.id + '">Modifier</button>'
@@ -349,8 +427,9 @@
     const box = $("leconList");
     if (!box) return;
     box.innerHTML = "<p class='empty'>Chargement…</p>";
-    let q = DB.from("lecons").select("*").order("filiere").order("matiere").order("ordre");
-    if (filtreLecon !== "all") q = q.eq("filiere", filtreLecon);
+    let q = DB.from("lecons").select("*").order("filiere").order("niveau").order("matiere").order("ordre");
+    if (filtreLecon === "sec") q = q.not("niveau", "is", null);
+    else if (filtreLecon !== "all") q = q.eq("filiere", filtreLecon);
     const { data, error } = await q;
     if (error) { box.innerHTML = "<p class='empty'>Erreur de chargement.</p>"; return; }
     derniereListe = data || [];
@@ -360,7 +439,17 @@
   function editLecon(l) {
     if (!l) return;
     editId = l.id;
-    selFil.value = l.filiere; majMatieres(); selMat.value = l.matiere;
+    const estSec = !!l.niveau;
+    ouvrirUnivers(estSec ? "sec" : "univ");
+    if (estSec) {
+      selNiveau.value = l.niveau;
+      const avecSerie = NIVEAUX_AVEC_SERIE.includes(l.niveau);
+      if (avecSerie && selSerie) selSerie.value = l.filiere || "svt";
+      majMatieresSecondaire();
+      selMatSec.value = l.matiere || "";
+    } else {
+      selFil.value = l.filiere; majMatieres(); selMat.value = l.matiere;
+    }
     $("leTitre").value = l.titre || "";
     $("leChapitre").value = l.chapitre || "";
     $("leApercu").value = l.apercu || "";

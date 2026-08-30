@@ -99,13 +99,21 @@
         <div class="adm-tabs">
           <button class="adm-tab on" data-tab="dashboard">Tableau de bord</button>
           <button class="adm-tab" data-tab="contrib">Contributions</button>
-          <button class="adm-tab" data-tab="lecons">Leçons</button>
-          <button class="adm-tab" data-tab="quiz">Quiz</button>
+          <button class="adm-tab univers-univ" data-univers="univ">🎓 Université</button>
+          <button class="adm-tab univers-sec" data-univers="sec">📘 Secondaire</button>
           <button class="adm-tab" data-tab="carousels">Carousels</button>
-          <button class="adm-tab" data-tab="fiche">Fiche</button>
         </div>
         <button class="btn btn-ghost" id="logoutBtn" style="color:var(--encre);border-color:var(--craie-2)">Déconnexion</button>
       </div>
+
+      <!-- Sous-navigation d'un univers (Leçons / Quiz / Fiche), affichée une fois un univers choisi -->
+      <div class="adm-sub-tabs" id="admSubTabs" style="display:none">
+        <span class="adm-univers-badge" id="admUniversBadge"></span>
+        <button class="adm-tab" data-tab="lecons">Leçons</button>
+        <button class="adm-tab" data-tab="quiz">Quiz</button>
+        <button class="adm-tab" data-tab="fiche">Fiche</button>
+      </div>
+
       <div class="status-msg" id="admStatus"></div>
 
       <!-- ONGLET TABLEAU DE BORD -->
@@ -145,7 +153,7 @@
         <div class="lecon-editor" id="leconEditor">
           <h2 id="leconFormTitre">Nouvelle leçon</h2>
           <div class="status-msg" id="leconMsg"></div>
-          <div class="le-row">
+          <div class="le-row" id="leFiliereWrap">
             <div class="le-field">
               <label>Filière</label>
               <select id="leFiliere">
@@ -157,6 +165,31 @@
             <div class="le-field">
               <label>Matière</label>
               <select id="leMatiere"></select>
+            </div>
+          </div>
+          <div class="le-row" id="leNiveauWrap" style="display:none">
+            <div class="le-field">
+              <label>Niveau</label>
+              <select id="leNiveau">
+                <option value="9e">4e (9e Année Fondamentale)</option>
+                <option value="ns1">3e (NS1)</option>
+                <option value="ns2">2e (NS2)</option>
+                <option value="ns3">1ère (NS3)</option>
+                <option value="ns4">Terminale (NS4)</option>
+              </select>
+            </div>
+            <div class="le-field" id="leSerieWrap" style="display:none">
+              <label>Série</label>
+              <select id="leSerie">
+                <option value="svt">SVT — Sciences de la Vie et de la Terre</option>
+                <option value="smp">SMP — Sciences, Mathématiques, Physique</option>
+                <option value="ses">SES — Sciences Économiques et Sociales</option>
+                <option value="lla">LLA — Lettres, Langues et Arts</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière</label>
+              <select id="leMatiereSec"></select>
             </div>
           </div>
           <div class="le-field">
@@ -241,6 +274,7 @@ Contenu..."></textarea>
             <button class="filter" data-lf="f1">Filière 1</button>
             <button class="filter" data-lf="f2">Filière 2</button>
             <button class="filter" data-lf="f3">Filière 3</button>
+            <button class="filter" data-lf="sec">Secondaire</button>
           </div>
           <div id="leconList"><p class="empty">Chargement…</p></div>
         </div>
@@ -259,7 +293,7 @@ Contenu..."></textarea>
               <label class="qz-type-opt gogo"><input type="radio" name="qzType" value="gogo"><span>Quiz à Gogo</span><small>10 questions, source des carousels</small></label>
             </div>
           </div>
-          <div class="le-row">
+          <div class="le-row" id="qzFiliereWrap">
             <div class="le-field">
               <label>Filière</label>
               <select id="qzFiliere">
@@ -271,6 +305,31 @@ Contenu..."></textarea>
             <div class="le-field">
               <label>Matière</label>
               <select id="qzMatiere"></select>
+            </div>
+          </div>
+          <div class="le-row" id="qzNiveauWrap" style="display:none">
+            <div class="le-field">
+              <label>Niveau</label>
+              <select id="qzNiveau">
+                <option value="9e">4e (9e Fondamentale)</option>
+                <option value="ns1">3e (NS1)</option>
+                <option value="ns2">2e (NS2)</option>
+                <option value="ns3">1ère (NS3)</option>
+                <option value="ns4">Terminale (NS4)</option>
+              </select>
+            </div>
+            <div class="le-field" id="qzSerieWrap" style="display:none">
+              <label>Série</label>
+              <select id="qzSerie">
+                <option value="svt">SVT — Sciences de la Vie et de la Terre</option>
+                <option value="smp">SMP — Sciences, Mathématiques, Physique</option>
+                <option value="ses">SES — Sciences Économiques et Sociales</option>
+                <option value="lla">LLA — Lettres, Langues et Arts</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière</label>
+              <select id="qzMatiereSec"></select>
             </div>
           </div>
           <div class="le-field" id="qzLeconWrap">
@@ -342,6 +401,7 @@ Réponse: B"></textarea>
             <button class="filter" data-qf="f1">Médecine, Agro &amp; Véto</button>
             <button class="filter" data-qf="f2">Sciences admin, Éco &amp; Génie</button>
             <button class="filter" data-qf="f3">Sciences humaines et sociales</button>
+            <button class="filter" data-qf="sec">Secondaire</button>
           </div>
 
           <div id="quizSelectBar" style="display:none;align-items:center;gap:12px;flex-wrap:wrap;
@@ -422,7 +482,7 @@ Réponse: B"></textarea>
           <h2>Fiche — leçon + quiz en un seul texte</h2>
           <div class="status-msg" id="fiMsg"></div>
 
-          <div class="le-row">
+          <div class="le-row" id="fiFiliereWrap">
             <div class="le-field">
               <label>Filière</label>
               <select id="fiFiliere">
@@ -434,6 +494,31 @@ Réponse: B"></textarea>
             <div class="le-field">
               <label>Matière</label>
               <select id="fiMatiere"></select>
+            </div>
+          </div>
+          <div class="le-row" id="fiNiveauWrap" style="display:none">
+            <div class="le-field">
+              <label>Niveau</label>
+              <select id="fiNiveau">
+                <option value="9e">4e (9e Fondamentale)</option>
+                <option value="ns1">3e (NS1)</option>
+                <option value="ns2">2e (NS2)</option>
+                <option value="ns3">1ère (NS3)</option>
+                <option value="ns4">Terminale (NS4)</option>
+              </select>
+            </div>
+            <div class="le-field" id="fiSerieWrap" style="display:none">
+              <label>Série</label>
+              <select id="fiSerie">
+                <option value="svt">SVT — Sciences de la Vie et de la Terre</option>
+                <option value="smp">SMP — Sciences, Mathématiques, Physique</option>
+                <option value="ses">SES — Sciences Économiques et Sociales</option>
+                <option value="lla">LLA — Lettres, Langues et Arts</option>
+              </select>
+            </div>
+            <div class="le-field">
+              <label>Matière</label>
+              <select id="fiMatiereSec"></select>
             </div>
           </div>
 

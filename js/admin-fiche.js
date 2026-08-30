@@ -12,6 +12,15 @@
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
+  const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
+    "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+  const SERIES_MATIERES = {
+    svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
+    smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
+    ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
+    lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+  };
+  const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const statusFi = (m, t) => { const el = $("fiMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t || "ok"); } };
 
@@ -21,6 +30,31 @@
     selMat.innerHTML = (MATIERES[selFil.value] || []).map(m => "<option>" + m + "</option>").join("");
   }
   if (selFil) { selFil.addEventListener("change", majMat); majMat(); }
+
+  // ---------- Secondaire : niveau -> (série si NS3/NS4) -> matières fixes ----------
+  const fiFiliereWrap = $("fiFiliereWrap"), fiNiveauWrap = $("fiNiveauWrap");
+  const fiSelNiveau = $("fiNiveau"), fiSerieWrap = $("fiSerieWrap"), fiSelSerie = $("fiSerie"), fiSelMatSec = $("fiMatiereSec");
+
+  function sectionActuelle() { return window.adminUnivers || "univ"; }
+
+  function majMatieresSecondaire() {
+    if (!fiSelNiveau || !fiSelMatSec) return;
+    const avecSerie = NIVEAUX_AVEC_SERIE.includes(fiSelNiveau.value);
+    if (fiSerieWrap) fiSerieWrap.style.display = avecSerie ? "block" : "none";
+    const opts = avecSerie ? (SERIES_MATIERES[fiSelSerie.value] || []) : TRONC_COMMUN;
+    fiSelMatSec.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
+  }
+  if (fiSelNiveau) fiSelNiveau.addEventListener("change", majMatieresSecondaire);
+  if (fiSelSerie) fiSelSerie.addEventListener("change", majMatieresSecondaire);
+
+  function majSection() {
+    const sec = sectionActuelle() === "sec";
+    if (fiFiliereWrap) fiFiliereWrap.style.display = sec ? "none" : "flex";
+    if (fiNiveauWrap) fiNiveauWrap.style.display = sec ? "flex" : "none";
+    if (sec) majMatieresSecondaire();
+  }
+  document.addEventListener("univers-change", majSection);
+  majMatieresSecondaire();
 
   if ($("fiVoirFormat")) $("fiVoirFormat").addEventListener("click", e => {
     e.preventDefault();
@@ -214,18 +248,25 @@
     $("fiPublier").disabled = true;
     statusFi("Publication en cours…", "");
 
-    const filiere = selFil.value, matiere = selMat.value;
+    const estSecFi = sectionActuelle() === "sec";
+    const niveau = estSecFi ? fiSelNiveau.value : null;
+    const avecSerieFi = estSecFi && NIVEAUX_AVEC_SERIE.includes(niveau);
+    const filiere = estSecFi ? (avecSerieFi ? fiSelSerie.value : null) : selFil.value;
+    const matiere = estSecFi ? fiSelMatSec.value : selMat.value;
+    if (estSecFi && !matiere) { statusFi("La matière est requise.", "err"); $("fiPublier").disabled = false; return; }
     const ent = await monEnt();
     if (!ent) { statusFi("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); $("fiPublier").disabled = false; return; }
 
-    const { count } = await DB.from("lecons").select("id", { count: "exact", head: true }).eq("filiere", filiere).eq("matiere", matiere);
+    let compteQ = DB.from("lecons").select("id", { count: "exact", head: true }).eq("matiere", matiere);
+    compteQ = estSecFi ? compteQ.eq("niveau", niveau) : compteQ.eq("filiere", filiere);
+    const { count } = await compteQ;
     let ordre = (count || 0) + 1;
 
     let ok = 0, erreurs = [], resume = [];
     for (const d of lecons) {
       try {
         const { data: lec, error: eLec } = await DB.from("lecons").insert({
-          entreprise_id: ent, filiere, matiere, titre: d.titre, chapitre: d.chapitre || null, apercu: d.apercu || null,
+          entreprise_id: ent, filiere, niveau, matiere, titre: d.titre, chapitre: d.chapitre || null, apercu: d.apercu || null,
           contenu: d.contenu_html, publie: true, ordre: ordre
         }).select("id").single();
         if (eLec) throw new Error(eLec.message);
@@ -235,7 +276,7 @@
         for (const qz of d.quizzes) {
           const titreQuiz = d.quizzes.length > 1 ? qz.sousTitre + " — " + d.titre : "Quiz — " + d.titre;
           const { data: qzRow, error: eQz } = await DB.from("quiz").insert({
-            entreprise_id: ent, filiere, matiere, titre: titreQuiz,
+            entreprise_id: ent, filiere, niveau, matiere, titre: titreQuiz,
             duree_sec: 600, type: "lecon", lecon_id: lec.id, publie: true
           }).select("id").single();
           if (eQz) throw new Error(eQz.message);

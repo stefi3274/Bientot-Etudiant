@@ -9,11 +9,21 @@
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
+  const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
+  const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
+    "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+  const SERIES_MATIERES = {
+    svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
+    smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
+    ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
+    lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+  };
+  const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const statusQ = (m, t) => { const el = $("quizMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t||"ok"); } };
 
-  // Matières selon filière
+  // Matières selon filière univ
   const selFil = $("qzFiliere"), selMat = $("qzMatiere");
   function majMat() {
     if (!selFil || !selMat) return;
@@ -23,6 +33,34 @@
   }
   if (selFil) { selFil.addEventListener("change", majMat); majMat(); }
   if (selMat) selMat.addEventListener("change", chargerLeconsRattach);
+
+  // ---------- Secondaire : niveau -> (série si NS3/NS4) -> matières fixes ----------
+  const qzFiliereWrap = $("qzFiliereWrap"), qzNiveauWrap = $("qzNiveauWrap");
+  const qzSelNiveau = $("qzNiveau"), qzSerieWrap = $("qzSerieWrap"), qzSelSerie = $("qzSerie"), qzSelMatSec = $("qzMatiereSec");
+
+  function sectionActuelle() { return window.adminUnivers || "univ"; }
+
+  function majMatieresSecondaire() {
+    if (!qzSelNiveau || !qzSelMatSec) return;
+    const avecSerie = NIVEAUX_AVEC_SERIE.includes(qzSelNiveau.value);
+    if (qzSerieWrap) qzSerieWrap.style.display = avecSerie ? "block" : "none";
+    const opts = avecSerie ? (SERIES_MATIERES[qzSelSerie.value] || []) : TRONC_COMMUN;
+    qzSelMatSec.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
+    chargerLeconsRattach();
+  }
+  if (qzSelNiveau) qzSelNiveau.addEventListener("change", majMatieresSecondaire);
+  if (qzSelSerie) qzSelSerie.addEventListener("change", majMatieresSecondaire);
+  if (qzSelMatSec) qzSelMatSec.addEventListener("change", chargerLeconsRattach);
+
+  function majSection() {
+    const sec = sectionActuelle() === "sec";
+    if (qzFiliereWrap) qzFiliereWrap.style.display = sec ? "none" : "flex";
+    if (qzNiveauWrap) qzNiveauWrap.style.display = sec ? "flex" : "none";
+    if (sec) majMatieresSecondaire();
+    chargerLeconsRattach();
+  }
+  document.addEventListener("univers-change", majSection);
+  majMatieresSecondaire();
 
   // Type de quiz : afficher/cacher le rattachement leçon
   const typeRadios = document.querySelectorAll('input[name="qzType"]');
@@ -35,12 +73,20 @@
   typeRadios.forEach(r => r.addEventListener("change", majType));
   majType();
 
-  // Charger les leçons de la matière courante pour le rattachement
+  // Charger les leçons de la matière courante pour le rattachement (Université OU Secondaire)
   async function chargerLeconsRattach() {
     const sel = $("qzLecon");
     if (!sel || typeof DB === "undefined" || !DB) return;
-    const { data } = await DB.from("lecons").select("id, titre, ordre")
-      .eq("filiere", selFil.value).eq("matiere", selMat.value).order("ordre");
+    const estSec = sectionActuelle() === "sec";
+    const matiereActuelle = estSec ? (qzSelMatSec ? qzSelMatSec.value : "") : selMat.value;
+    let q = DB.from("lecons").select("id, titre, ordre").eq("matiere", matiereActuelle).order("ordre");
+    if (estSec) {
+      q = q.eq("niveau", qzSelNiveau.value);
+      if (NIVEAUX_AVEC_SERIE.includes(qzSelNiveau.value)) q = q.eq("filiere", qzSelSerie.value);
+    } else {
+      q = q.eq("filiere", selFil.value);
+    }
+    const { data } = await q;
     const actuel = sel.value;
     sel.innerHTML = '<option value="">— Choisir une leçon —</option>'
       + (data || []).map(l => '<option value="' + l.id + '">Leçon ' + (l.ordre||1) + ' : ' + esc(l.titre) + '</option>').join("");
@@ -167,6 +213,11 @@
     const typeLot = typeChoisi === "gogo" ? "gogo" : (typeChoisi === "lecon" ? "lecon" : "dimanche");
     const leconIdLot = (typeChoisi === "lecon" && $("qzLecon") && $("qzLecon").value) ? $("qzLecon").value : null;
     if (typeChoisi === "lecon" && !leconIdLot) { statusQ("Choisis la leçon à rattacher avant d'importer (ou passe en Quiz Libre/Gogo).", "err"); return; }
+    const estSecLot = sectionActuelle() === "sec";
+    const niveauLot = estSecLot ? qzSelNiveau.value : null;
+    const avecSerieLot = estSecLot && NIVEAUX_AVEC_SERIE.includes(niveauLot);
+    const matiereLot = estSecLot ? qzSelMatSec.value : selMat.value;
+    if (estSecLot && !matiereLot) { statusQ("La matière est requise.", "err"); return; }
 
     let ok = 0, erreurs = [];
     for (let i = 0; i < groupes.length; i++) {
@@ -176,8 +227,8 @@
       if (incomplete !== -1) { erreurs.push(groupes[i].sousTitre + ", question " + (incomplete + 1) + " incomplète."); continue; }
 
       const { data: qz, error: eQz } = await DB.from("quiz").insert({
-        entreprise_id: ent, filiere: selFil.value, matiere: selMat.value,
-        titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
+        entreprise_id: ent, filiere: estSecLot ? (avecSerieLot ? qzSelSerie.value : null) : selFil.value, niveau: niveauLot,
+        matiere: matiereLot, titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
         type: typeLot, lecon_id: leconIdLot, publie: true
       }).select("id").single();
       if (eQz) { erreurs.push(groupes[i].sousTitre + " : " + eQz.message); continue; }
@@ -257,11 +308,17 @@
     const typeQ = (document.querySelector('input[name="qzType"]:checked') || {}).value || "lecon";
     const leconId = ($("qzLecon") && $("qzLecon").value) ? $("qzLecon").value : null;
     if (typeQ === "lecon" && !leconId) { statusQ("Choisis la leçon à rattacher (ou passe en Quiz Libre).", "err"); return; }
+    const estSecQz = sectionActuelle() === "sec";
+    const niveauQz = estSecQz ? qzSelNiveau.value : null;
+    const avecSerieQz = estSecQz && NIVEAUX_AVEC_SERIE.includes(niveauQz);
+    const matiereQz = estSecQz ? qzSelMatSec.value : selMat.value;
+    if (estSecQz && !matiereQz) { statusQ("La matière est requise.", "err"); return; }
 
     const quizData = {
       entreprise_id: ent,
-      filiere: selFil.value,
-      matiere: selMat.value,
+      filiere: estSecQz ? (avecSerieQz ? qzSelSerie.value : null) : selFil.value,
+      niveau: niveauQz,
+      matiere: matiereQz,
       titre: titre,
       duree_sec: (parseInt($("qzDuree").value) || 10) * 60,
       type: typeQ,
@@ -296,6 +353,8 @@
   function resetQuiz() {
     editId = null;
     $("qzTitre").value = ""; $("qzDuree").value = "10";
+    if (qzSelNiveau) qzSelNiveau.value = "9e";
+    majMatieresSecondaire();
     const rLecon = document.querySelector('input[name="qzType"][value="lecon"]');
     if (rLecon) rLecon.checked = true;
     majType();
@@ -338,7 +397,8 @@
     if (!box) return;
     box.innerHTML = "<p class='empty'>Chargement…</p>";
     let q = DB.from("quiz").select("*, questions(count)").order("created_at", { ascending: false });
-    if (filtreQuiz !== "all") q = q.eq("filiere", filtreQuiz);
+    if (filtreQuiz === "sec") q = q.not("niveau", "is", null);
+    else if (filtreQuiz !== "all") q = q.eq("filiere", filtreQuiz);
     const { data, error } = await q;
     if (error) { box.innerHTML = "<p class='empty'>Erreur de chargement.</p>"; return; }
     if (!data.length) { box.innerHTML = "<p class='empty'>Aucun quiz pour l'instant.</p>"; majBarreSelection(); return; }
@@ -347,10 +407,10 @@
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
       const estDim = q.type === "dimanche";
       const estGogo = q.type === "gogo";
-      return '<div class="quiz-item ' + q.filiere + '">'
+      return '<div class="quiz-item ' + (q.filiere || "sec") + '">'
         + '<input type="checkbox" class="quiz-select-cb" data-id="' + q.id + '"' + (selection.has(q.id) ? ' checked' : '') + ' style="width:18px;height:18px;flex:0 0 auto;cursor:pointer">'
         + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="badge-libre">Libre</span>' : '') + (estGogo ? ' <span class="badge-libre" style="background:#8257b5">Gogo</span>' : '') + '</b>'
-        + '<span class="qi-meta">' + esc(q.matiere) + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
+        + '<span class="qi-meta">' + esc(q.matiere) + (q.niveau ? ' · ' + esc(NIVEAUX[q.niveau] || q.niveau) + (q.filiere && NIVEAUX_AVEC_SERIE.includes(q.niveau) ? ' · ' + q.filiere.toUpperCase() : '') : '') + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + q.id + '">Modifier</button>'
         + '<button class="del" data-del="' + q.id + '">Supprimer</button>'
@@ -404,7 +464,17 @@
     const { data: qs } = await DB.from("questions").select("*").eq("quiz_id", id).order("ordre");
     if (!q) return;
     editId = id;
-    selFil.value = q.filiere; majMat(); selMat.value = q.matiere;
+    const estSecQ = !!q.niveau;
+    window.ouvrirUnivers(estSecQ ? "sec" : "univ", "quiz");
+    if (estSecQ) {
+      qzSelNiveau.value = q.niveau;
+      const avecSerie = NIVEAUX_AVEC_SERIE.includes(q.niveau);
+      if (avecSerie && qzSelSerie) qzSelSerie.value = q.filiere || "svt";
+      majMatieresSecondaire();
+      qzSelMatSec.value = q.matiere || "";
+    } else {
+      selFil.value = q.filiere; majMat(); selMat.value = q.matiere;
+    }
     // type + leçon rattachée
     const typeRadio = document.querySelector('input[name="qzType"][value="' + (q.type || "lecon") + '"]');
     if (typeRadio) typeRadio.checked = true;
