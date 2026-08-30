@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pré-Fac · Bientôt Étudiant</title>
+<meta name="description" content="Préparation aux concours d'entrée des universités haïtiennes. Trois filières, des matières, des leçons et des quiz.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<link rel="stylesheet" href="css/style.css">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GP1KFW8G47"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GP1KFW8G47');
+</script>
+</head>
+<body data-univers-page="prefac">
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html">Accueil</a>
+      <a href="secondaire.html">Secondaire</a>
+      <a href="prefac.html" class="on">Pré-Fac</a>
+      <a href="matieres.html">Matières</a>
+      <a href="a-propos.html">À propos</a>
+      <a href="contact.html">Contact</a>
+      <a href="contribuer.html">Contribuer</a>
+      <span id="compteZone"><a href="connexion.html" class="cta">Se connecter</a></span>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== HERO Pré-Fac (bleu campus) ===== -->
+<section class="hero" style="background:linear-gradient(160deg,var(--prefac),var(--prefac-2))">
+  <div class="wrap hero-in">
+    <span class="eyebrow">🎓 Pré-Fac</span>
+    <h1 class="hero-title">Concours d'entrée à l'université</h1>
+    <p>Trois filières, des matières, des leçons et des quiz — tout pour réussir ton concours.</p>
+  </div>
+</section>
+
+<!-- ===== REPRENDRE OÙ TU T'ES ARRÊTÉ (connectés) ===== -->
+<section id="repriseSection" style="display:none">
+  <div class="wrap">
+    <div id="repriseZone"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="mat-onglets" id="prefacOnglets">
+      <button class="mat-onglet on" data-tab="jour">Quiz du jour</button>
+      <button class="mat-onglet" data-tab="gogo">Quiz à Gogo 🔥</button>
+      <button class="mat-onglet" data-tab="explorer">Leçons et Quiz</button>
+    </div>
+
+    <!-- Onglet Quiz du jour -->
+    <div id="prefacJourPanel">
+      <section class="quiz-jour" id="quizJourSection" style="display:none;padding:0">
+        <div class="qj-grid" id="quizJourGrid"></div>
+      </section>
+    </div>
+
+    <!-- Onglet Quiz à Gogo -->
+    <div id="prefacGogoPanel" style="display:none">
+      <div class="filters" id="gogoFiliereBtns"></div>
+      <div class="filters" id="gogoMatiereBtns"></div>
+      <div id="gogoZone"></div>
+    </div>
+
+    <!-- Onglet Leçons et Quiz (explorateur filière/matière) -->
+    <div id="prefacExplorerPanel" style="display:none">
+      <div class="filters" id="expFiliereBtns"></div>
+      <p class="exp-filiere-label" id="expFiliereLabel"></p>
+      <div class="filters" id="expMatiereBtns"></div>
+      <div id="expZone"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-brand">
+        <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
+        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+      </div>
+      <div class="f-col">
+        <h5>Navigation</h5>
+        <a href="index.html">Accueil</a>
+        <a href="secondaire.html">Secondaire</a>
+        <a href="prefac.html">Pré-Fac</a>
+        <a href="matieres.html">Matières</a>
+        <a href="a-propos.html">À propos</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="f-col">
+        <h5>Filières</h5>
+        <a href="matieres.html#f1">Médecine &amp; Agro</a>
+        <a href="matieres.html#f2">Gestion &amp; Génie</a>
+        <a href="matieres.html#f3">Sciences humaines</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+      </div>
+    </div>
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant</span><span>Conçu par SteFi Services</span></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js?v=20260830"></script>
+<script src="js/main.js?v=20260830"></script>
+<script src="js/eleve.js?v=20260830"></script>
+<script src="js/quiz-du-jour.js?v=20260830"></script>
+<script src="js/quiz-a-gogo.js?v=20260830"></script>
+<script src="js/explorer-accueil.js?v=20260830"></script>
+<script src="js/icons.js?v=20260830"></script>
+<script>
+(function () {
+  const panels = { jour: "prefacJourPanel", gogo: "prefacGogoPanel", explorer: "prefacExplorerPanel" };
+  document.querySelectorAll("#prefacOnglets .mat-onglet").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#prefacOnglets .mat-onglet").forEach(x => x.classList.toggle("on", x === btn));
+      const t = btn.dataset.tab;
+      Object.keys(panels).forEach(k => { document.getElementById(panels[k]).style.display = (k === t) ? "block" : "none"; });
+    });
+  });
+})();
+</script>
+</body>
+</html>

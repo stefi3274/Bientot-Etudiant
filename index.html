@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bientôt Étudiant (Prépare aujourd'hui. Réussis demain.)</title>
-<meta name="description" content="Plateforme de préparation aux concours d'admission des universités haïtiennes. Trois filières, des matières, des quiz et des concours blancs.">
+<meta name="description" content="Plateforme éducative haïtienne en deux volets : Secondaire (4e à Terminale) et Pré-Fac (préparation aux concours d'entrée à l'université).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,8 +42,8 @@
     <button class="burger" id="burger" aria-label="Menu">☰</button>
     <nav class="menu" id="menu">
       <a href="index.html" class="on">Accueil</a>
-      <a href="filieres.html">Filières</a>
       <a href="secondaire.html">Secondaire</a>
+      <a href="prefac.html">Pré-Fac</a>
       <a href="matieres.html">Matières</a>
       <a href="a-propos.html">À propos</a>
       <a href="contact.html">Contact</a>
@@ -53,75 +53,24 @@
   </div>
 </header>
 
-<!-- ===== HERO : le tableau ===== -->
+<!-- ===== HERO : le choix entre les deux univers ===== -->
 <section class="hero">
   <div class="wrap hero-in">
-    <span class="eyebrow">Concours d'entrée à l'université</span>
+    <span class="eyebrow">De la 4e à l'Université</span>
     <h1 class="hero-title"><span class="reveal-word">Prépare <span class="chalk">aujourd'hui</span>.</span><br><span class="reveal-word reveal-word-2">Réussis <span class="pop">demain</span>.</span></h1>
-    <p>La plateforme qui accompagne les postulant.e.s haïtien.ne.s vers la faculté.</p>
-    <div class="hero-actions">
-      <a href="#universSection" class="btn btn-primary">Voir les leçons et quiz <span>→</span></a>
-    </div>
-    <div class="hero-actions hero-stats-actions" style="margin-top:12px">
-      <a href="quiz-libres.html" class="btn btn-stat btn-libre">Voir les Quiz Libres <span>→</span><small>20 questions · 10 min</small>
-        <span class="btn-splash">✨ Essaie !</span></a>
-      <a href="quiz-a-gogo.html" class="btn btn-stat btn-gogo btn-pulse">Quiz à Gogo 🔥 <span>→</span><small>10 questions · 5 min</small>
-        <span class="btn-splash btn-splash-gogo">🔥 On y va !</span></a>
-    </div>
-  </div>
-</section>
+    <p>La plateforme qui accompagne les élèves haïtien.ne.s depuis la 4e (9e Année Fondamentale) jusqu'aux concours d'entrée à l'université — le Pré-Fac est le prolongement direct du Secondaire.</p>
 
-<!-- ===== REPRENDRE OÙ TU T'ES ARRÊTÉ (connectés) ===== -->
-<section id="repriseSection" style="display:none">
-  <div class="wrap">
-    <div id="repriseZone"></div>
-  </div>
-</section>
-
-<!-- ===== QUIZ DU JOUR ===== -->
-<section class="quiz-jour" id="quizJourSection" style="display:none">
-  <div class="wrap">
-    <div class="qj-grid" id="quizJourGrid"></div>
-  </div>
-</section>
-
-<!-- ===== EXPLORER LES LEÇONS/QUIZ ===== -->
-<!-- ===== CHOISIS TON UNIVERS ===== -->
-<section id="universSection">
-  <div class="wrap">
-    <h2 class="univers-titre">Choisis ton univers</h2>
     <div class="univers-choix">
-      <button class="univers-carte univ-universite on" data-univers="universite">
-        <span class="univers-emoji">🎓</span>
-        <span class="univers-nom">Université</span>
-        <span class="univers-desc">Concours d'entrée · par filière</span>
-      </button>
-      <button class="univers-carte univ-secondaire" data-univers="secondaire">
+      <a href="secondaire.html" class="univers-carte univ-secondaire">
         <span class="univers-emoji">📘</span>
         <span class="univers-nom">Secondaire</span>
-        <span class="univers-desc">4e à Terminale · par niveau</span>
-      </button>
-    </div>
-  </div>
-</section>
-
-<section class="explorer" id="explorerSection">
-  <div class="wrap">
-    <div class="filters" id="expFiliereBtns"></div>
-    <p class="exp-filiere-label" id="expFiliereLabel"></p>
-    <div class="filters" id="expMatiereBtns"></div>
-    <div id="expZone"></div>
-  </div>
-</section>
-
-<!-- ===== SECONDAIRE, intégré à l'accueil (même contenu que secondaire.html) ===== -->
-<section class="explorer" id="secondaireHomeSection" style="display:none">
-  <div class="wrap">
-    <div class="filters" id="secNiveauBtns"></div>
-    <div class="filters" id="secSerieBtns"></div>
-    <div class="filters" id="secMatiereBtns"></div>
-    <div id="secZone">
-      <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
+        <span class="univers-desc">4e à NS4 (Terminale) · par niveau</span>
+      </a>
+      <a href="prefac.html" class="univers-carte univ-prefac">
+        <span class="univers-emoji">🎓</span>
+        <span class="univers-nom">Pré-Fac</span>
+        <span class="univers-desc">Concours d'entrée · par filière</span>
+      </a>
     </div>
   </div>
 </section>
@@ -131,19 +80,19 @@
     <div class="f-grid">
       <div class="f-brand">
         <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
-        <p>La préparation aux concours d'entrée des universités haïtiennes. Prépare aujourd'hui, réussis demain.</p>
+        <p>Une plateforme éducative en deux volets : Secondaire et Pré-Fac. Prépare aujourd'hui, réussis demain.</p>
       </div>
       <div class="f-col">
         <h5>Navigation</h5>
         <a href="index.html">Accueil</a>
-        <a href="filieres.html">Filières</a>
-      <a href="secondaire.html">Secondaire</a>
+        <a href="secondaire.html">Secondaire</a>
+        <a href="prefac.html">Pré-Fac</a>
         <a href="matieres.html">Matières</a>
         <a href="a-propos.html">À propos</a>
         <a href="contact.html">Contact</a>
       </div>
       <div class="f-col">
-        <h5>Filières</h5>
+        <h5>Filières (Pré-Fac)</h5>
         <a href="matieres.html#f1">Médecine &amp; Agro</a>
         <a href="matieres.html#f2">Gestion &amp; Génie</a>
         <a href="matieres.html#f3">Sciences humaines</a>
@@ -158,26 +107,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js?v=20260817"></script>
-<script src="js/main.js?v=20260817"></script>
-<script src="js/eleve.js?v=20260817"></script>
-<script src="js/quiz-du-jour.js?v=20260817"></script>
-<script src="js/explorer-accueil.js?v=20260817"></script>
-<script src="js/secondaire.js?v=20260817"></script>
-<script src="js/icons.js?v=20260817"></script>
-<script>
-(function () {
-  const boutons = document.querySelectorAll("#universSection .univers-carte");
-  const secExplorer = document.getElementById("explorerSection");
-  const secSecondaire = document.getElementById("secondaireHomeSection");
-  boutons.forEach(b => b.addEventListener("click", () => {
-    boutons.forEach(x => x.classList.toggle("on", x === b));
-    const univ = b.dataset.univers;
-    secExplorer.style.display = univ === "universite" ? "block" : "none";
-    secSecondaire.style.display = univ === "secondaire" ? "block" : "none";
-    document.body.setAttribute("data-univers-accueil", univ);
-  }));
-})();
-</script>
+<script src="js/supabase-config.js?v=20260830"></script>
+<script src="js/main.js?v=20260830"></script>
+<script src="js/eleve.js?v=20260830"></script>
 </body>
 </html>

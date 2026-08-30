@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Secondaire · Bientôt Étudiant</title>
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<meta name="description" content="Leçons et quiz pour le fondamental et le secondaire haïtien — de la 4e (9e Fondamentale) à la Terminale (NS4).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
 <link rel="stylesheet" href="css/style.css">
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -21,7 +22,7 @@
   gtag('config', 'G-GP1KFW8G47');
 </script>
 </head>
-<body>
+<body data-univers-page="secondaire">
 
 <header>
   <div class="wrap nav">
@@ -29,30 +30,64 @@
     <button class="burger" id="burger" aria-label="Menu">☰</button>
     <nav class="menu" id="menu">
       <a href="index.html">Accueil</a>
-      <a href="filieres.html">Filières</a>
-      <a href="secondaire.html">Secondaire</a>
+      <a href="secondaire.html" class="on">Secondaire</a>
+      <a href="prefac.html">Pré-Fac</a>
       <a href="matieres.html">Matières</a>
+      <a href="a-propos.html">À propos</a>
+      <a href="contact.html">Contact</a>
       <a href="contribuer.html">Contribuer</a>
       <span id="compteZone"><a href="connexion.html" class="cta">Se connecter</a></span>
     </nav>
   </div>
 </header>
 
-<section class="page-hero" style="padding:48px 0 40px">
+<!-- ===== HERO Secondaire (violet) ===== -->
+<section class="hero" style="background:linear-gradient(160deg,var(--secondaire),#5f4f96)">
+  <div class="wrap hero-in">
+    <span class="eyebrow">📘 Secondaire</span>
+    <h1 class="hero-title">4e à Terminale</h1>
+    <p>Leçons et quiz pour le fondamental et le secondaire — de la 4e (9e Fondamentale) à la Terminale (NS4).</p>
+  </div>
+</section>
+
+<!-- ===== REPRENDRE OÙ TU T'ES ARRÊTÉ (connectés) ===== -->
+<section id="repriseSecSection" style="display:none">
   <div class="wrap">
-    <span class="eyebrow">4e à Terminale</span>
-    <h1>Secondaire</h1>
-    <p>Leçons et quiz pour le fondamental et le secondaire — de la 4e (9e Fondamentale) à la Terminale (NS4). Choisis ta classe pour commencer.</p>
+    <div id="repriseSecZone"></div>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <div class="filters" id="secNiveauBtns"></div>
-    <div class="filters" id="secSerieBtns"></div>
-    <div class="filters" id="secMatiereBtns"></div>
-    <div id="secZone">
-      <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
+    <div class="mat-onglets" id="secOnglets">
+      <button class="mat-onglet on" data-tab="jour">Quiz du jour</button>
+      <button class="mat-onglet" data-tab="gogo">Quiz à Gogo 🔥</button>
+      <button class="mat-onglet" data-tab="explorer">Leçons et Quiz</button>
+    </div>
+
+    <!-- Onglet Quiz du jour -->
+    <div id="secJourPanel">
+      <section class="quiz-jour" id="quizJourSecSection" style="display:none;padding:0">
+        <div class="qj-grid" id="quizJourSecGrid"></div>
+      </section>
+    </div>
+
+    <!-- Onglet Quiz à Gogo -->
+    <div id="secGogoPanel" style="display:none">
+      <div class="filters" id="gogoSecNiveauBtns"></div>
+      <div class="filters" id="gogoSecSerieBtns"></div>
+      <div class="filters" id="gogoSecMatiereBtns"></div>
+      <div id="gogoSecZone"></div>
+    </div>
+
+    <!-- Onglet Leçons et Quiz (explorateur niveau/série/matière) -->
+    <div id="secExplorerPanel" style="display:none">
+      <div class="filters" id="secNiveauBtns"></div>
+      <div class="filters" id="secSerieBtns"></div>
+      <div class="filters" id="secMatiereBtns"></div>
+      <div id="secZone">
+        <p class="empty" style="text-align:center;color:var(--encre-2)">Chargement…</p>
+      </div>
     </div>
   </div>
 </section>
@@ -62,19 +97,74 @@
     <div class="f-grid">
       <div class="f-brand">
         <div class="logo"><img class="mark-img mark-clair" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></div>
-        <p>La préparation aux concours d'entrée des universités haïtiennes, du fondamental à la Terminale. Prépare aujourd'hui, réussis demain.</p>
+        <p>Leçons et quiz du fondamental au secondaire, de la 4e à la Terminale.</p>
       </div>
-      <div class="f-col"><h5>Navigation</h5><a href="index.html">Accueil</a><a href="filieres.html">Filières</a><a href="secondaire.html">Secondaire</a><a href="contact.html">Contact</a></div>
-      <div class="f-col"><h5>En savoir plus</h5><a href="a-propos.html">À propos</a><a href="contribuer.html">Contribuer</a><a href="mentions-legales.html">Mentions légales</a></div>
+      <div class="f-col">
+        <h5>Navigation</h5>
+        <a href="index.html">Accueil</a>
+        <a href="secondaire.html">Secondaire</a>
+        <a href="prefac.html">Pré-Fac</a>
+        <a href="a-propos.html">À propos</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="f-col">
+        <h5>Niveaux</h5>
+        <a href="secondaire.html">4e (9e Fondamentale)</a>
+        <a href="secondaire.html">3e (NS1) · 2e (NS2)</a>
+        <a href="secondaire.html">1ère (NS3) · Terminale (NS4)</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+      </div>
     </div>
-    <div class="f-bot"><span>© 2026 Bientôt Étudiant · Projet à but non lucratif</span><span>Conçu par SteFi Services</span></div>
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant</span><span>Conçu par SteFi Services</span></div>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js?v=20260817"></script>
-<script src="js/main.js?v=20260817"></script>
-<script src="js/eleve.js?v=20260817"></script>
-<script src="js/secondaire.js?v=20260817"></script>
+<script src="js/supabase-config.js?v=20260830"></script>
+<script src="js/main.js?v=20260830"></script>
+<script src="js/eleve.js?v=20260830"></script>
+<script src="js/quiz-du-jour-secondaire.js?v=20260830"></script>
+<script src="js/quiz-a-gogo-secondaire.js?v=20260830"></script>
+<script src="js/secondaire.js?v=20260830"></script>
+<script src="js/icons.js?v=20260830"></script>
+<script>
+(function () {
+  const panels = { jour: "secJourPanel", gogo: "secGogoPanel", explorer: "secExplorerPanel" };
+  document.querySelectorAll("#secOnglets .mat-onglet").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#secOnglets .mat-onglet").forEach(x => x.classList.toggle("on", x === btn));
+      const t = btn.dataset.tab;
+      Object.keys(panels).forEach(k => { document.getElementById(panels[k]).style.display = (k === t) ? "block" : "none"; });
+    });
+  });
+
+  // Reprendre où tu t'es arrêté — leçon Secondaire (connectés)
+  (async function chargerRepriseSec() {
+    if (typeof DB === "undefined" || !DB || typeof eleveActuel !== "function") return;
+    let el;
+    try { el = await eleveActuel(); } catch (e) { return; }
+    if (!el || !el.nom || !el.user_id) return;
+
+    const esc = s => (s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    const { data: derniere } = await DB.from("lecons_vues")
+      .select("lecon_id, created_at, lecons(id, titre, matiere, niveau)")
+      .eq("user_id", el.user_id).order("created_at", { ascending: false }).limit(10);
+    const derniereSec = (derniere || []).find(d => d.lecons && d.lecons.niveau);
+    if (!derniereSec) return;
+
+    const l = derniereSec.lecons;
+    const section = document.getElementById("repriseSecSection");
+    const zone = document.getElementById("repriseSecZone");
+    section.style.display = "block";
+    zone.innerHTML =
+      '<a class="reprise-carte" href="lecon.html?id=' + l.id + '">'
+      + '<span class="reprise-kick">Reprendre où tu t\'es arrêté.e</span>'
+      + '<h3>' + esc(l.titre) + '</h3>'
+      + '<span class="reprise-meta">' + esc(l.matiere) + '</span>'
+      + '<span class="btn btn-dark btn-pulse">Continuer <span>→</span></span>'
+      + '</a>';
+  })();
+})();
+</script>
 </body>
 </html>

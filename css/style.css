@@ -13,8 +13,8 @@
   --ardoise-3:#245043;     /* bordures sur fond sombre */
   --craie:#f7f4ec;         /* blanc craie — fond clair */
   --secondaire:#7d6fb3;    /* accent générique section Secondaire (listes admin) */
-  --universite:#2f7cd6;    /* bleu campus vif — univers Université, distinct de l'ardoise sitewide */
-  --universite-2:#1f5fb0;
+  --prefac:#2f7cd6;    /* bleu campus vif — univers Pré-Fac, distinct de l'ardoise sitewide */
+  --prefac-2:#1f5fb0;
   --niv-9e:#d4a24c;
   --niv-ns1:#7ba05b;
   --niv-ns2:#4f9d9d;
@@ -423,7 +423,7 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .adm-tab:hover{border-color:var(--ocre)}
 .adm-tab.on{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
 
-/* Univers Université (vert ardoise, thème habituel) et Secondaire (violet) */
+/* Univers Pré-Fac (vert ardoise, thème habituel) et Secondaire (violet) */
 .univers-univ.on,.univers-univ.actif{background:var(--ardoise);color:var(--craie);border-color:var(--ardoise)}
 .univers-sec.on,.univers-sec.actif{background:var(--secondaire);color:#fff;border-color:var(--secondaire)}
 
@@ -888,21 +888,17 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
 @keyframes invite-flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @media (max-width:520px){.invite-flottante{padding:16px 40px 16px 16px}.invite-txt span{display:none}}
 
-/* ===== Sélecteur d'univers sur l'accueil (Université / Secondaire) ===== */
-#universSection{padding:36px 0 8px}
-.univers-titre{text-align:center;font-size:1.6rem;margin-bottom:20px;color:var(--ardoise)}
-.univers-choix{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:700px;margin:0 auto}
+/* ===== Sélecteur d'univers, maintenant dans le hero (fond ardoise) ===== */
+.univers-choix{display:flex;gap:20px;flex-wrap:wrap;justify-content:flex-start;max-width:700px;margin:32px 0 0}
 .univers-carte{flex:1 1 260px;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:6px;
-  background:var(--craie);border:2px solid var(--craie-2);border-radius:22px;padding:28px 20px;cursor:pointer;
-  font-family:inherit;transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s;text-align:center}
-.univers-carte:hover{transform:translateY(-4px);box-shadow:0 16px 32px -14px rgba(20,52,43,.25)}
+  border-radius:22px;padding:26px 20px;cursor:pointer;text-decoration:none;
+  font-family:inherit;transition:transform .3s var(--ease),box-shadow .3s var(--ease);text-align:center}
+.univers-carte:hover{transform:translateY(-4px);box-shadow:0 16px 32px -14px rgba(0,0,0,.4)}
 .univers-emoji{font-size:2.4rem;margin-bottom:4px}
-.univers-nom{font-family:var(--serif);font-size:1.3rem;font-weight:600;color:var(--encre)}
-.univers-desc{font-size:.85rem;color:var(--encre-2)}
+.univers-nom{font-family:var(--serif);font-size:1.3rem;font-weight:600;color:#fff}
+.univers-desc{font-size:.85rem;color:rgba(255,255,255,.85)}
 
-.univ-universite.on{background:linear-gradient(160deg,var(--universite),var(--universite-2));border-color:var(--universite)}
-.univ-universite.on .univers-nom,.univ-universite.on .univers-desc{color:#fff}
-.univ-secondaire.on{background:linear-gradient(160deg,var(--secondaire),#5f4f96);border-color:var(--secondaire)}
-.univ-secondaire.on .univers-nom,.univ-secondaire.on .univers-desc{color:#fff}
+.univ-prefac{background:linear-gradient(160deg,var(--prefac),var(--prefac-2));border:2px solid var(--prefac)}
+.univ-secondaire{background:linear-gradient(160deg,var(--secondaire),#5f4f96);border:2px solid var(--secondaire)}
 
 @media (max-width:560px){.univers-choix{flex-direction:column;align-items:stretch}.univers-carte{max-width:none}}

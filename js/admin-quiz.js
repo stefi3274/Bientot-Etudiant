@@ -73,7 +73,7 @@
   typeRadios.forEach(r => r.addEventListener("change", majType));
   majType();
 
-  // Charger les leçons de la matière courante pour le rattachement (Université OU Secondaire)
+  // Charger les leçons de la matière courante pour le rattachement (Pré-Fac OU Secondaire)
   async function chargerLeconsRattach() {
     const sel = $("qzLecon");
     if (!sel || typeof DB === "undefined" || !DB) return;

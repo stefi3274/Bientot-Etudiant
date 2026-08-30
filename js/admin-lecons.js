@@ -26,7 +26,7 @@
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-  // ---------- Navigation admin : onglets simples + univers (Université/Secondaire) + sous-onglets ----------
+  // ---------- Navigation admin : onglets simples + univers (Pré-Fac/Secondaire) + sous-onglets ----------
   window.adminUnivers = "univ";
   const subTabs = $("admSubTabs"), universBadge = $("admUniversBadge");
 
@@ -51,7 +51,7 @@
     clearTopOn();
     document.querySelectorAll(".adm-tab[data-univers]").forEach(x => x.classList.toggle("on", x.dataset.univers === u));
     if (subTabs) subTabs.style.display = "flex";
-    if (universBadge) universBadge.textContent = u === "sec" ? "Secondaire" : "Université";
+    if (universBadge) universBadge.textContent = u === "sec" ? "Secondaire" : "Pré-Fac";
     ouvrirSousOnglet(sousTab || "lecons");
     document.dispatchEvent(new CustomEvent("univers-change", { detail: u }));
   }
