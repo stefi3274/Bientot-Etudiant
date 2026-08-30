@@ -889,16 +889,27 @@ body[data-filiere="f3"] .quiz-carte.libre .lc-num{color:var(--f3)}
 @media (max-width:520px){.invite-flottante{padding:16px 40px 16px 16px}.invite-txt span{display:none}}
 
 /* ===== Sélecteur d'univers, maintenant dans le hero (fond ardoise) ===== */
-.univers-choix{display:flex;gap:20px;flex-wrap:wrap;justify-content:flex-start;max-width:700px;margin:32px 0 0}
-.univers-carte{flex:1 1 260px;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:6px;
-  border-radius:22px;padding:26px 20px;cursor:pointer;text-decoration:none;
-  font-family:inherit;transition:transform .3s var(--ease),box-shadow .3s var(--ease);text-align:center}
-.univers-carte:hover{transform:translateY(-4px);box-shadow:0 16px 32px -14px rgba(0,0,0,.4)}
-.univers-emoji{font-size:2.4rem;margin-bottom:4px}
-.univers-nom{font-family:var(--serif);font-size:1.3rem;font-weight:600;color:#fff}
-.univers-desc{font-size:.85rem;color:rgba(255,255,255,.85)}
+.univers-choix{display:flex;gap:24px;flex-wrap:wrap;justify-content:flex-start;max-width:760px;margin:36px 0 0}
+.univers-carte{flex:1 1 300px;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  border-radius:26px;padding:38px 26px;cursor:pointer;text-decoration:none;
+  font-family:inherit;transition:transform .35s var(--ease),box-shadow .35s var(--ease);text-align:center;
+  box-shadow:0 20px 44px -18px rgba(0,0,0,.35)}
+.univers-carte:hover{transform:translateY(-6px);box-shadow:0 26px 52px -16px rgba(0,0,0,.45)}
+.univers-logo{width:88px;height:auto;margin-bottom:6px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+.univers-nom{font-family:var(--serif);font-size:1.6rem;font-weight:600;color:#fff;letter-spacing:.01em}
+.univers-desc{font-size:.9rem;color:rgba(255,255,255,.88)}
 
 .univ-prefac{background:linear-gradient(160deg,var(--prefac),var(--prefac-2));border:2px solid var(--prefac)}
 .univ-secondaire{background:linear-gradient(160deg,var(--secondaire),#5f4f96);border:2px solid var(--secondaire)}
 
 @media (max-width:560px){.univers-choix{flex-direction:column;align-items:stretch}.univers-carte{max-width:none}}
+
+/* ===== Hero dédié Secondaire / Pré-Fac (logo + grand titre, style académique) ===== */
+.univers-hero-in{display:flex;align-items:center;gap:32px;max-width:800px}
+.univers-hero-logo{width:120px;height:auto;flex:0 0 auto;filter:drop-shadow(0 10px 22px rgba(0,0,0,.3))}
+.univers-hero-title{font-size:clamp(3rem,7vw,5.2rem);margin:6px 0 14px;letter-spacing:-.01em}
+.univers-hero-sub{font-size:1.08rem;max-width:520px;color:rgba(255,255,255,.9)}
+@media (max-width:640px){
+  .univers-hero-in{flex-direction:column;text-align:center;gap:18px}
+  .univers-hero-logo{width:96px}
+}
