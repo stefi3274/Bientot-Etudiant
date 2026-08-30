@@ -257,10 +257,13 @@
     const ent = await monEnt();
     if (!ent) { statusFi("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); $("fiPublier").disabled = false; return; }
 
-    let compteQ = DB.from("lecons").select("id", { count: "exact", head: true }).eq("matiere", matiere);
-    compteQ = estSecFi ? compteQ.eq("niveau", niveau) : compteQ.eq("filiere", filiere);
-    const { count } = await compteQ;
-    let ordre = (count || 0) + 1;
+    let ordreQ = DB.from("lecons").select("ordre").eq("matiere", matiere);
+    ordreQ = estSecFi ? ordreQ.eq("niveau", niveau) : ordreQ.eq("filiere", filiere);
+    const { data: ordresExistants, error: eOrdre } = await ordreQ;
+    if (eOrdre) { statusFi("Erreur lors du calcul de l'ordre : " + eOrdre.message, "err"); $("fiPublier").disabled = false; return; }
+    let ordre = ordresExistants && ordresExistants.length
+      ? Math.max(...ordresExistants.map(o => o.ordre || 0)) + 1
+      : 1;
 
     let ok = 0, erreurs = [], resume = [];
     for (const d of lecons) {

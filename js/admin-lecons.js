@@ -351,10 +351,14 @@
     if (editId) {
       res = await DB.from("lecons").update(champs).eq("id", editId);
     } else {
-      // ordre = nb de leçons existantes pour cette matière + 1
-      const { count } = await DB.from("lecons").select("id", { count: "exact", head: true })
-        .eq("filiere", champs.filiere).eq("matiere", champs.matiere);
-      champs.ordre = (count || 0) + 1;
+      // ordre = MAX(ordre) existant pour cette matière (+niveau si secondaire) + 1
+      let ordreQ = DB.from("lecons").select("ordre").eq("matiere", champs.matiere);
+      ordreQ = estSecondaire ? ordreQ.eq("niveau", champs.niveau) : ordreQ.eq("filiere", champs.filiere);
+      const { data: ordresExistants, error: eOrdre } = await ordreQ;
+      if (eOrdre) { statusL("Erreur lors du calcul de l'ordre : " + eOrdre.message, "err"); return; }
+      champs.ordre = ordresExistants && ordresExistants.length
+        ? Math.max(...ordresExistants.map(o => o.ordre || 0)) + 1
+        : 1;
       res = await DB.from("lecons").insert(champs);
     }
     if (res.error) { statusL("Erreur : " + res.error.message, "err"); return; }
