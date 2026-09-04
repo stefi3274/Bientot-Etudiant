@@ -430,6 +430,23 @@ Réponse: B"></textarea>
           <h2>Carousel TikTok depuis un Quiz à Gogo</h2>
           <div class="status-msg" id="caMsg"></div>
           <div class="le-field">
+            <label>Contenu</label>
+            <div class="qz-type-choix">
+              <label class="qz-type-opt"><input type="radio" name="caUnivers" value="prefac" checked><span>🎓 Pré-Fac</span><small>Par filière</small></label>
+              <label class="qz-type-opt"><input type="radio" name="caUnivers" value="sec"><span>📘 Secondaire</span><small>Par niveau</small></label>
+            </div>
+          </div>
+          <div class="le-field" id="caNiveauWrap" style="display:none">
+            <label>Niveau</label>
+            <select id="caNiveau">
+              <option value="9e">4e (9e Fondamentale)</option>
+              <option value="ns1">3e (NS1)</option>
+              <option value="ns2">2e (NS2)</option>
+              <option value="ns3">1ère (NS3)</option>
+              <option value="ns4">Terminale (NS4)</option>
+            </select>
+          </div>
+          <div class="le-field">
             <label>Quiz à Gogo à transformer en carousel</label>
             <select id="caQuiz"><option value="">— Choisir un quiz —</option></select>
           </div>
@@ -462,6 +479,23 @@ Réponse: B"></textarea>
           <h2>Carousel TikTok depuis une leçon</h2>
           <p class="qz-hint" style="margin-bottom:14px">Fonctionne uniquement pour les leçons publiées en fiches (voir l'onglet Leçons → "Coller la leçon en fiches").</p>
           <div class="status-msg" id="calMsg"></div>
+          <div class="le-field">
+            <label>Contenu</label>
+            <div class="qz-type-choix">
+              <label class="qz-type-opt"><input type="radio" name="calUnivers" value="prefac" checked><span>🎓 Pré-Fac</span><small>Par filière</small></label>
+              <label class="qz-type-opt"><input type="radio" name="calUnivers" value="sec"><span>📘 Secondaire</span><small>Par niveau</small></label>
+            </div>
+          </div>
+          <div class="le-field" id="calNiveauWrap" style="display:none">
+            <label>Niveau</label>
+            <select id="calNiveau">
+              <option value="9e">4e (9e Fondamentale)</option>
+              <option value="ns1">3e (NS1)</option>
+              <option value="ns2">2e (NS2)</option>
+              <option value="ns3">1ère (NS3)</option>
+              <option value="ns4">Terminale (NS4)</option>
+            </select>
+          </div>
           <div class="le-field">
             <label>Leçon à transformer en carousel</label>
             <select id="calLecon"><option value="">— Choisir une leçon —</option></select>

@@ -16,12 +16,28 @@
   const BLANC = "#ffffff";
 
   const FILIERES = { f1: "Médecine, Agronomie & Vétérinaire", f2: "Sciences administratives, Économie & Génie", f3: "Sciences humaines et sociales" };
+  const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
   const COULEUR_MATIERE = {
     "Mathématiques": "#3b6ea5", "Physique": "#e07a3c", "Chimie": "#c94f4f", "Biologie": "#3fa06a",
     "Botanique": "#5a8f3c", "Français": "#a78bda", "Philosophie": "#5b5fc7", "Culture générale": "#3aa5b0",
     "Créole": "#d98a4b", "Économie et Gestion": "#b8863b", "Droit": "#6d5a8f"
   };
   const couleurMatiere = m => COULEUR_MATIERE[m] || "#4a5f73";
+
+  // ---------- Bascule Pré-Fac / Secondaire pour les deux générateurs de carousel ----------
+  function brancherBasculeUnivers(nomRadio, idNiveauWrap, rechargerFn) {
+    const wrap = $(idNiveauWrap);
+    function section() {
+      const r = document.querySelector('input[name="' + nomRadio + '"]:checked');
+      return r ? r.value : "prefac";
+    }
+    function maj() {
+      if (wrap) wrap.style.display = section() === "sec" ? "block" : "none";
+      rechargerFn();
+    }
+    document.querySelectorAll('input[name="' + nomRadio + '"]').forEach(r => r.addEventListener("change", maj));
+    return section;
+  }
 
   let logoImg = null;
   function chargerLogo() {
@@ -44,6 +60,48 @@
     });
     if (ligne) lignes.push(ligne);
     return lignes;
+  }
+
+  // ---------- Rendu multi-couleur des paragraphes de fiche (accent doré sur guillemets/parenthèses) ----------
+  const COULEUR_ACCENT = "#b8862b"; // équivalent --ocre-d, assombri pour rester lisible sur fond blanc
+  function policeMot(taillePx, accent, italique) {
+    const poids = accent ? "800" : "600";
+    const style = italique ? "italic " : "";
+    return poids + " " + style + taillePx + "px Inter, system-ui, sans-serif";
+  }
+  function motsDepuisSegments(segments) {
+    const mots = [];
+    segments.forEach(seg => {
+      seg.texte.split(/\s+/).filter(Boolean).forEach(m => mots.push({ texte: m, accent: seg.accent }));
+    });
+    return mots;
+  }
+  function decouperLignesAccents(ctx, segments, maxWidth, taillePx, italique) {
+    const mots = motsDepuisSegments(segments);
+    ctx.font = policeMot(taillePx, false, italique);
+    const espace = ctx.measureText(" ").width;
+    const lignes = [];
+    let ligne = [], largeur = 0;
+    mots.forEach(mot => {
+      ctx.font = policeMot(taillePx, mot.accent, italique);
+      const largeurMot = ctx.measureText(mot.texte).width;
+      const ajout = ligne.length ? espace + largeurMot : largeurMot;
+      if (largeur + ajout > maxWidth && ligne.length) { lignes.push(ligne); ligne = [mot]; largeur = largeurMot; }
+      else { ligne.push(mot); largeur += ajout; }
+    });
+    if (ligne.length) lignes.push(ligne);
+    return lignes;
+  }
+  function dessinerLigneAccents(ctx, ligne, x, y, taillePx, italique) {
+    ctx.font = policeMot(taillePx, false, italique);
+    const espace = ctx.measureText(" ").width;
+    let cx = x;
+    ligne.forEach(mot => {
+      ctx.font = policeMot(taillePx, mot.accent, italique);
+      ctx.fillStyle = mot.accent ? COULEUR_ACCENT : NOIR;
+      ctx.fillText(mot.texte, cx, y);
+      cx += ctx.measureText(mot.texte).width + espace;
+    });
   }
 
   function rr(ctx, x, y, w, h, r) {
@@ -112,9 +170,13 @@
 
     ctx.font = "800 24px Inter, system-ui, sans-serif";
     ctx.fillStyle = NOIR;
-    ctx.fillText("CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 64, 108);
+    ctx.fillText(quiz.niveau ? "SECONDAIRE" : "CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 64, 108);
 
-    pastille(ctx, FILIERES[quiz.filiere] || quiz.filiere || "", 64, 142, 22);
+    const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+    const badgeUnivers = quiz.niveau
+      ? (NIVEAUX[quiz.niveau] || quiz.niveau) + (SERIES[quiz.filiere] ? " · " + SERIES[quiz.filiere] : "")
+      : (FILIERES[quiz.filiere] || quiz.filiere || "");
+    pastille(ctx, badgeUnivers, 64, 142, 22);
     pastille(ctx, quiz.matiere || "", 64, 204, 22);
 
     ctx.fillStyle = NOIR;
@@ -316,6 +378,8 @@
   });
 
   // ---------- Chargement du quiz choisi ----------
+  const sectionCa = brancherBasculeUnivers("caUnivers", "caNiveauWrap", () => chargerListeQuiz());
+  if ($("caNiveau")) $("caNiveau").addEventListener("change", () => chargerListeQuiz());
   document.querySelectorAll('.adm-tab[data-tab="carousels"]').forEach(t => {
     t.addEventListener("click", () => { if (typeof DB !== "undefined" && DB) chargerListeQuiz(); });
   });
@@ -323,7 +387,10 @@
   async function chargerListeQuiz() {
     const sel = $("caQuiz");
     if (!sel || typeof DB === "undefined" || !DB) return;
-    const { data } = await DB.from("quiz").select("id, titre, matiere, filiere").eq("type", "gogo").order("created_at", { ascending: false });
+    const estSec = sectionCa() === "sec";
+    const { data } = estSec
+      ? await DB.from("quiz").select("id, titre, matiere, filiere, niveau").eq("type", "gogo").eq("niveau", $("caNiveau").value).order("created_at", { ascending: false })
+      : await DB.from("quiz").select("id, titre, matiere, filiere, niveau").eq("type", "gogo").is("niveau", null).order("created_at", { ascending: false });
     sel.innerHTML = '<option value="">— Choisir un Quiz à Gogo —</option>'
       + (data || []).map(q => '<option value="' + q.id + '">' + q.titre.replace(/</g, "&lt;") + ' (' + q.matiere + ')</option>').join("");
   }
@@ -404,6 +471,21 @@
   const MAX_FICHES = 10;
   const statusCL = (m, t) => { const el = $("calMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t || "ok"); } };
 
+  // Extrait les segments d'un paragraphe en distinguant le texte accentué
+  // (guillemets/parenthèses, déjà marqués <strong class="fiche-accent"> par le site)
+  function extraireSegments(node) {
+    const segments = [];
+    node.childNodes.forEach(child => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        if (child.textContent) segments.push({ texte: child.textContent, accent: false });
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const estAccent = child.classList && child.classList.contains("fiche-accent");
+        if (child.textContent) segments.push({ texte: child.textContent, accent: !!estAccent });
+      }
+    });
+    return segments;
+  }
+
   function extraireFiches(html) {
     const tmp = document.createElement("div");
     tmp.innerHTML = html || "";
@@ -412,8 +494,10 @@
     blocs.forEach(bloc => {
       const h3 = bloc.querySelector("h3");
       const titre = h3 ? h3.textContent.trim() : "";
-      const paras = [...bloc.querySelectorAll("p, li")].map(p => p.textContent.trim()).filter(Boolean);
-      fiches.push({ titre, texte: paras.join(" ") });
+      const paragraphes = [...bloc.querySelectorAll("p, li")]
+        .map(p => ({ segments: extraireSegments(p), exemple: p.classList.contains("fiche-exemple") }))
+        .filter(p => p.segments.length);
+      fiches.push({ titre, paragraphes });
     });
     return fiches;
   }
@@ -426,9 +510,13 @@
 
     ctx.font = "800 24px Inter, system-ui, sans-serif";
     ctx.fillStyle = NOIR;
-    ctx.fillText("LEÇON · CONCOURS D'ENTRÉE", 64, 108);
+    ctx.fillText(lecon.niveau ? "LEÇON · SECONDAIRE" : "LEÇON · CONCOURS D'ENTRÉE", 64, 108);
 
-    pastille(ctx, FILIERES[lecon.filiere] || lecon.filiere || "", 64, 142, 22);
+    const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+    const badgeUnivers = lecon.niveau
+      ? (NIVEAUX[lecon.niveau] || lecon.niveau) + (SERIES[lecon.filiere] ? " · " + SERIES[lecon.filiere] : "")
+      : (FILIERES[lecon.filiere] || lecon.filiere || "");
+    pastille(ctx, badgeUnivers, 64, 142, 22);
     pastille(ctx, lecon.matiere || "", 64, 204, 22);
 
     ctx.fillStyle = NOIR;
@@ -477,18 +565,33 @@
     let y = 232;
     lignesTitre.slice(0, 3).forEach(l => { ctx.fillText(l, 64, y); y += 60; });
 
-    // Boîte de texte : dimensionnée pour le contenu réel (pas étirée jusqu'en bas),
-    // puis centrée dans l'espace restant — quasiment plus d'espace blanc inutilisé.
+    // Boîte de texte : dimensionnée pour le contenu réel, centrée dans l'espace restant.
     const zoneHaut = y + 20, zoneBas = T - 130;
-    const padding = 44, tailleTexte = 42, ligneHauteur = 54;
-    ctx.font = "600 " + tailleTexte + "px Inter, system-ui, sans-serif";
+    const padding = 44, tailleTexte = 40, ligneHauteur = 52, gapParagraphe = 18, indentExemple = 26;
     const largeurTexte = T - 128 - padding * 2;
-    let lignesTexte = decouperTexte(ctx, fiche.texte, largeurTexte);
+    const dispoHauteur = zoneBas - zoneHaut - padding * 2;
 
-    const maxLignesPossibles = Math.max(3, Math.floor((zoneBas - zoneHaut - padding * 2) / ligneHauteur));
-    if (lignesTexte.length > maxLignesPossibles) lignesTexte = lignesTexte.slice(0, maxLignesPossibles);
+    const paragraphes = (fiche.paragraphes || []).filter(p => p.segments && p.segments.length);
+    const groupes = paragraphes.map(p => ({
+      exemple: p.exemple,
+      lignes: decouperLignesAccents(ctx, p.segments, largeurTexte - (p.exemple ? indentExemple : 0), tailleTexte, p.exemple)
+    }));
 
-    const boiteHauteur = Math.min(zoneBas - zoneHaut, padding * 2 + lignesTexte.length * ligneHauteur);
+    let hauteurUtilisee = 0;
+    const groupesAffiches = [];
+    for (const g of groupes) {
+      const gapAvant = groupesAffiches.length ? gapParagraphe : 0;
+      const placeRestante = dispoHauteur - hauteurUtilisee - gapAvant;
+      if (placeRestante < ligneHauteur) break;
+      const maxLignesG = Math.max(1, Math.floor(placeRestante / ligneHauteur));
+      const tronque = g.lignes.length > maxLignesG;
+      const lignesG = tronque ? g.lignes.slice(0, maxLignesG) : g.lignes;
+      groupesAffiches.push({ exemple: g.exemple, lignes: lignesG });
+      hauteurUtilisee += gapAvant + lignesG.length * ligneHauteur;
+      if (tronque) break;
+    }
+
+    const boiteHauteur = Math.min(zoneBas - zoneHaut, padding * 2 + hauteurUtilisee);
     const boiteY = zoneHaut + Math.max(0, (zoneBas - zoneHaut - boiteHauteur) / 2);
 
     ctx.fillStyle = BLANC;
@@ -496,9 +599,21 @@
     ctx.strokeStyle = "rgba(22,22,22,.15)"; ctx.lineWidth = 1.5;
     rr(ctx, 64, boiteY, T - 128, boiteHauteur, 22); ctx.stroke();
 
-    ctx.fillStyle = NOIR;
     let ty = boiteY + padding + tailleTexte * 0.72;
-    lignesTexte.forEach(l => { ctx.fillText(l, 64 + padding, ty); ty += ligneHauteur; });
+    groupesAffiches.forEach((g, gi) => {
+      if (gi > 0) ty += gapParagraphe;
+      const xBase = 64 + padding + (g.exemple ? indentExemple : 0);
+      if (g.exemple) {
+        const hautBarre = ty - tailleTexte * 0.72 - 2;
+        const basBarre = ty + (g.lignes.length - 1) * ligneHauteur + tailleTexte * 0.3;
+        ctx.fillStyle = "rgba(232,184,75,.9)";
+        ctx.fillRect(64 + padding, hautBarre, 4, basBarre - hautBarre);
+      }
+      g.lignes.forEach(ligne => {
+        dessinerLigneAccents(ctx, ligne, xBase, ty, tailleTexte, g.exemple);
+        ty += ligneHauteur;
+      });
+    });
 
     piedDePage(ctx);
     return cv;
@@ -546,6 +661,8 @@
     return cv;
   }
 
+  const sectionCal = brancherBasculeUnivers("calUnivers", "calNiveauWrap", () => chargerListeLecons());
+  if ($("calNiveau")) $("calNiveau").addEventListener("change", () => chargerListeLecons());
   document.querySelectorAll('.adm-tab[data-tab="carousels"]').forEach(t => {
     t.addEventListener("click", () => { if (typeof DB !== "undefined" && DB) chargerListeLecons(); });
   });
@@ -553,7 +670,10 @@
   async function chargerListeLecons() {
     const sel = $("calLecon");
     if (!sel || typeof DB === "undefined" || !DB) return;
-    const { data } = await DB.from("lecons").select("id, titre, matiere, filiere").eq("publie", true).order("created_at", { ascending: false });
+    const estSec = sectionCal() === "sec";
+    const { data } = estSec
+      ? await DB.from("lecons").select("id, titre, matiere, filiere, niveau").eq("publie", true).eq("niveau", $("calNiveau").value).order("created_at", { ascending: false })
+      : await DB.from("lecons").select("id, titre, matiere, filiere, niveau").eq("publie", true).is("niveau", null).order("created_at", { ascending: false });
     sel.innerHTML = '<option value="">— Choisir une leçon —</option>'
       + (data || []).map(l => '<option value="' + l.id + '">' + l.titre.replace(/</g, "&lt;") + ' (' + l.matiere + ')</option>').join("");
   }
