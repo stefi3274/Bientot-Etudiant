@@ -307,4 +307,249 @@
     if (erreurs.length) statusFi(ok + " publiée(s), " + erreurs.length + " erreur(s) : " + erreurs.join(" | "), "err");
     else { statusFi(ok + " leçon(s) + quiz publiés avec succès !", "ok"); $("fiTexte").value = ""; }
   });
+
+  // ============================================================
+  // MODIFIER UNE LEÇON EXISTANTE (+ tous ses quiz, sur un seul écran)
+  // ============================================================
+  const gererMsg = (m, t) => { const el = $("gererMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t || "ok"); } };
+  const gererListeEl = $("gererListe"), gererZone = $("gererZone"), gererRecherche = $("gererRecherche");
+  let gererResultats = [];
+
+  async function chargerListeLeconsGerer() {
+    if (!gererListeEl || typeof DB === "undefined" || !DB) return;
+    const estSec = sectionActuelle() === "sec";
+    let q = DB.from("lecons").select("id, titre, matiere, niveau, filiere").order("created_at", { ascending: false });
+    if (estSec) {
+      if (fiSelNiveau && fiSelNiveau.value) q = q.eq("niveau", fiSelNiveau.value);
+    } else {
+      if (selFil && selFil.value) q = q.eq("filiere", selFil.value);
+    }
+    const { data, error } = await q;
+    if (error) { gererListeEl.innerHTML = "<p class='empty' style='padding:10px'>Erreur de chargement.</p>"; return; }
+    gererResultats = data || [];
+    afficherListeGerer();
+  }
+
+  function afficherListeGerer() {
+    const filtre = (gererRecherche.value || "").trim().toLowerCase();
+    const liste = filtre
+      ? gererResultats.filter(l => l.titre.toLowerCase().includes(filtre))
+      : gererResultats;
+    if (!liste.length) {
+      gererListeEl.innerHTML = "<p class='empty' style='padding:10px;margin:0'>Aucune leçon trouvée.</p>";
+      return;
+    }
+    gererListeEl.innerHTML = liste.slice(0, 30).map(l =>
+      '<div class="gerer-item" data-id="' + l.id + '" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--craie-2)">'
+      + '<b>' + esc(l.titre) + '</b> <span style="color:var(--encre-2);font-size:.85rem">· ' + esc(l.matiere) + '</span>'
+      + '</div>'
+    ).join("");
+    gererListeEl.querySelectorAll(".gerer-item").forEach(el => {
+      el.addEventListener("click", () => selectionnerLeconGerer(el.dataset.id));
+      el.addEventListener("mouseenter", () => el.style.background = "var(--craie-2)");
+      el.addEventListener("mouseleave", () => el.style.background = "");
+    });
+  }
+
+  if (gererRecherche) gererRecherche.addEventListener("input", afficherListeGerer);
+  document.addEventListener("univers-change", () => { if (gererListeEl) chargerListeLeconsGerer(); });
+  if (selFil) selFil.addEventListener("change", chargerListeLeconsGerer);
+  if (selMat) selMat.addEventListener("change", chargerListeLeconsGerer);
+  if (fiSelNiveau) fiSelNiveau.addEventListener("change", chargerListeLeconsGerer);
+  document.querySelectorAll('#admSubTabs .adm-tab[data-tab="fiche"]').forEach(t => {
+    t.addEventListener("click", () => { if (typeof DB !== "undefined" && DB) chargerListeLeconsGerer(); });
+  });
+
+  async function selectionnerLeconGerer(leconId) {
+    gererMsg("Chargement…", "");
+    const { data: lecon, error: eL } = await DB.from("lecons").select("*").eq("id", leconId).single();
+    if (eL || !lecon) { gererMsg("Impossible de charger cette leçon.", "err"); return; }
+    const { data: quizzes, error: eQ } = await DB.from("quiz").select("id, titre").eq("lecon_id", leconId).order("created_at");
+    if (eQ) { gererMsg("Erreur au chargement des quiz.", "err"); return; }
+
+    const quizzesAvecQuestions = [];
+    for (const qz of (quizzes || [])) {
+      const { data: questions } = await DB.from("questions").select("*").eq("quiz_id", qz.id).order("ordre");
+      quizzesAvecQuestions.push({ ...qz, questions: questions || [] });
+    }
+    gererMsg("", "");
+    afficherLeconGerer(lecon, quizzesAvecQuestions);
+  }
+
+  function afficherLeconGerer(lecon, quizzes) {
+    gererZone.style.display = "block";
+    gererZone.dataset.leconId = lecon.id;
+    gererZone.innerHTML =
+      '<div style="border-top:2px solid var(--ocre);margin-top:10px;padding-top:20px">'
+      + '<div class="le-field"><label>Titre de la leçon</label><input type="text" id="gererTitre" value="' + esc(lecon.titre) + '"></div>'
+      + '<div class="le-field"><label>Chapitre (facultatif)</label><input type="text" id="gererChapitre" value="' + esc(lecon.chapitre || "") + '"></div>'
+      + '<div class="le-field"><label>Aperçu</label><input type="text" id="gererApercu" value="' + esc(lecon.apercu || "") + '"></div>'
+      + '<div class="le-field"><label>Contenu (fiches)</label><div id="gererContenu" class="rte" contenteditable="true" style="min-height:140px;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px">' + (lecon.contenu || "") + '</div></div>'
+      + '<div style="display:flex;gap:10px;margin:14px 0 26px">'
+      + '<button class="btn btn-dark" id="gererSaveLecon">Enregistrer la leçon <span>→</span></button>'
+      + '<button class="btn btn-ghost" id="gererDelLecon" style="color:var(--rouge);border-color:var(--rouge)">Supprimer toute la leçon</button>'
+      + '</div>'
+      + '<h3 style="font-family:var(--serif);border-top:1px solid var(--craie-2);padding-top:20px">Quiz rattachés (' + quizzes.length + ')</h3>'
+      + '<div id="gererQuizListe"></div>'
+      + '<button class="btn btn-ghost" id="gererAddQuiz" style="margin-top:10px">+ Ajouter un nouveau quiz à cette leçon</button>'
+      + '</div>';
+
+    const quizListeEl = $("gererQuizListe");
+    quizzes.forEach(qz => quizListeEl.appendChild(construireBlocQuiz(qz)));
+
+    $("gererSaveLecon").addEventListener("click", () => sauvegarderLeconGerer(lecon.id));
+    $("gererDelLecon").addEventListener("click", () => supprimerLeconGerer(lecon.id, lecon.titre));
+    $("gererAddQuiz").addEventListener("click", () => {
+      const nouveauBloc = construireBlocQuiz({ id: null, titre: "Nouveau quiz — " + lecon.titre, questions: [] });
+      quizListeEl.appendChild(nouveauBloc);
+      nouveauBloc.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function construireBlocQuiz(qz) {
+    const bloc = document.createElement("div");
+    bloc.className = "lecon-editor";
+    bloc.style.cssText = "margin:16px 0;background:var(--craie-2)";
+    bloc.dataset.quizId = qz.id || "";
+    bloc.innerHTML =
+      '<div class="le-field"><label>Titre du quiz</label><input type="text" class="gerer-quiz-titre" value="' + esc(qz.titre) + '"></div>'
+      + '<div class="gerer-questions"></div>'
+      + '<button type="button" class="btn btn-ghost gerer-add-q" style="margin:10px 0">+ Ajouter une question</button>'
+      + '<div style="display:flex;gap:10px;flex-wrap:wrap">'
+      + '<button type="button" class="btn btn-dark gerer-save-quiz">Enregistrer ce quiz <span>→</span></button>'
+      + (qz.id ? '<button type="button" class="btn btn-ghost gerer-del-quiz" style="color:var(--rouge);border-color:var(--rouge)">Supprimer ce quiz</button>' : '')
+      + '</div>';
+
+    const qContainer = bloc.querySelector(".gerer-questions");
+    (qz.questions || []).forEach(q => qContainer.appendChild(construireQuestionGerer(qContainer, q)));
+    if (!qz.questions || !qz.questions.length) qContainer.appendChild(construireQuestionGerer(qContainer, null));
+
+    bloc.querySelector(".gerer-add-q").addEventListener("click", () => qContainer.appendChild(construireQuestionGerer(qContainer, null)));
+    bloc.querySelector(".gerer-save-quiz").addEventListener("click", () => sauvegarderQuizGerer(bloc));
+    const delBtn = bloc.querySelector(".gerer-del-quiz");
+    if (delBtn) delBtn.addEventListener("click", () => supprimerQuizGerer(bloc, qz.titre));
+
+    return bloc;
+  }
+
+  let gererQCompteur = 0;
+  function construireQuestionGerer(container, data) {
+    gererQCompteur++;
+    const nom = "gerer-bonne-" + gererQCompteur;
+    const d = data || {};
+    const div = document.createElement("div");
+    div.className = "qz-question";
+    const lettre = (l, txt) =>
+      '<label class="qz-choix">'
+      + '<input type="radio" name="' + nom + '" value="' + l + '"' + (d.bonne === l ? " checked" : "") + '>'
+      + '<span class="qz-lettre" title="Bonne réponse">' + l.toUpperCase() + '</span>'
+      + '<input type="text" class="qz-txt" data-l="' + l + '" placeholder="Choix ' + l.toUpperCase() + '" value="' + esc(d["choix_" + l] || "") + '">'
+      + '</label>';
+    div.innerHTML =
+      '<button type="button" class="qz-del-q">Retirer</button>'
+      + '<span class="qz-qnum">Question</span>'
+      + '<textarea class="qz-enonce" placeholder="Énoncé de la question…">' + esc(d.enonce || "") + '</textarea>'
+      + lettre("a", d.choix_a) + lettre("b", d.choix_b) + lettre("c", d.choix_c) + lettre("d", d.choix_d)
+      + '<p class="qz-hint">Clique sur la lettre (A/B/C/D) pour marquer la bonne réponse.</p>';
+    div.querySelector(".qz-del-q").addEventListener("click", () => div.remove());
+    return div;
+  }
+
+  function lireQuestionsDuBloc(bloc) {
+    const questions = [];
+    bloc.querySelectorAll(".qz-question").forEach((qDiv, i) => {
+      const enonce = qDiv.querySelector(".qz-enonce").value.trim();
+      const bonne = (qDiv.querySelector('input[type="radio"]:checked') || {}).value;
+      const get = l => qDiv.querySelector('.qz-txt[data-l="' + l + '"]').value.trim();
+      questions.push({ ordre: i + 1, enonce, bonne, choix_a: get("a"), choix_b: get("b"), choix_c: get("c"), choix_d: get("d") });
+    });
+    return questions;
+  }
+
+  async function sauvegarderLeconGerer(leconId) {
+    gererMsg("Enregistrement…", "");
+    const champs = {
+      titre: $("gererTitre").value.trim(),
+      chapitre: $("gererChapitre").value.trim() || null,
+      apercu: $("gererApercu").value.trim() || null,
+      contenu: $("gererContenu").innerHTML.trim()
+    };
+    if (!champs.titre) { gererMsg("Le titre est requis.", "err"); return; }
+    const { error } = await DB.from("lecons").update(champs).eq("id", leconId);
+    if (error) gererMsg("Erreur : " + error.message, "err");
+    else gererMsg("Leçon enregistrée.", "ok");
+  }
+
+  async function supprimerLeconGerer(leconId, titre) {
+    if (!confirm('Supprimer définitivement "' + titre + '" et tous ses quiz rattachés ? Cette action est irréversible.')) return;
+    gererMsg("Suppression…", "");
+    await DB.from("quiz").delete().eq("lecon_id", leconId);
+    const { error } = await DB.from("lecons").delete().eq("id", leconId);
+    if (error) { gererMsg("Erreur : " + error.message, "err"); return; }
+    gererZone.style.display = "none";
+    gererZone.innerHTML = "";
+    gererMsg("Leçon et quiz supprimés.", "ok");
+    chargerListeLeconsGerer();
+  }
+
+  async function sauvegarderQuizGerer(bloc) {
+    const quizId = bloc.dataset.quizId;
+    const titre = bloc.querySelector(".gerer-quiz-titre").value.trim();
+    const questions = lireQuestionsDuBloc(bloc);
+    if (!titre) { gererMsg("Le titre du quiz est requis.", "err"); return; }
+    if (!questions.length) { gererMsg("Ce quiz n'a aucune question.", "err"); return; }
+    const incomplete = questions.findIndex(q => !q.enonce || !q.bonne || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
+    if (incomplete !== -1) { gererMsg("Question " + (incomplete + 1) + " incomplète (énoncé, 4 choix et bonne réponse requis).", "err"); return; }
+
+    gererMsg("Enregistrement du quiz…", "");
+    const ent = await monEnt();
+    if (!ent) { gererMsg("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi.", "err"); return; }
+
+    let idFinal = quizId;
+    if (!quizId) {
+      // Nouveau quiz : on le crée avec le même contexte (filière/niveau/matière) que la leçon affichée
+      const estSec = sectionActuelle() === "sec";
+      const avecSerie = estSec && NIVEAUX_AVEC_SERIE.includes(fiSelNiveau.value);
+      const { data: nouveauQz, error: eIns } = await DB.from("quiz").insert({
+        entreprise_id: ent,
+        filiere: estSec ? (avecSerie ? fiSelSerie.value : null) : selFil.value,
+        niveau: estSec ? fiSelNiveau.value : null,
+        matiere: estSec ? fiSelMatSec.value : selMat.value,
+        titre, duree_sec: 600, type: "lecon",
+        lecon_id: gererZone.dataset.leconId,
+        publie: true
+      }).select("id").single();
+      if (eIns) { gererMsg("Erreur : " + eIns.message, "err"); return; }
+      idFinal = nouveauQz.id;
+      bloc.dataset.quizId = idFinal;
+      // ajouter le bouton supprimer maintenant qu'il existe
+      if (!bloc.querySelector(".gerer-del-quiz")) {
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.className = "btn btn-ghost gerer-del-quiz";
+        btn.style.cssText = "color:var(--rouge);border-color:var(--rouge)";
+        btn.textContent = "Supprimer ce quiz";
+        btn.addEventListener("click", () => supprimerQuizGerer(bloc, titre));
+        bloc.querySelector('div[style*="flex"]').appendChild(btn);
+      }
+    } else {
+      const { error: eUp } = await DB.from("quiz").update({ titre }).eq("id", quizId);
+      if (eUp) { gererMsg("Erreur : " + eUp.message, "err"); return; }
+      await DB.from("questions").delete().eq("quiz_id", quizId);
+    }
+
+    const rows = questions.map(q => ({ ...q, quiz_id: idFinal }));
+    const { error: eQ } = await DB.from("questions").insert(rows);
+    if (eQ) { gererMsg("Erreur questions : " + eQ.message, "err"); return; }
+    gererMsg("Quiz enregistré (" + questions.length + " questions).", "ok");
+  }
+
+  async function supprimerQuizGerer(bloc, titre) {
+    const quizId = bloc.dataset.quizId;
+    if (!quizId) { bloc.remove(); return; }
+    if (!confirm('Supprimer le quiz "' + titre + '" ? Cette action est irréversible.')) return;
+    const { error } = await DB.from("quiz").delete().eq("id", quizId);
+    if (error) { gererMsg("Erreur : " + error.message, "err"); return; }
+    bloc.remove();
+    gererMsg("Quiz supprimé.", "ok");
+  }
 })();

@@ -610,6 +610,20 @@ Réponse: B"></textarea>
             <div id="fiApercuListe"></div>
           </div>
         </div>
+
+        <!-- ===== MODIFIER UNE LEÇON EXISTANTE (+ tous ses quiz, au même endroit) ===== -->
+        <div class="lecon-editor" style="margin-top:24px">
+          <h2>Modifier une leçon (et tous ses quiz)</h2>
+          <p class="qz-hint" style="margin-bottom:14px">Cherche une leçon déjà publiée : tu peux modifier son texte et corriger n'importe quelle question de n'importe quel quiz rattaché, le tout sur cette page, sans changer d'onglet.</p>
+          <div class="status-msg" id="gererMsg"></div>
+          <div class="le-field">
+            <label>Chercher une leçon (matière/niveau déjà choisis ci-dessus)</label>
+            <input type="text" id="gererRecherche" placeholder="🔎 Titre de la leçon…">
+          </div>
+          <div id="gererListe" style="max-height:220px;overflow-y:auto;border:1px solid var(--craie-2);border-radius:10px;margin-bottom:18px"></div>
+
+          <div id="gererZone" style="display:none"></div>
+        </div>
       </div>
 
     </div>
