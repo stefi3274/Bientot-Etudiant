@@ -64,7 +64,7 @@
     const zone = $("listeConversations");
     zone.innerHTML = "<p class='empty'>Chargement…</p>";
 
-    const { data: convs, error } = await DB.from("conversations")
+    const { data: convs, error } = await DB.from("dm_conversations")
       .select("*")
       .or("participant_a.eq." + moi.user_id + ",participant_b.eq." + moi.user_id)
       .order("dernier_message_at", { ascending: false });
@@ -84,7 +84,7 @@
     // dernier message de chaque conversation (aperçu)
     const apercus = {};
     for (const c of convs) {
-      const { data: dernier } = await DB.from("messages")
+      const { data: dernier } = await DB.from("dm_messages")
         .select("contenu, supprime, sender_id, created_at")
         .eq("conversation_id", c.id)
         .order("created_at", { ascending: false })
@@ -184,7 +184,7 @@
     // Conversation déjà existante ?
     let conv = conversations.find(c => c.autreId === autreId);
     if (!conv) {
-      const { data: nouvelle, error } = await DB.from("conversations").insert({
+      const { data: nouvelle, error } = await DB.from("dm_conversations").insert({
         participant_a: moi.user_id, participant_b: autreId
       }).select("*").single();
       if (error) {
@@ -229,7 +229,7 @@
 
   async function chargerMessages() {
     if (!convActive) return;
-    const { data, error } = await DB.from("messages")
+    const { data, error } = await DB.from("dm_messages")
       .select("*").eq("conversation_id", convActive.id).order("created_at", { ascending: true });
     if (error) return;
     messagesActuels = data || [];
@@ -307,19 +307,19 @@
     const msgEl = $("chatMsg");
 
     if (editionId) {
-      const { error } = await DB.from("messages").update({
+      const { error } = await DB.from("dm_messages").update({
         contenu: texte, modifie: true, updated_at: new Date().toISOString()
       }).eq("id", editionId);
       if (error) { msgEl.textContent = "Erreur : " + error.message; msgEl.className = "status-msg on err"; return; }
       editionId = null; $("editionActive").style.display = "none";
     } else {
-      const { error } = await DB.from("messages").insert({
+      const { error } = await DB.from("dm_messages").insert({
         conversation_id: convActive.id, sender_id: moi.user_id, contenu: texte,
         reply_to: citationId || null
       });
       if (error) { msgEl.textContent = "Message non envoyé (bloqué ou erreur)."; msgEl.className = "status-msg on err"; return; }
       citationId = null; $("citationActive").style.display = "none";
-      await DB.from("conversations").update({ dernier_message_at: new Date().toISOString() }).eq("id", convActive.id);
+      await DB.from("dm_conversations").update({ dernier_message_at: new Date().toISOString() }).eq("id", convActive.id);
     }
     champ.value = "";
     msgEl.textContent = "";
@@ -329,13 +329,13 @@
 
   async function supprimerMessage(id) {
     if (!confirm("Supprimer ce message ?")) return;
-    await DB.from("messages").update({ supprime: true, contenu: "", updated_at: new Date().toISOString() }).eq("id", id);
+    await DB.from("dm_messages").update({ supprime: true, contenu: "", updated_at: new Date().toISOString() }).eq("id", id);
     chargerMessages();
   }
 
   async function signalerMessage(id) {
     const raison = prompt("Pourquoi signales-tu ce message ? (facultatif)") || null;
-    const { error } = await DB.from("signalements").insert({ message_id: id, signale_par: moi.user_id, raison });
+    const { error } = await DB.from("dm_signalements").insert({ message_id: id, signale_par: moi.user_id, raison });
     const msgEl = $("chatMsg");
     if (error) { msgEl.textContent = "Erreur lors du signalement."; msgEl.className = "status-msg on err"; }
     else { msgEl.textContent = "Message signalé. Merci, l'équipe va l'examiner."; msgEl.className = "status-msg on ok"; }
@@ -344,7 +344,7 @@
   async function bloquerUtilisateurActif() {
     if (!autreUtilisateur) return;
     if (!confirm('Bloquer ' + autreUtilisateur.nom + ' ? Cette personne ne pourra plus t\'envoyer de messages.')) return;
-    const { error } = await DB.from("blocages").insert({ bloqueur_id: moi.user_id, bloque_id: autreUtilisateur.id });
+    const { error } = await DB.from("dm_blocages").insert({ bloqueur_id: moi.user_id, bloque_id: autreUtilisateur.id });
     if (error && !error.message.includes("duplicate")) { alert("Erreur lors du blocage."); return; }
     alert(autreUtilisateur.nom + " a été bloqué.e.");
     fermerConversation();

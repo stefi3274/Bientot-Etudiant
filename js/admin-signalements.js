@@ -15,12 +15,12 @@
     const zone = $("sigListe");
     zone.innerHTML = "<p class='empty'>Chargement…</p>";
 
-    const { data: sigs, error } = await DB.from("signalements").select("*").order("created_at", { ascending: false });
+    const { data: sigs, error } = await DB.from("dm_signalements").select("*").order("created_at", { ascending: false });
     if (error) { zone.innerHTML = "<p class='empty'>Erreur de chargement : " + esc(error.message) + "</p>"; return; }
     if (!sigs || !sigs.length) { zone.innerHTML = "<p class='empty'>Aucun signalement pour l'instant.</p>"; return; }
 
     const messageIds = [...new Set(sigs.map(s => s.message_id))];
-    const { data: msgs } = await DB.from("messages").select("id, contenu, sender_id, supprime").in("id", messageIds);
+    const { data: msgs } = await DB.from("dm_messages").select("id, contenu, sender_id, supprime").in("id", messageIds);
     const msgParId = {}; (msgs || []).forEach(m => msgParId[m.id] = m);
 
     const userIds = [...new Set([
@@ -52,7 +52,7 @@
   }
 
   async function marquerTraite(sigId) {
-    const { error } = await DB.from("signalements").update({ traite: true }).eq("id", sigId);
+    const { error } = await DB.from("dm_signalements").update({ traite: true }).eq("id", sigId);
     if (error) { statusS("Erreur : " + error.message, "err"); return; }
     statusS("Signalement marqué comme traité.", "ok");
     chargerSignalements();
@@ -60,7 +60,7 @@
 
   async function supprimerMessageSignale(msgId) {
     if (!confirm("Supprimer ce message de la conversation ? Cette action est irréversible.")) return;
-    const { error } = await DB.from("messages").update({ supprime: true, contenu: "" }).eq("id", msgId);
+    const { error } = await DB.from("dm_messages").update({ supprime: true, contenu: "" }).eq("id", msgId);
     if (error) { statusS("Erreur : " + error.message, "err"); return; }
     statusS("Message supprimé.", "ok");
     chargerSignalements();
