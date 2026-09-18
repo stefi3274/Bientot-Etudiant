@@ -102,6 +102,7 @@
           <button class="adm-tab univers-univ" data-univers="univ">🎓 Pré-Fac</button>
           <button class="adm-tab univers-sec" data-univers="sec">📘 Secondaire</button>
           <button class="adm-tab" data-tab="carousels">Carousels</button>
+          <button class="adm-tab" data-tab="signalements">🚩 Signalements</button>
         </div>
         <button class="btn btn-ghost" id="logoutBtn" style="color:var(--encre);border-color:var(--craie-2)">Déconnexion</button>
       </div>
@@ -510,6 +511,16 @@ Réponse: B"></textarea>
         </div>
       </div>
 
+      <!-- ONGLET SIGNALEMENTS (modération de la messagerie) -->
+      <div id="tab-signalements" style="display:none">
+        <div class="lecon-editor">
+          <h2>🚩 Messages signalés</h2>
+          <p class="qz-hint" style="margin-bottom:14px">Les messages signalés par les élèves apparaissent ici. Tu peux les marquer comme traités ou supprimer le message concerné.</p>
+          <div class="status-msg" id="sigMsg"></div>
+          <div id="sigListe"><p class="empty">Chargement…</p></div>
+        </div>
+      </div>
+
       <!-- ONGLET FICHE (leçon + quiz combinés, pour toi) -->
       <div id="tab-fiche" style="display:none">
         <div class="lecon-editor">
@@ -640,6 +651,7 @@ Réponse: B"></textarea>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="js/admin-carousel.js?v=20260811"></script>
 <script src="js/admin-fiche.js?v=20260811"></script>
+<script src="js/admin-signalements.js?v=20260830"></script>
 <script src="js/passeye.js?v=20260811"></script>
 </body>
 </html>

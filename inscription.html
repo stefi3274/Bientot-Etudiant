@@ -65,12 +65,60 @@
           <input type="password" id="suPass" name="password" placeholder="Au moins 6 caractères" required>
         </div>
         <div class="auth-field">
-          <label>Ta ou tes filières (2 maximum)</label>
-          <div class="fil-choose">
-            <label class="fil-opt f1"><input type="checkbox" name="filiere" value="f1"><span class="dot"></span><span>Médecine, Agronomie &amp; Vétérinaire</span></label>
-            <label class="fil-opt f2"><input type="checkbox" name="filiere" value="f2"><span class="dot"></span><span>Sciences administratives, Économie &amp; Génie</span></label>
-            <label class="fil-opt f3"><input type="checkbox" name="filiere" value="f3"><span class="dot"></span><span>Sciences humaines et sociales</span></label>
+          <label>Tu es en...</label>
+          <div class="qz-type-choix">
+            <label class="qz-type-opt"><input type="radio" name="univers" value="sec" checked><span>📘 Secondaire</span><small>4e à Terminale</small></label>
+            <label class="qz-type-opt"><input type="radio" name="univers" value="prefac"><span>🎓 Pré-Fac</span><small>Concours d'entrée</small></label>
           </div>
+        </div>
+
+        <!-- Champs Secondaire -->
+        <div id="suSecWrap">
+          <div class="auth-field">
+            <label for="suNiveau">Ton niveau</label>
+            <select id="suNiveau" name="niveau" style="width:100%;padding:12px 14px;border:1px solid var(--craie-2);border-radius:10px;font-family:inherit;font-size:1rem">
+              <option value="9e">4e (9e Année Fondamentale)</option>
+              <option value="ns1">3e (NS1)</option>
+              <option value="ns2">2e (NS2)</option>
+              <option value="ns3">1ère (NS3)</option>
+              <option value="ns4">Terminale (NS4)</option>
+            </select>
+          </div>
+          <div class="auth-field" id="suSerieWrap" style="display:none">
+            <label for="suSerie">Ta série</label>
+            <select id="suSerie" name="serie" style="width:100%;padding:12px 14px;border:1px solid var(--craie-2);border-radius:10px;font-family:inherit;font-size:1rem">
+              <option value="svt">SVT — Sciences de la Vie et de la Terre</option>
+              <option value="smp">SMP — Sciences, Mathématiques, Physique</option>
+              <option value="ses">SES — Sciences Économiques et Sociales</option>
+              <option value="lla">LLA — Lettres, Langues et Arts</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Champs Pré-Fac -->
+        <div id="suPrefacWrap" style="display:none">
+          <div class="auth-field">
+            <label>Ta ou tes filières (2 maximum)</label>
+            <div class="fil-choose">
+              <label class="fil-opt f1"><input type="checkbox" name="filiere" value="f1"><span class="dot"></span><span>Médecine, Agronomie &amp; Vétérinaire</span></label>
+              <label class="fil-opt f2"><input type="checkbox" name="filiere" value="f2"><span class="dot"></span><span>Sciences administratives, Économie &amp; Génie</span></label>
+              <label class="fil-opt f3"><input type="checkbox" name="filiere" value="f3"><span class="dot"></span><span>Sciences humaines et sociales</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label>Tes matières préférées (facultatif)</label>
+          <div class="fil-choose" id="suMatieresBox"></div>
+        </div>
+
+        <div class="auth-field">
+          <label for="suEtablissement">Ton établissement (facultatif)</label>
+          <input type="text" id="suEtablissement" name="etablissement" placeholder="Ex. Lycée Toussaint Louverture">
+        </div>
+        <div class="auth-field">
+          <label for="suVille">Ta ville (facultatif)</label>
+          <input type="text" id="suVille" name="ville" placeholder="Ex. Port-au-Prince">
         </div>
         <button type="submit" class="btn btn-dark" style="width:100%;justify-content:center;margin-top:8px">Créer mon compte <span>→</span></button>
       </form>

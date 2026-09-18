@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messagerie · Bientôt Étudiant</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo"><img class="mark-img" src="img/logo.png" alt=""><span>Bientôt<span class="accent"> Étudiant</span></span></a>
+    <button class="burger" id="burger" aria-label="Menu">☰</button>
+    <nav class="menu" id="menu">
+      <a href="index.html">Accueil</a>
+      <a href="prefac.html">Pré-Fac</a>
+      <a href="secondaire.html">Secondaire</a>
+      <a href="espace.html">Mon espace</a>
+      <a href="messagerie.html" class="cta">Messages</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero msg-hero" id="msgHero" style="padding:32px 0">
+  <div class="wrap">
+    <h1 style="font-size:1.8rem;margin:0">Messagerie</h1>
+    <p style="margin:4px 0 0;opacity:.85" id="msgSousTitre">Chargement…</p>
+  </div>
+</section>
+
+<section style="padding:20px 0 60px">
+  <div class="wrap">
+
+    <div id="msgNonConnecte" style="display:none" class="wait-box">
+      <h2>Connecte-toi pour voir tes messages</h2>
+      <p>La messagerie est réservée aux comptes connectés.</p>
+      <a href="connexion.html" class="btn btn-primary">Se connecter <span>→</span></a>
+    </div>
+
+    <div id="msgApp" style="display:none">
+
+      <!-- ===== VUE LISTE DES CONVERSATIONS ===== -->
+      <div id="vueListe">
+        <button class="btn btn-dark" id="btnNouveauMsg" style="margin-bottom:18px">✉️ Nouveau message <span>→</span></button>
+
+        <div id="nouveauMsgBox" style="display:none;margin-bottom:22px;padding:18px;background:var(--craie-2);border-radius:14px">
+          <label style="display:block;font-weight:600;font-size:.85rem;margin-bottom:8px">Chercher quelqu'un (même niveau/filière que toi)</label>
+          <input type="text" id="rechercheNom" placeholder="🔎 Nom…" style="width:100%;padding:11px 14px;border:1px solid var(--craie-2);border-radius:10px;font-family:inherit;margin-bottom:10px">
+          <div id="resultatsRecherche"></div>
+        </div>
+
+        <div id="listeConversations"><p class="empty">Chargement…</p></div>
+      </div>
+
+      <!-- ===== VUE CONVERSATION OUVERTE ===== -->
+      <div id="vueChat" style="display:none">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--craie-2)">
+          <button class="btn btn-ghost" id="btnRetourListe" style="padding:8px 14px">← Retour</button>
+          <b id="chatNomInterlocuteur" style="font-family:var(--serif);font-size:1.15rem;flex:1"></b>
+          <button class="btn btn-ghost" id="btnOptionsChat" style="padding:8px 12px;color:var(--rouge);border-color:var(--rouge)">⋯</button>
+        </div>
+
+        <div id="optionsChatMenu" style="display:none;margin-bottom:14px;padding:14px;background:var(--craie-2);border-radius:12px">
+          <button class="btn btn-ghost" id="btnBloquer" style="width:100%;justify-content:center;margin-bottom:8px;color:var(--rouge);border-color:var(--rouge)">🚫 Bloquer cette personne</button>
+        </div>
+
+        <div id="fenetreMessages" style="display:flex;flex-direction:column;gap:10px;min-height:300px;max-height:55vh;overflow-y:auto;padding:6px 2px 14px"></div>
+
+        <div id="citationActive" style="display:none;padding:10px 14px;background:var(--craie-2);border-left:3px solid var(--ocre);border-radius:8px;margin-bottom:8px;position:relative">
+          <span style="font-size:.78rem;font-weight:700;color:var(--encre-2)">Réponse à</span>
+          <p id="citationTexte" style="margin:2px 0 0;font-size:.88rem"></p>
+          <button id="annulerCitation" style="position:absolute;top:8px;right:10px;background:none;border:0;cursor:pointer;font-size:1.1rem;color:var(--encre-2)">✕</button>
+        </div>
+
+        <div id="editionActive" style="display:none;padding:8px 14px;background:rgba(232,184,75,.15);border-radius:8px;margin-bottom:8px;font-size:.85rem;font-weight:600;color:var(--ocre-d)">
+          Modification du message… <button id="annulerEdition" style="background:none;border:0;cursor:pointer;text-decoration:underline;color:inherit">annuler</button>
+        </div>
+
+        <form id="formEnvoi" style="display:flex;gap:10px;align-items:flex-end">
+          <textarea id="champMessage" rows="1" placeholder="Écris un message…" style="flex:1;padding:13px 16px;border:1px solid var(--craie-2);border-radius:22px;font-family:inherit;font-size:.95rem;resize:none;max-height:120px"></textarea>
+          <button type="submit" class="btn-envoi" id="btnEnvoyer" aria-label="Envoyer">→</button>
+        </form>
+        <p class="status-msg" id="chatMsg"></p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="f-bot"><span>© 2026 Bientôt Étudiant</span><span>Conçu par SteFi Services</span></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js?v=20260830"></script>
+<script src="js/main.js?v=20260830"></script>
+<script src="js/eleve.js?v=20260830"></script>
+<script src="js/messagerie.js?v=20260830"></script>
+</body>
+</html>

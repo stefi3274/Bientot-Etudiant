@@ -7,6 +7,22 @@ const FILIERES = {
   f2: "Sciences administratives, Économie & Génie",
   f3: "Sciences humaines et sociales"
 };
+const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
+const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
+const MATIERES_PREFAC = {
+  f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français", "Botanique"],
+  f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
+  f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
+};
+const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
+  "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+const SERIES_MATIERES = {
+  svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
+  smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
+  ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
+  lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+};
 
 // Récupère l'élève connecté (ou null)
 async function eleveActuel() {
@@ -24,7 +40,7 @@ async function majMenuCompte() {
   const el = await eleveActuel();
   if (el && el.nom) {
     const prenom = el.nom.split(" ")[0];
-    zone.innerHTML = '<a href="espace.html" class="cta">Mon espace</a>';
+    zone.innerHTML = '<a href="messagerie.html" style="margin-right:14px">Messages</a><a href="espace.html" class="cta">Mon espace</a>';
   } else {
     zone.innerHTML = '<a href="connexion.html" class="cta">Se connecter</a>';
     initInviteFlottante();
@@ -67,7 +83,6 @@ function initInscription() {
   const msg = document.getElementById("signupMsg");
   const show = (m, t) => { msg.textContent = m; msg.className = "form-msg on " + t; };
 
-  // gérer la limite de 2 filières
   const checks = form.querySelectorAll('input[name="filiere"]');
   checks.forEach(c => c.addEventListener("change", () => {
     const cochees = Array.from(checks).filter(x => x.checked);
@@ -75,16 +90,62 @@ function initInscription() {
     else msg.className = "form-msg";
   }));
 
+  const secWrap = document.getElementById("suSecWrap"), prefacWrap = document.getElementById("suPrefacWrap");
+  const selNiveau = document.getElementById("suNiveau"), serieWrap = document.getElementById("suSerieWrap"), selSerie = document.getElementById("suSerie");
+  const matieresBox = document.getElementById("suMatieresBox");
+
+  function universActuel() {
+    const r = form.querySelector('input[name="univers"]:checked');
+    return r ? r.value : "sec";
+  }
+
+  function majMatieresPreferees() {
+    const sec = universActuel() === "sec";
+    let liste;
+    if (sec) {
+      liste = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? (SERIES_MATIERES[selSerie.value] || []) : TRONC_COMMUN;
+    } else {
+      const filChoisies = Array.from(checks).filter(x => x.checked).map(x => x.value);
+      const ensemble = new Set();
+      (filChoisies.length ? filChoisies : ["f1", "f2", "f3"]).forEach(f => (MATIERES_PREFAC[f] || []).forEach(m => ensemble.add(m)));
+      liste = [...ensemble];
+    }
+    matieresBox.innerHTML = liste.map(m =>
+      '<label class="fil-opt"><input type="checkbox" name="matiere-pref" value="' + m.replace(/"/g, "&quot;") + '"><span class="dot"></span><span>' + m + '</span></label>'
+    ).join("");
+  }
+
+  function majUnivers() {
+    const sec = universActuel() === "sec";
+    secWrap.style.display = sec ? "block" : "none";
+    prefacWrap.style.display = sec ? "none" : "block";
+    majMatieresPreferees();
+  }
+  form.querySelectorAll('input[name="univers"]').forEach(r => r.addEventListener("change", majUnivers));
+  selNiveau.addEventListener("change", () => {
+    serieWrap.style.display = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? "block" : "none";
+    majMatieresPreferees();
+  });
+  selSerie.addEventListener("change", majMatieresPreferees);
+  checks.forEach(c => c.addEventListener("change", majMatieresPreferees));
+  majUnivers();
+
   form.addEventListener("submit", async e => {
     e.preventDefault();
     const nom = form.nom.value.trim();
     const email = form.email.value.trim();
     const pass = form.password.value;
-    const filieres = Array.from(checks).filter(x => x.checked).map(x => x.value);
+    const estSec = universActuel() === "sec";
+    const filieres = estSec ? [] : Array.from(checks).filter(x => x.checked).map(x => x.value);
+    const niveau = estSec ? selNiveau.value : null;
+    const serie = (estSec && NIVEAUX_AVEC_SERIE.includes(selNiveau.value)) ? selSerie.value : null;
+    const matieresPreferees = Array.from(matieresBox.querySelectorAll('input[name="matiere-pref"]:checked')).map(x => x.value);
+    const etablissement = document.getElementById("suEtablissement").value.trim();
+    const ville = document.getElementById("suVille").value.trim();
 
     if (!nom || !email || !pass) { show("Merci de remplir tous les champs.", "err"); return; }
     if (pass.length < 6) { show("Le mot de passe doit faire au moins 6 caractères.", "err"); return; }
-    if (filieres.length === 0) { show("Choisis au moins une filière.", "err"); return; }
+    if (!estSec && filieres.length === 0) { show("Choisis au moins une filière.", "err"); return; }
     if (!DB) { show("Inscription indisponible pour le moment.", "err"); return; }
 
     const btn = form.querySelector("button[type=submit]");
@@ -104,7 +165,12 @@ function initInscription() {
       user_id: auth.user.id,
       entreprise_id: ent,
       nom: nom,
-      filieres: filieres
+      filieres: filieres,
+      niveau: niveau,
+      serie: serie,
+      matieres_preferees: matieresPreferees,
+      etablissement: etablissement || null,
+      ville: ville || null
     });
     if (profErr) { show("Compte créé, mais erreur de profil : " + profErr.message, "err"); btn.disabled = false; return; }
 
@@ -146,38 +212,107 @@ async function initEspace() {
   const el = await eleveActuel();
   if (!el || !el.nom) { location.href = "connexion.html"; return; }
 
-  // Nom + filières
+  // Nom
   const nomEl = document.getElementById("espaceNom");
   if (nomEl) nomEl.textContent = el.nom.split(" ")[0];
 
-  const filZone = document.getElementById("mesFilieres");
-  if (filZone) {
-    filZone.innerHTML = (el.filieres && el.filieres.length)
-      ? el.filieres.map(f => '<span class="fil-tag ' + f + '">' + (FILIERES[f] || f) + '</span>').join("")
-      : '<span class="fil-tag">Aucune filière choisie</span>';
+  // Résumé du profil (lecture seule, au-dessus du formulaire dépliable)
+  const resumeZone = document.getElementById("monProfilResume");
+  function afficherResume(d) {
+    if (!resumeZone) return;
+    const morceaux = [];
+    if (d.niveau) {
+      morceaux.push('<span class="fil-tag">' + (NIVEAUX[d.niveau] || d.niveau) + '</span>');
+      if (d.serie) morceaux.push('<span class="fil-tag">' + (SERIES[d.serie] || d.serie) + '</span>');
+    }
+    if (d.filieres && d.filieres.length) d.filieres.forEach(f => morceaux.push('<span class="fil-tag ' + f + '">' + (FILIERES[f] || f) + '</span>'));
+    if (d.matieres_preferees && d.matieres_preferees.length) morceaux.push('<span class="fil-tag">' + d.matieres_preferees.join(", ") + '</span>');
+    if (d.etablissement) morceaux.push('<span class="fil-tag">' + d.etablissement + '</span>');
+    if (d.ville) morceaux.push('<span class="fil-tag">' + d.ville + '</span>');
+    resumeZone.innerHTML = morceaux.length ? '<div class="fil-tags">' + morceaux.join("") + '</div>' : '<p class="empty">Profil pas encore complété.</p>';
   }
+  afficherResume(el);
 
-  // Pré-cocher les filières dans le formulaire de modification
-  const checks = document.querySelectorAll('#filieresForm input[name="filiere"]');
-  checks.forEach(c => { c.checked = (el.filieres || []).includes(c.value); });
+  // ---------- Formulaire de modification du profil ----------
+  const profilForm = document.getElementById("profilForm");
+  if (profilForm) {
+    const msg = document.getElementById("profilMsg");
+    const secWrap = document.getElementById("pfSecWrap"), prefacWrap = document.getElementById("pfPrefacWrap");
+    const selNiveau = document.getElementById("pfNiveau"), serieWrap = document.getElementById("pfSerieWrap"), selSerie = document.getElementById("pfSerie");
+    const filChecks = profilForm.querySelectorAll('input[name="filiere"]');
+    const matieresBox = document.getElementById("pfMatieresBox");
+    const champEtablissement = document.getElementById("pfEtablissement"), champVille = document.getElementById("pfVille");
 
-  // Enregistrer les filières
-  const filForm = document.getElementById("filieresForm");
-  if (filForm) {
-    const msg = document.getElementById("filieresMsg");
-    checks.forEach(c => c.addEventListener("change", () => {
-      const cochees = Array.from(checks).filter(x => x.checked);
+    function universActuel() {
+      const r = profilForm.querySelector('input[name="univers"]:checked');
+      return r ? r.value : "sec";
+    }
+    function majMatieresPreferees(dejaCochees) {
+      const sec = universActuel() === "sec";
+      let liste;
+      if (sec) {
+        liste = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? (SERIES_MATIERES[selSerie.value] || []) : TRONC_COMMUN;
+      } else {
+        const filChoisies = Array.from(filChecks).filter(x => x.checked).map(x => x.value);
+        const ensemble = new Set();
+        (filChoisies.length ? filChoisies : ["f1", "f2", "f3"]).forEach(f => (MATIERES_PREFAC[f] || []).forEach(m => ensemble.add(m)));
+        liste = [...ensemble];
+      }
+      const dejaSet = new Set(dejaCochees || []);
+      matieresBox.innerHTML = liste.map(m =>
+        '<label class="fil-opt"><input type="checkbox" name="matiere-pref" value="' + m.replace(/"/g, "&quot;") + '"' + (dejaSet.has(m) ? " checked" : "") + '><span class="dot"></span><span>' + m + '</span></label>'
+      ).join("");
+    }
+    function majUnivers(dejaCochees) {
+      const sec = universActuel() === "sec";
+      secWrap.style.display = sec ? "block" : "none";
+      prefacWrap.style.display = sec ? "none" : "block";
+      majMatieresPreferees(dejaCochees);
+    }
+
+    // Pré-remplir avec les valeurs actuelles
+    const estSecActuel = !!el.niveau;
+    profilForm.querySelector('input[name="univers"][value="' + (estSecActuel ? "sec" : "prefac") + '"]').checked = true;
+    if (el.niveau) selNiveau.value = el.niveau;
+    serieWrap.style.display = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? "block" : "none";
+    if (el.serie) selSerie.value = el.serie;
+    filChecks.forEach(c => { c.checked = (el.filieres || []).includes(c.value); });
+    if (champEtablissement) champEtablissement.value = el.etablissement || "";
+    if (champVille) champVille.value = el.ville || "";
+    majUnivers(el.matieres_preferees);
+
+    profilForm.querySelectorAll('input[name="univers"]').forEach(r => r.addEventListener("change", () => majUnivers()));
+    selNiveau.addEventListener("change", () => {
+      serieWrap.style.display = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? "block" : "none";
+      majMatieresPreferees();
+    });
+    selSerie.addEventListener("change", () => majMatieresPreferees());
+    filChecks.forEach(c => c.addEventListener("change", () => {
+      const cochees = Array.from(filChecks).filter(x => x.checked);
       if (cochees.length > 2) { c.checked = false; msg.textContent = "2 filières maximum."; msg.className = "form-msg on err"; }
       else msg.className = "form-msg";
+      majMatieresPreferees();
     }));
-    filForm.addEventListener("submit", async e => {
+
+    profilForm.addEventListener("submit", async e => {
       e.preventDefault();
-      const filieres = Array.from(checks).filter(x => x.checked).map(x => x.value);
-      if (filieres.length === 0) { msg.textContent = "Choisis au moins une filière."; msg.className = "form-msg on err"; return; }
-      const { error } = await DB.from("eleves").update({ filieres, updated_at: new Date().toISOString() }).eq("user_id", el.user_id);
+      const estSec = universActuel() === "sec";
+      const filieres = estSec ? [] : Array.from(filChecks).filter(x => x.checked).map(x => x.value);
+      if (!estSec && filieres.length === 0) { msg.textContent = "Choisis au moins une filière."; msg.className = "form-msg on err"; return; }
+
+      const champs = {
+        niveau: estSec ? selNiveau.value : null,
+        serie: (estSec && NIVEAUX_AVEC_SERIE.includes(selNiveau.value)) ? selSerie.value : null,
+        filieres: filieres,
+        matieres_preferees: Array.from(matieresBox.querySelectorAll('input[name="matiere-pref"]:checked')).map(x => x.value),
+        etablissement: (champEtablissement.value || "").trim() || null,
+        ville: (champVille.value || "").trim() || null,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await DB.from("eleves").update(champs).eq("user_id", el.user_id);
       if (error) { msg.textContent = "Erreur : " + error.message; msg.className = "form-msg on err"; return; }
-      msg.textContent = "Filières mises à jour !"; msg.className = "form-msg on ok";
-      if (filZone) filZone.innerHTML = filieres.map(f => '<span class="fil-tag ' + f + '">' + (FILIERES[f] || f) + '</span>').join("");
+      msg.textContent = "Profil mis à jour !"; msg.className = "form-msg on ok";
+      afficherResume({ ...el, ...champs });
     });
   }
 

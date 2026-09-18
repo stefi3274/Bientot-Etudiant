@@ -34,7 +34,7 @@
     document.querySelectorAll(".adm-tabs > .adm-tab").forEach(x => x.classList.remove("on"));
   }
   function majAffichageOnglet(t) {
-    ["dashboard", "contrib", "lecons", "quiz", "carousels", "fiche"].forEach(k => {
+    ["dashboard", "contrib", "lecons", "quiz", "carousels", "fiche", "signalements"].forEach(k => {
       const el = $("tab-" + k);
       if (el) el.style.display = (t === k) ? "block" : "none";
     });
