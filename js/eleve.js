@@ -8,23 +8,43 @@ const FILIERES = {
   f3: "Sciences humaines et sociales"
 };
 const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
-const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+const SERIES = { svt: "SVT", mp: "MP", ses: "SES", lla: "LLA" };
 const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
 const MATIERES_PREFAC = {
   f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français", "Botanique"],
   f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
   f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
 };
-const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
-  "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+const MATIERES_9E_AF = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+  "Sciences Sociales", "Sciences Expérimentales", "Éducation à la Citoyenneté"];
+// Tronc commun NS1/NS2 (S1-S2 du Nouveau Secondaire) — programme MENFP 2024
+const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+  "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
+  "Éducation à la Citoyenneté", "Informatique"];
 const SERIES_MATIERES = {
-  svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
-  smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
-  ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
-  lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+  svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+  mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+  ses: ["Mathématiques", "Économie", "Physique", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Informatique", "Anglais", "Espagnol"],
+  lla: ["Français", "Anglais", "Espagnol", "Arts", "Mathématiques", "Physique", "Histoire-Géographie", "Philosophie", "Économie"]
 };
 
 // Récupère l'élève connecté (ou null)
+// Associe un nom de matière à sa classe couleur (voir .mat.xxx dans style.css)
+// Utilisable partout : matiere.html, secondaire.html, cartes admin, badges...
+const MATIERE_CLASSES = {
+  "Mathématiques": "math", "Physique": "phys", "Chimie": "chim",
+  "Biologie": "bio", "Biologie/Géologie": "biogeo",
+  "Français": "fr", "Créole": "creole", "Anglais": "angl", "Espagnol": "esp",
+  "Philosophie": "philo", "Histoire-Géographie": "hist",
+  "Culture générale": "cg", "Économie": "eco", "Économie et Gestion": "eco",
+  "Botanique": "bota", "Droit": "droit", "Informatique": "info",
+  "Éducation à la Citoyenneté": "citoy", "Éducation Civique": "citoy",
+  "Sciences Sociales": "social", "Sciences Expérimentales": "exp",
+  "Sciences Physiques": "phys", "Sciences de la Vie et de la Terre": "biogeo",
+  "Arts": "arts", "Art et Musique": "arts"
+};
+function classeMatiere(nom) { return MATIERE_CLASSES[nom] || "math"; }
+
 async function eleveActuel() {
   if (!DB) return null;
   const { data: sess } = await DB.auth.getSession();
@@ -102,7 +122,7 @@ function initInscription() {
     const sec = universActuel() === "sec";
     let liste;
     if (sec) {
-      liste = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? (SERIES_MATIERES[selSerie.value] || []) : TRONC_COMMUN;
+      liste = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? (SERIES_MATIERES[selSerie.value] || []) : (selNiveau.value === "9e" ? MATIERES_9E_AF : TRONC_COMMUN);
     } else {
       const filChoisies = Array.from(checks).filter(x => x.checked).map(x => x.value);
       const ensemble = new Set();
@@ -307,7 +327,7 @@ async function initEspace() {
       const sec = universActuel() === "sec";
       let liste;
       if (sec) {
-        liste = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? (SERIES_MATIERES[selSerie.value] || []) : TRONC_COMMUN;
+        liste = NIVEAUX_AVEC_SERIE.includes(selNiveau.value) ? (SERIES_MATIERES[selSerie.value] || []) : (selNiveau.value === "9e" ? MATIERES_9E_AF : TRONC_COMMUN);
       } else {
         const filChoisies = Array.from(filChecks).filter(x => x.checked).map(x => x.value);
         const ensemble = new Set();

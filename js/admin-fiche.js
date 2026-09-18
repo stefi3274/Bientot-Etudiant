@@ -12,13 +12,20 @@
     f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
-  const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
-    "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+  const MATIERES_9E_AF = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+      "Sciences Sociales", "Sciences Expérimentales", "Éducation à la Citoyenneté"];
+    // Tronc commun NS1/NS2 (S1-S2 du Nouveau Secondaire) — programme MENFP 2024
+    const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+      "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
+      "Éducation à la Citoyenneté", "Informatique"];
+  const DOMAINES_MATH_9E_AF = ["Algèbre", "Géométrie", "Mesures", "Applications"];
+  const DOMAINES_MATH_SECONDAIRE = ["Nombres et calculs", "Calcul algébrique", "Fonctions", "Géométrie",
+    "Probabilités", "Statistique", "Algorithmique et programmation", "Logique et raisonnement", "Matrices et graphes"];
   const SERIES_MATIERES = {
-    svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
-    smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
-    ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
-    lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+    svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+    mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+    ses: ["Mathématiques", "Économie", "Physique", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Informatique", "Anglais", "Espagnol"],
+    lla: ["Français", "Anglais", "Espagnol", "Arts", "Mathématiques", "Physique", "Histoire-Géographie", "Philosophie", "Économie"]
   };
   const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -41,11 +48,22 @@
     if (!fiSelNiveau || !fiSelMatSec) return;
     const avecSerie = NIVEAUX_AVEC_SERIE.includes(fiSelNiveau.value);
     if (fiSerieWrap) fiSerieWrap.style.display = avecSerie ? "block" : "none";
-    const opts = avecSerie ? (SERIES_MATIERES[fiSelSerie.value] || []) : TRONC_COMMUN;
+    const opts = avecSerie ? (SERIES_MATIERES[fiSelSerie.value] || []) : (fiSelNiveau.value === "9e" ? MATIERES_9E_AF : TRONC_COMMUN);
     fiSelMatSec.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
+    majDomaine();
   }
   if (fiSelNiveau) fiSelNiveau.addEventListener("change", majMatieresSecondaire);
   if (fiSelSerie) fiSelSerie.addEventListener("change", majMatieresSecondaire);
+
+  const fiDomaineWrap = $("fiDomaineWrap"), fiSelDomaine = $("fiDomaine");
+  function majDomaine() {
+    if (!fiSelDomaine || !fiDomaineWrap) return;
+    if (fiSelMatSec.value !== "Mathématiques") { fiDomaineWrap.style.display = "none"; fiSelDomaine.innerHTML = ""; return; }
+    fiDomaineWrap.style.display = "block";
+    const liste = fiSelNiveau.value === "9e" ? DOMAINES_MATH_9E_AF : DOMAINES_MATH_SECONDAIRE;
+    fiSelDomaine.innerHTML = liste.map(d => '<option>' + esc(d) + '</option>').join("");
+  }
+  if (fiSelMatSec) fiSelMatSec.addEventListener("change", majDomaine);
 
   function majSection() {
     const sec = sectionActuelle() === "sec";
@@ -254,6 +272,7 @@
     const filiere = estSecFi ? (avecSerieFi ? fiSelSerie.value : null) : selFil.value;
     const matiere = estSecFi ? fiSelMatSec.value : selMat.value;
     if (estSecFi && !matiere) { statusFi("La matière est requise.", "err"); $("fiPublier").disabled = false; return; }
+    const domaine = (estSecFi && matiere === "Mathématiques" && fiSelDomaine.value) ? fiSelDomaine.value : null;
     const ent = await monEnt();
     if (!ent) { statusFi("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); $("fiPublier").disabled = false; return; }
 
@@ -269,7 +288,7 @@
     for (const d of lecons) {
       try {
         const { data: lec, error: eLec } = await DB.from("lecons").insert({
-          entreprise_id: ent, filiere, niveau, matiere, titre: d.titre, chapitre: d.chapitre || null, apercu: d.apercu || null,
+          entreprise_id: ent, filiere, niveau, matiere, domaine, titre: d.titre, chapitre: d.chapitre || null, apercu: d.apercu || null,
           contenu: d.contenu_html, publie: true, ordre: ordre
         }).select("id").single();
         if (eLec) throw new Error(eLec.message);
@@ -279,7 +298,7 @@
         for (const qz of d.quizzes) {
           const titreQuiz = d.quizzes.length > 1 ? qz.sousTitre + " — " + d.titre : "Quiz — " + d.titre;
           const { data: qzRow, error: eQz } = await DB.from("quiz").insert({
-            entreprise_id: ent, filiere, niveau, matiere, titre: titreQuiz,
+            entreprise_id: ent, filiere, niveau, matiere, domaine, titre: titreQuiz,
             duree_sec: 600, type: "lecon", lecon_id: lec.id, publie: true
           }).select("id").single();
           if (eQz) throw new Error(eQz.message);
@@ -515,6 +534,7 @@
         filiere: estSec ? (avecSerie ? fiSelSerie.value : null) : selFil.value,
         niveau: estSec ? fiSelNiveau.value : null,
         matiere: estSec ? fiSelMatSec.value : selMat.value,
+        domaine: (estSec && fiSelMatSec.value === "Mathématiques" && fiSelDomaine.value) ? fiSelDomaine.value : null,
         titre, duree_sec: 600, type: "lecon",
         lecon_id: gererZone.dataset.leconId,
         publie: true

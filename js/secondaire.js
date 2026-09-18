@@ -1,7 +1,7 @@
 /* ============================================================
    Page Secondaire — niveau (4e à Terminale), puis :
    - pour 9e/NS1/NS2 : matière (tronc commun, pas de filière)
-   - pour NS3/NS4 : série (SVT/SMP/SES/LLA) -> matière fixe
+   - pour NS3/NS4 : série (SVT/MP/SES/LLA) -> matière fixe
    Puis affichage des leçons/quiz.
    ============================================================ */
 (function () {
@@ -21,7 +21,7 @@
   const ORDRE_NIVEAUX = ["9e", "ns1", "ns2", "ns3", "ns4"];
   const NIVEAU_COULEUR = { "9e": "var(--niv-9e)", ns1: "var(--niv-ns1)", ns2: "var(--niv-ns2)", ns3: "var(--niv-ns3)", ns4: "var(--niv-ns4)" };
   const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
-  const SERIES = { svt: "SVT — Sciences de la Vie et de la Terre", smp: "SMP — Sciences, Mathématiques, Physique",
+  const SERIES = { svt: "SVT — Sciences de la Vie et de la Terre", mp: "MP — Mathématiques et Physique",
     ses: "SES — Sciences Économiques et Sociales", lla: "LLA — Lettres, Langues et Arts" };
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -94,7 +94,7 @@
       const on = i === 0;
       return '<button class="filter' + (on ? ' on' : '') + '" data-m="' + esc(m) + '"'
         + (on ? ' style="background:var(--ocre-d);border-color:var(--ocre-d);color:#fff"' : '')
-        + '>' + esc(m) + '</button>';
+        + '><span class="mat-dot ' + classeMatiere(m) + '"></span>' + esc(m) + '</button>';
     }).join("");
     matiereActuelle = matieres[0];
     matBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {

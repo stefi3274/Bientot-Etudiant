@@ -29,6 +29,12 @@
   setTxt("mBread", m);
   setTxt("mFiliere", filiereNoms[f] || "Matière");
   if (f) document.body.setAttribute("data-filiere", f);
+  const hero = document.getElementById("mHero");
+  if (hero && typeof classeMatiere === "function") {
+    const cls = classeMatiere(m);
+    const couleur = getComputedStyle(document.documentElement).getPropertyValue("--m-" + cls).trim();
+    if (couleur) { hero.style.setProperty("--c", couleur); hero.setAttribute("data-mat-couleur", ""); }
+  }
 
   const zoneLecons = document.getElementById("leconsContenu");
   const zoneQuiz = document.getElementById("quizContenu");

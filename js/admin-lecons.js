@@ -13,18 +13,41 @@
   };
   const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
   // Tronc commun (9e, NS1, NS2) — pas de filière avant le NS3
-  const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
-    "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+  const MATIERES_9E_AF = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+      "Sciences Sociales", "Sciences Expérimentales", "Éducation à la Citoyenneté"];
+    // Tronc commun NS1/NS2 (S1-S2 du Nouveau Secondaire) — programme MENFP 2024
+    const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+      "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
+      "Éducation à la Citoyenneté", "Informatique"];
+  // Domaines de Mathématiques — 9e AF (programme MENFP 1989, 4 sections) et Secondaire (9 unités, programme MENFP 2024)
+  const DOMAINES_MATH_9E_AF = ["Algèbre", "Géométrie", "Mesures", "Applications"];
+  const DOMAINES_MATH_SECONDAIRE = ["Nombres et calculs", "Calcul algébrique", "Fonctions", "Géométrie",
+    "Probabilités", "Statistique", "Algorithmique et programmation", "Logique et raisonnement", "Matrices et graphes"];
   // Séries du Nouveau Secondaire (NS3/NS4), chacune avec ses matières fixes — MENFP
   const SERIES_MATIERES = {
-    svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
-    smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
-    ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
-    lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+    svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+    mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+    ses: ["Mathématiques", "Économie", "Physique", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Informatique", "Anglais", "Espagnol"],
+    lla: ["Français", "Anglais", "Espagnol", "Arts", "Mathématiques", "Physique", "Histoire-Géographie", "Philosophie", "Économie"]
   };
   const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+  // Couleur par matière (même mapping que eleve.js, dupliqué car eleve.js n'est pas chargé dans l'admin)
+  const MATIERE_CLASSES = {
+    "Mathématiques": "math", "Physique": "phys", "Chimie": "chim",
+    "Biologie": "bio", "Biologie/Géologie": "biogeo",
+    "Français": "fr", "Créole": "creole", "Anglais": "angl", "Espagnol": "esp",
+    "Philosophie": "philo", "Histoire-Géographie": "hist",
+    "Culture générale": "cg", "Économie": "eco", "Économie et Gestion": "eco",
+    "Botanique": "bota", "Droit": "droit", "Informatique": "info",
+    "Éducation à la Citoyenneté": "citoy", "Éducation Civique": "citoy",
+    "Sciences Sociales": "social", "Sciences Expérimentales": "exp",
+    "Sciences Physiques": "phys", "Sciences de la Vie et de la Terre": "biogeo",
+    "Arts": "arts", "Art et Musique": "arts"
+  };
+  function classeMatiere(nom) { return MATIERE_CLASSES[nom] || "math"; }
 
   // ---------- Navigation admin : onglets simples + univers (Pré-Fac/Secondaire) + sous-onglets ----------
   window.adminUnivers = "univ";
@@ -91,9 +114,20 @@
     if (!selNiveau || !selMatSec) return;
     const avecSerie = NIVEAUX_AVEC_SERIE.includes(selNiveau.value);
     if (serieWrap) serieWrap.style.display = avecSerie ? "block" : "none";
-    const opts = avecSerie ? (SERIES_MATIERES[selSerie.value] || []) : TRONC_COMMUN;
+    const opts = avecSerie ? (SERIES_MATIERES[selSerie.value] || []) : (selNiveau.value === "9e" ? MATIERES_9E_AF : TRONC_COMMUN);
     selMatSec.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
+    majDomaine();
   }
+
+  const domaineWrap = $("leDomaineWrap"), selDomaine = $("leDomaine");
+  function majDomaine() {
+    if (!selDomaine || !domaineWrap) return;
+    if (selMatSec.value !== "Mathématiques") { domaineWrap.style.display = "none"; selDomaine.innerHTML = ""; return; }
+    domaineWrap.style.display = "block";
+    const liste = selNiveau.value === "9e" ? DOMAINES_MATH_9E_AF : DOMAINES_MATH_SECONDAIRE;
+    selDomaine.innerHTML = liste.map(d => '<option>' + esc(d) + '</option>').join("");
+  }
+  if (selMatSec) selMatSec.addEventListener("change", majDomaine);
   if (selNiveau) selNiveau.addEventListener("change", majMatieresSecondaire);
   if (selSerie) selSerie.addEventListener("change", majMatieresSecondaire);
 
@@ -329,6 +363,7 @@
       filiere: estSecondaire ? (avecSerie ? selSerie.value : null) : selFil.value,
       niveau: niveauChoisi,
       matiere: matiereChoisie,
+      domaine: (estSecondaire && matiereChoisie === "Mathématiques" && selDomaine.value) ? selDomaine.value : null,
       titre: titre,
       chapitre: $("leChapitre").value.trim() || null,
       apercu: $("leApercu").value.trim() || null,
@@ -413,7 +448,7 @@
       + liste.map(l =>
         '<div class="lec-item ' + (l.filiere || "sec") + '">'
         + '<div class="lec-info"><b>' + esc(l.titre) + '</b>'
-        + '<span class="lec-meta">' + esc(l.matiere) + (l.niveau ? ' · ' + esc(NIVEAUX[l.niveau] || l.niveau) + (l.filiere && NIVEAUX_AVEC_SERIE.includes(l.niveau) ? ' · ' + l.filiere.toUpperCase() : '') : '') + ' · Leçon ' + (l.ordre || 1)
+        + '<span class="lec-meta"><span class="mat-dot ' + classeMatiere(l.matiere) + '"></span>' + esc(l.matiere) + (l.domaine ? ' (' + esc(l.domaine) + ')' : '') + (l.niveau ? ' · ' + esc(NIVEAUX[l.niveau] || l.niveau) + (l.filiere && NIVEAUX_AVEC_SERIE.includes(l.niveau) ? ' · ' + l.filiere.toUpperCase() : '') : '') + ' · Leçon ' + (l.ordre || 1)
         + (l.pdf_url ? ' · PDF joint' : '') + (l.auteur ? ' · ' + esc(l.auteur) : '') + '</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + l.id + '">Modifier</button>'

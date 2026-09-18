@@ -17,7 +17,7 @@
   const ORDRE_NIVEAUX = ["9e", "ns1", "ns2", "ns3", "ns4"];
   const NIVEAU_COULEUR = { "9e": "var(--niv-9e)", ns1: "var(--niv-ns1)", ns2: "var(--niv-ns2)", ns3: "var(--niv-ns3)", ns4: "var(--niv-ns4)" };
   const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
-  const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+  const SERIES = { svt: "SVT", mp: "MP", ses: "SES", lla: "LLA" };
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 

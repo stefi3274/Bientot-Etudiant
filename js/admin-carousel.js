@@ -172,7 +172,7 @@
     ctx.fillStyle = NOIR;
     ctx.fillText(quiz.niveau ? "SECONDAIRE" : "CONCOURS D'ENTRÉE À L'UNIVERSITÉ", 64, 108);
 
-    const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+    const SERIES = { svt: "SVT", mp: "MP", ses: "SES", lla: "LLA" };
     const badgeUnivers = quiz.niveau
       ? (NIVEAUX[quiz.niveau] || quiz.niveau) + (SERIES[quiz.filiere] ? " · " + SERIES[quiz.filiere] : "")
       : (FILIERES[quiz.filiere] || quiz.filiere || "");
@@ -512,7 +512,7 @@
     ctx.fillStyle = NOIR;
     ctx.fillText(lecon.niveau ? "LEÇON · SECONDAIRE" : "LEÇON · CONCOURS D'ENTRÉE", 64, 108);
 
-    const SERIES = { svt: "SVT", smp: "SMP", ses: "SES", lla: "LLA" };
+    const SERIES = { svt: "SVT", mp: "MP", ses: "SES", lla: "LLA" };
     const badgeUnivers = lecon.niveau
       ? (NIVEAUX[lecon.niveau] || lecon.niveau) + (SERIES[lecon.filiere] ? " · " + SERIES[lecon.filiere] : "")
       : (FILIERES[lecon.filiere] || lecon.filiere || "");

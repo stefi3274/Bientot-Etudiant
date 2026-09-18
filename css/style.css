@@ -48,6 +48,14 @@
   --m-eco:#b8863b;
   --m-bota:#5a8f3c;
   --m-droit:#6d5a8f;
+  --m-angl:#2f8f7a;
+  --m-esp:#c76b8a;
+  --m-info:#4a7fc9;
+  --m-citoy:#8a6d3f;
+  --m-social:#a87d4f;
+  --m-exp:#4f9d8f;
+  --m-arts:#c97fb0;
+  --m-biogeo:#478a5c;
 
   --serif:'Fraunces',Georgia,serif;
   --corps:'Inter',system-ui,sans-serif;
@@ -223,6 +231,18 @@ section{padding:88px 0}
 .mat.eco{--c:var(--m-eco);--c-bg:rgba(184,134,59,.12)}
 .mat.bota{--c:var(--m-bota);--c-bg:rgba(90,143,60,.12)}
 .mat.droit{--c:var(--m-droit);--c-bg:rgba(109,90,143,.12)}
+.mat.angl{--c:var(--m-angl);--c-bg:rgba(47,143,122,.12)}
+.mat.esp{--c:var(--m-esp);--c-bg:rgba(199,107,138,.12)}
+.mat.info{--c:var(--m-info);--c-bg:rgba(74,127,201,.12)}
+.mat.citoy{--c:var(--m-citoy);--c-bg:rgba(138,109,63,.12)}
+.mat.social{--c:var(--m-social);--c-bg:rgba(168,125,79,.12)}
+.mat.exp{--c:var(--m-exp);--c-bg:rgba(79,157,143,.12)}
+.mat.arts{--c:var(--m-arts);--c-bg:rgba(201,127,176,.12)}
+.mat.biogeo{--c:var(--m-biogeo);--c-bg:rgba(71,138,92,.12)}
+
+/* Petit point de couleur par matière, réutilisable partout (listes admin, badges...) */
+.mat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;
+  background:var(--c,var(--ardoise))}
 
 /* ============================================================
    BANDEAU CTA
@@ -254,6 +274,8 @@ footer{background:var(--ardoise-2);color:rgba(247,244,236,.75);padding:56px 0 32
 .page-hero{background:var(--ardoise);color:var(--craie);padding:64px 0 68px;position:relative;overflow:hidden}
 .page-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;
                   background:linear-gradient(90deg,var(--ocre),var(--ocre-d))}
+.page-hero[data-mat-couleur]::after{background:linear-gradient(90deg,var(--c),var(--c))}
+.page-hero[data-mat-couleur] .eyebrow{color:var(--c)}
 .page-hero .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;
                     letter-spacing:.08em;text-transform:uppercase;color:var(--ocre);margin-bottom:16px}
 .page-hero h1{color:var(--craie);font-size:clamp(2.2rem,5vw,3.6rem);letter-spacing:-.02em;margin-bottom:14px}

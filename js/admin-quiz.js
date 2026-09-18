@@ -10,17 +10,37 @@
     f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
   };
   const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
-  const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Histoire-Géographie",
-    "Sciences Physiques", "Sciences de la Vie et de la Terre", "Éducation Civique"];
+  const MATIERES_9E_AF = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+      "Sciences Sociales", "Sciences Expérimentales", "Éducation à la Citoyenneté"];
+    // Tronc commun NS1/NS2 (S1-S2 du Nouveau Secondaire) — programme MENFP 2024
+    const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
+      "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
+      "Éducation à la Citoyenneté", "Informatique"];
+  const DOMAINES_MATH_9E_AF = ["Algèbre", "Géométrie", "Mesures", "Applications"];
+  const DOMAINES_MATH_SECONDAIRE = ["Nombres et calculs", "Calcul algébrique", "Fonctions", "Géométrie",
+    "Probabilités", "Statistique", "Algorithmique et programmation", "Logique et raisonnement", "Matrices et graphes"];
   const SERIES_MATIERES = {
-    svt: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Biologie/Géologie", "Philosophie"],
-    smp: ["Mathématiques", "Histoire-Géographie", "Physique", "Chimie", "Philosophie", "Biologie/Géologie"],
-    ses: ["Mathématiques", "Histoire-Géographie", "Économie", "Philosophie", "Biologie/Géologie", "Physique", "Chimie"],
-    lla: ["Histoire-Géographie", "Anglais", "Espagnol", "Philosophie", "Art et Musique", "Mathématiques", "Chimie"]
+    svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+    mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
+    ses: ["Mathématiques", "Économie", "Physique", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Informatique", "Anglais", "Espagnol"],
+    lla: ["Français", "Anglais", "Espagnol", "Arts", "Mathématiques", "Physique", "Histoire-Géographie", "Philosophie", "Économie"]
   };
   const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  const MATIERE_CLASSES = {
+    "Mathématiques": "math", "Physique": "phys", "Chimie": "chim",
+    "Biologie": "bio", "Biologie/Géologie": "biogeo",
+    "Français": "fr", "Créole": "creole", "Anglais": "angl", "Espagnol": "esp",
+    "Philosophie": "philo", "Histoire-Géographie": "hist",
+    "Culture générale": "cg", "Économie": "eco", "Économie et Gestion": "eco",
+    "Botanique": "bota", "Droit": "droit", "Informatique": "info",
+    "Éducation à la Citoyenneté": "citoy", "Éducation Civique": "citoy",
+    "Sciences Sociales": "social", "Sciences Expérimentales": "exp",
+    "Sciences Physiques": "phys", "Sciences de la Vie et de la Terre": "biogeo",
+    "Arts": "arts", "Art et Musique": "arts"
+  };
+  function classeMatiere(nom) { return MATIERE_CLASSES[nom] || "math"; }
   const statusQ = (m, t) => { const el = $("quizMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t||"ok"); } };
 
   // Matières selon filière univ
@@ -44,10 +64,21 @@
     if (!qzSelNiveau || !qzSelMatSec) return;
     const avecSerie = NIVEAUX_AVEC_SERIE.includes(qzSelNiveau.value);
     if (qzSerieWrap) qzSerieWrap.style.display = avecSerie ? "block" : "none";
-    const opts = avecSerie ? (SERIES_MATIERES[qzSelSerie.value] || []) : TRONC_COMMUN;
+    const opts = avecSerie ? (SERIES_MATIERES[qzSelSerie.value] || []) : (qzSelNiveau.value === "9e" ? MATIERES_9E_AF : TRONC_COMMUN);
     qzSelMatSec.innerHTML = opts.map(m => '<option>' + esc(m) + '</option>').join("");
+    majDomaine();
     chargerLeconsRattach();
   }
+
+  const qzDomaineWrap = $("qzDomaineWrap"), qzSelDomaine = $("qzDomaine");
+  function majDomaine() {
+    if (!qzSelDomaine || !qzDomaineWrap) return;
+    if (qzSelMatSec.value !== "Mathématiques") { qzDomaineWrap.style.display = "none"; qzSelDomaine.innerHTML = ""; return; }
+    qzDomaineWrap.style.display = "block";
+    const liste = qzSelNiveau.value === "9e" ? DOMAINES_MATH_9E_AF : DOMAINES_MATH_SECONDAIRE;
+    qzSelDomaine.innerHTML = liste.map(d => '<option>' + esc(d) + '</option>').join("");
+  }
+  if (qzSelMatSec) qzSelMatSec.addEventListener("change", majDomaine);
   if (qzSelNiveau) qzSelNiveau.addEventListener("change", majMatieresSecondaire);
   if (qzSelSerie) qzSelSerie.addEventListener("change", majMatieresSecondaire);
   if (qzSelMatSec) qzSelMatSec.addEventListener("change", chargerLeconsRattach);
@@ -228,7 +259,8 @@
 
       const { data: qz, error: eQz } = await DB.from("quiz").insert({
         entreprise_id: ent, filiere: estSecLot ? (avecSerieLot ? qzSelSerie.value : null) : selFil.value, niveau: niveauLot,
-        matiere: matiereLot, titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
+        matiere: matiereLot, domaine: (estSecLot && matiereLot === "Mathématiques" && qzSelDomaine.value) ? qzSelDomaine.value : null,
+        titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
         type: typeLot, lecon_id: leconIdLot, publie: true
       }).select("id").single();
       if (eQz) { erreurs.push(groupes[i].sousTitre + " : " + eQz.message); continue; }
@@ -319,6 +351,7 @@
       filiere: estSecQz ? (avecSerieQz ? qzSelSerie.value : null) : selFil.value,
       niveau: niveauQz,
       matiere: matiereQz,
+      domaine: (estSecQz && matiereQz === "Mathématiques" && qzSelDomaine.value) ? qzSelDomaine.value : null,
       titre: titre,
       duree_sec: (parseInt($("qzDuree").value) || 10) * 60,
       type: typeQ,
@@ -410,7 +443,7 @@
       return '<div class="quiz-item ' + (q.filiere || "sec") + '">'
         + '<input type="checkbox" class="quiz-select-cb" data-id="' + q.id + '"' + (selection.has(q.id) ? ' checked' : '') + ' style="width:18px;height:18px;flex:0 0 auto;cursor:pointer">'
         + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="badge-libre">Libre</span>' : '') + (estGogo ? ' <span class="badge-libre" style="background:#8257b5">Gogo</span>' : '') + '</b>'
-        + '<span class="qi-meta">' + esc(q.matiere) + (q.niveau ? ' · ' + esc(NIVEAUX[q.niveau] || q.niveau) + (q.filiere && NIVEAUX_AVEC_SERIE.includes(q.niveau) ? ' · ' + q.filiere.toUpperCase() : '') : '') + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
+        + '<span class="qi-meta"><span class="mat-dot ' + classeMatiere(q.matiere) + '"></span>' + esc(q.matiere) + (q.domaine ? ' (' + esc(q.domaine) + ')' : '') + (q.niveau ? ' · ' + esc(NIVEAUX[q.niveau] || q.niveau) + (q.filiere && NIVEAUX_AVEC_SERIE.includes(q.niveau) ? ' · ' + q.filiere.toUpperCase() : '') : '') + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + q.id + '">Modifier</button>'
         + '<button class="del" data-del="' + q.id + '">Supprimer</button>'

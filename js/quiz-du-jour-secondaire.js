@@ -37,7 +37,7 @@
         '<div class="qj-card">'
         + '<span class="kicker" style="color:var(--ocre)">Quiz du jour · ' + esc(NIVEAUX[n] || n) + '</span>'
         + '<h3 style="font-family:var(--serif);color:var(--craie);margin:6px 0 8px">' + esc(q.titre) + '</h3>'
-        + '<p style="color:rgba(247,244,236,.75)">' + esc(q.matiere) + '</p>'
+        + '<p style="color:rgba(247,244,236,.75)"><span class="mat-dot ' + classeMatiere(q.matiere) + '"></span>' + esc(q.matiere) + '</p>'
         + '<a href="quiz.html?id=' + q.id + '" class="btn btn-primary">Faire le quiz <span>→</span></a>'
         + '</div>';
     });
