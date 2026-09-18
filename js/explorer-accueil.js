@@ -189,8 +189,8 @@
     if (typeof eleveActuel === "function") {
       try {
         const el = await eleveActuel();
-        if (el && el.nom && el.filieres && el.filieres.length) filieresEtudiant = el.filieres;
-        if (el && el.nom && el.user_id) { userId = el.user_id; await chargerStatuts(userId); }
+        if (el && el.filieres && el.filieres.length) filieresEtudiant = el.filieres;
+        if (el && el.user_id) { userId = el.user_id; await chargerStatuts(userId); }
       } catch (e) { /* pas connecté ou erreur silencieuse */ }
     }
 

@@ -38,8 +38,7 @@ async function majMenuCompte() {
   const zone = document.getElementById("compteZone");
   if (!zone) return;
   const el = await eleveActuel();
-  if (el && el.nom) {
-    const prenom = el.nom.split(" ")[0];
+  if (el) {
     zone.innerHTML = '<a href="messagerie.html" style="margin-right:14px">Messages</a><a href="espace.html" class="cta">Mon espace</a>';
   } else {
     zone.innerHTML = '<a href="connexion.html" class="cta">Se connecter</a>';
@@ -210,7 +209,7 @@ async function initEspace() {
   if (!zone) return;
 
   const el = await eleveActuel();
-  if (!el || !el.nom) { location.href = "connexion.html"; return; }
+  if (!el) { location.href = "connexion.html"; return; }
 
   // Nom
   const nomEl = document.getElementById("espaceNom");
@@ -232,6 +231,63 @@ async function initEspace() {
     resumeZone.innerHTML = morceaux.length ? '<div class="fil-tags">' + morceaux.join("") + '</div>' : '<p class="empty">Profil pas encore complété.</p>';
   }
   afficherResume(el);
+
+  // ---------- Photo de profil ----------
+  const avatarImg = document.getElementById("avatarImg");
+  const avatarInitiale = document.getElementById("avatarInitiale");
+  const avatarEditBtn = document.getElementById("avatarEditBtn");
+  const avatarInput = document.getElementById("avatarInput");
+  const avatarMsg = document.getElementById("avatarMsg");
+
+  function afficherAvatar(url, nom) {
+    if (url) {
+      avatarImg.src = url + "?t=" + Date.now();
+      avatarImg.style.display = "block";
+      avatarInitiale.style.display = "none";
+    } else {
+      avatarImg.style.display = "none";
+      avatarInitiale.style.display = "block";
+      avatarInitiale.textContent = (nom || "?").trim().charAt(0).toUpperCase();
+    }
+  }
+  afficherAvatar(el.photo_url, el.nom);
+
+  if (avatarEditBtn && avatarInput) {
+    avatarEditBtn.addEventListener("click", () => avatarInput.click());
+    avatarInput.addEventListener("change", async () => {
+      const fichier = avatarInput.files[0];
+      if (!fichier) return;
+      if (!["image/png", "image/jpeg", "image/webp"].includes(fichier.type)) {
+        avatarMsg.textContent = "Format non supporté (PNG, JPG ou WEBP uniquement)."; avatarMsg.className = "status-msg on err"; return;
+      }
+      if (fichier.size > 3 * 1024 * 1024) {
+        avatarMsg.textContent = "Image trop lourde (3 Mo maximum)."; avatarMsg.className = "status-msg on err"; return;
+      }
+
+      avatarEditBtn.disabled = true;
+      avatarMsg.textContent = "Envoi en cours…"; avatarMsg.className = "status-msg on";
+
+      const extension = fichier.name.split(".").pop().toLowerCase();
+      const chemin = el.user_id + "/avatar." + extension;
+
+      const { error: eUp } = await DB.storage.from("avatars").upload(chemin, fichier, { upsert: true });
+      if (eUp) {
+        avatarMsg.textContent = "Erreur lors de l'envoi : " + eUp.message; avatarMsg.className = "status-msg on err";
+        avatarEditBtn.disabled = false; return;
+      }
+      const { data: pub } = DB.storage.from("avatars").getPublicUrl(chemin);
+      const { error: eMaj } = await DB.from("eleves").update({ photo_url: pub.publicUrl, updated_at: new Date().toISOString() }).eq("user_id", el.user_id);
+      if (eMaj) {
+        avatarMsg.textContent = "Erreur d'enregistrement : " + eMaj.message; avatarMsg.className = "status-msg on err";
+        avatarEditBtn.disabled = false; return;
+      }
+
+      el.photo_url = pub.publicUrl;
+      afficherAvatar(pub.publicUrl, el.nom);
+      avatarMsg.textContent = "Photo de profil mise à jour !"; avatarMsg.className = "status-msg on ok";
+      avatarEditBtn.disabled = false;
+    });
+  }
 
   // ---------- Formulaire de modification du profil ----------
   const profilForm = document.getElementById("profilForm");

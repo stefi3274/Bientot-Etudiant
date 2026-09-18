@@ -33,7 +33,7 @@
   (async function init() {
     if (typeof DB === "undefined" || !DB) return;
     moi = await eleveActuel();
-    if (!moi || !moi.nom) { $("msgNonConnecte").style.display = "block"; return; }
+    if (!moi) { $("msgNonConnecte").style.display = "block"; return; }
 
     moiEstSec = !!moi.niveau;
     document.body.dataset.universPage = moiEstSec ? "secondaire" : "prefac";
@@ -77,9 +77,9 @@
     }
 
     const autresIds = convs.map(c => c.participant_a === moi.user_id ? c.participant_b : c.participant_a);
-    const { data: profils } = await DB.from("eleves").select("user_id, nom").in("user_id", autresIds);
-    const nomsParId = {};
-    (profils || []).forEach(p => { nomsParId[p.user_id] = p.nom; });
+    const { data: profils } = await DB.from("eleves").select("user_id, nom, photo_url").in("user_id", autresIds);
+    const nomsParId = {}, photosParId = {};
+    (profils || []).forEach(p => { nomsParId[p.user_id] = p.nom; photosParId[p.user_id] = p.photo_url; });
 
     // dernier message de chaque conversation (aperçu)
     const apercus = {};
@@ -95,7 +95,7 @@
 
     conversations = convs.map(c => {
       const autreId = c.participant_a === moi.user_id ? c.participant_b : c.participant_a;
-      return { ...c, autreId, autreNom: nomsParId[autreId] || "Utilisateur", apercu: apercus[c.id] };
+      return { ...c, autreId, autreNom: nomsParId[autreId] || "Utilisateur", autrePhoto: photosParId[autreId] || null, apercu: apercus[c.id] };
     });
 
     zone.innerHTML = conversations.map(c => {
@@ -105,8 +105,12 @@
         if (a.supprime) texteApercu = "Message supprimé";
         else texteApercu = (a.sender_id === moi.user_id ? "Toi : " : "") + a.contenu;
       }
-      return '<div class="msg-conv-item" data-id="' + c.id + '" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--craie-2);cursor:pointer">'
-        + '<div style="min-width:0"><b style="font-family:var(--serif)">' + esc(c.autreNom) + '</b>'
+      const avatar = c.autrePhoto
+        ? '<img src="' + esc(c.autrePhoto) + '" alt="">'
+        : '<span>' + esc((c.autreNom || "?").charAt(0).toUpperCase()) + '</span>';
+      return '<div class="msg-conv-item" data-id="' + c.id + '" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--craie-2);cursor:pointer">'
+        + '<div class="avatar-mini">' + avatar + '</div>'
+        + '<div style="min-width:0;flex:1"><b style="font-family:var(--serif)">' + esc(c.autreNom) + '</b>'
         + '<p style="margin:2px 0 0;color:var(--encre-2);font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(texteApercu.slice(0, 60)) + '</p></div>'
         + '<span style="font-size:.75rem;color:var(--encre-2);flex:0 0 auto">' + (a ? dateFr(a.created_at) : "") + '</span>'
         + '</div>';
@@ -159,24 +163,28 @@
     const zone = $("resultatsRecherche");
     zone.innerHTML = "<p class='empty' style='margin:8px 0'>Recherche…</p>";
 
-    let q = DB.from("eleves").select("user_id, nom, niveau, filieres").ilike("nom", "%" + nom + "%").neq("user_id", moi.user_id).limit(15);
+    let q = DB.from("eleves").select("user_id, nom, photo_url, niveau, filieres").ilike("nom", "%" + nom + "%").neq("user_id", moi.user_id).limit(15);
     q = moiEstSec ? q.not("niveau", "is", null) : q.is("niveau", null);
     const { data, error } = await q;
 
     if (error || !data || !data.length) { zone.innerHTML = "<p class='empty' style='margin:8px 0'>Personne trouvé.e.</p>"; return; }
 
-    zone.innerHTML = data.map(u =>
-      '<div class="msg-resultat" data-id="' + u.user_id + '" data-nom="' + esc(u.nom) + '" style="padding:10px 12px;cursor:pointer;border-radius:8px;font-size:.9rem">'
-      + '<b>' + esc(u.nom) + '</b></div>'
-    ).join("");
+    zone.innerHTML = data.map(u => {
+      const avatar = u.photo_url
+        ? '<img src="' + esc(u.photo_url) + '" alt="">'
+        : '<span>' + esc((u.nom || "?").charAt(0).toUpperCase()) + '</span>';
+      return '<div class="msg-resultat" data-id="' + u.user_id + '" data-nom="' + esc(u.nom) + '" data-photo="' + esc(u.photo_url || "") + '" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-radius:8px;font-size:.9rem">'
+        + '<div class="avatar-mini" style="width:32px;height:32px;font-size:.85rem">' + avatar + '</div>'
+        + '<b>' + esc(u.nom) + '</b></div>';
+    }).join("");
     zone.querySelectorAll(".msg-resultat").forEach(el => {
       el.addEventListener("mouseenter", () => el.style.background = "var(--craie)");
       el.addEventListener("mouseleave", () => el.style.background = "");
-      el.addEventListener("click", () => demarrerConversation(el.dataset.id, el.dataset.nom));
+      el.addEventListener("click", () => demarrerConversation(el.dataset.id, el.dataset.nom, el.dataset.photo || null));
     });
   }
 
-  async function demarrerConversation(autreId, autreNom) {
+  async function demarrerConversation(autreId, autreNom, autrePhoto) {
     $("nouveauMsgBox").style.display = "none";
     $("rechercheNom").value = "";
     $("resultatsRecherche").innerHTML = "";
@@ -193,7 +201,7 @@
         conv = conversations.find(c => c.autreId === autreId);
         if (!conv) { alert("Impossible de démarrer cette conversation pour le moment."); return; }
       } else {
-        conv = { ...nouvelle, autreId, autreNom, apercu: null };
+        conv = { ...nouvelle, autreId, autreNom, autrePhoto: autrePhoto || null, apercu: null };
       }
     }
     ouvrirConversation(conv);
@@ -204,10 +212,13 @@
   // ============================================================
   async function ouvrirConversation(conv) {
     convActive = conv;
-    autreUtilisateur = { id: conv.autreId, nom: conv.autreNom };
+    autreUtilisateur = { id: conv.autreId, nom: conv.autreNom, photo: conv.autrePhoto || null };
     $("vueListe").style.display = "none";
     $("vueChat").style.display = "block";
     $("chatNomInterlocuteur").textContent = conv.autreNom;
+    $("chatAvatar").innerHTML = conv.autrePhoto
+      ? '<img src="' + esc(conv.autrePhoto) + '" alt="">'
+      : '<span>' + esc((conv.autreNom || "?").charAt(0).toUpperCase()) + '</span>';
     $("optionsChatMenu").style.display = "none";
     citationId = null; editionId = null;
     $("citationActive").style.display = "none";

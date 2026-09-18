@@ -30,7 +30,7 @@
     if (typeof eleveActuel === "function") {
       try {
         const el = await eleveActuel();
-        if (el && el.nom && el.filieres && el.filieres.length) filieresAffichees = el.filieres;
+        if (el && el.filieres && el.filieres.length) filieresAffichees = el.filieres;
       } catch (e) { /* invité */ }
     }
 

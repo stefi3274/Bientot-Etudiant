@@ -88,7 +88,7 @@
     if (typeof eleveActuel === "function") {
       try {
         const el = await eleveActuel();
-        if (el && el.nom && el.user_id) {
+        if (el && el.user_id) {
           userId = el.user_id;
           const [{ data: tentatives }, { data: vues }] = await Promise.all([
             DB.from("tentatives").select("quiz_id").eq("user_id", userId),

@@ -174,7 +174,7 @@
     questions = qs;
     if (quiz.filiere) document.body.setAttribute("data-filiere", quiz.filiere);
     const el = await eleveActuel();
-    eleveConnecte = (el && el.nom) ? el : null;
+    eleveConnecte = el || null;
 
     // Restriction "même matière" — invité : 1/24h, connecté : 2/24h. Le mode Gogo l'ignore.
     if (!gogo) {

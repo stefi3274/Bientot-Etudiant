@@ -10,7 +10,7 @@
 
     let el;
     try { el = await eleveActuel(); } catch (e) { return; }
-    if (!el || !el.nom || !el.user_id) return;
+    if (!el || !el.user_id) return;
 
     const cartes = document.querySelectorAll("a.mat[href*='matiere.html']");
     if (!cartes.length) return;

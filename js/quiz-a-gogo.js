@@ -131,7 +131,7 @@
     if (typeof eleveActuel === "function") {
       try {
         const el = await eleveActuel();
-        if (el && el.nom) {
+        if (el) {
           connecte = el;
           if (el.filieres && el.filieres.length) filieresAffichees = el.filieres.filter(f => filieresDisponibles.includes(f));
         }

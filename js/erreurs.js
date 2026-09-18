@@ -18,7 +18,7 @@
     if (typeof DB === "undefined" || !DB) { zone.innerHTML = "<p style='text-align:center'>Indisponible pour le moment.</p>"; return; }
 
     const el = await eleveActuel();
-    if (!el || !el.nom) {
+    if (!el) {
       zone.innerHTML = "<p style='text-align:center'>Connecte-toi pour voir tes erreurs à retravailler. <a href='connexion.html'>Se connecter</a></p>";
       return;
     }

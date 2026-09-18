@@ -27,7 +27,7 @@
     // Marquer cette leçon comme vue (compte connecté uniquement)
     if (typeof eleveActuel === "function") {
       eleveActuel().then(el => {
-        if (el && el.nom && el.user_id) {
+        if (el && el.user_id) {
           DB.from("lecons_vues").upsert({ user_id: el.user_id, lecon_id: l.id }, { onConflict: "user_id,lecon_id" }).then(() => {});
         }
       }).catch(() => {});
@@ -57,7 +57,7 @@
     if (typeof eleveActuel === "function") {
       try {
         const el = await eleveActuel();
-        if (!el || !el.nom) {
+        if (!el) {
           communauteBtn = '<div class="lecon-communaute">'
             + '<b>Rejoins la communauté</b>'
             + '<p>Crée un compte gratuit pour suivre ta progression, garder ta série de révision, et tester ce que tu viens d\'apprendre.</p>'

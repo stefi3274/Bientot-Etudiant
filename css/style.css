@@ -922,3 +922,22 @@ body[data-univers-page="secondaire"] .btn-envoi{background:var(--secondaire)}
 .btn-envoi:hover{transform:scale(1.08)}
 .msg-conv-item:hover{background:var(--craie-2)}
 #fenetreMessages{scrollbar-width:thin}
+
+/* ===== Avatar de profil (espace personnel) ===== */
+.avatar-zone{position:relative;width:104px;height:104px;margin:4px auto 16px}
+.avatar-cercle{width:104px;height:104px;border-radius:50%;background:linear-gradient(160deg,var(--ardoise),var(--ardoise-2));
+  display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--craie);
+  box-shadow:0 6px 18px -6px rgba(20,52,43,.35)}
+.avatar-cercle img{width:100%;height:100%;object-fit:cover}
+.avatar-cercle span{font-family:var(--serif);font-size:2.2rem;font-weight:600;color:var(--craie)}
+.avatar-edit-btn{position:absolute;bottom:0;right:0;width:34px;height:34px;border-radius:50%;
+  background:var(--ocre);border:3px solid var(--craie);color:var(--ardoise);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease)}
+.avatar-edit-btn:hover{transform:scale(1.1)}
+.avatar-edit-btn:disabled{opacity:.5;cursor:wait}
+
+/* Petits avatars réutilisés dans la messagerie */
+.avatar-mini{width:40px;height:40px;border-radius:50%;background:var(--ardoise);color:var(--craie);
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;
+  font-size:1rem;overflow:hidden;flex:0 0 auto}
+.avatar-mini img{width:100%;height:100%;object-fit:cover}

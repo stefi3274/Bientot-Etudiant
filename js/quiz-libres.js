@@ -141,8 +141,8 @@
     if (typeof eleveActuel === "function") {
       try {
         const el = await eleveActuel();
-        if (el && el.nom && el.filieres && el.filieres.length) filieresAffichees = el.filieres;
-        if (el && el.nom && el.user_id) {
+        if (el && el.filieres && el.filieres.length) filieresAffichees = el.filieres;
+        if (el && el.user_id) {
           userId = el.user_id;
           const { data: tentatives } = await DB.from("tentatives").select("quiz_id").eq("user_id", userId);
           doneQuizIds = new Set((tentatives || []).map(t => t.quiz_id));

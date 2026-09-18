@@ -58,6 +58,19 @@
     <!-- Mon profil -->
     <div class="espace-card">
       <h2>Mon profil</h2>
+
+      <div class="avatar-zone">
+        <div class="avatar-cercle" id="avatarCercle">
+          <img id="avatarImg" src="" alt="" style="display:none">
+          <span id="avatarInitiale"></span>
+        </div>
+        <button class="avatar-edit-btn" id="avatarEditBtn" aria-label="Changer la photo de profil" title="Changer la photo de profil">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+        <input type="file" id="avatarInput" accept="image/png,image/jpeg,image/webp" style="display:none">
+      </div>
+      <p class="status-msg" id="avatarMsg" style="text-align:center;margin-bottom:10px"></p>
+
       <div id="monProfilResume"></div>
       <details style="margin-top:16px">
         <summary style="cursor:pointer;color:var(--ocre-d);font-weight:600;font-size:.92rem">Modifier mon profil</summary>
