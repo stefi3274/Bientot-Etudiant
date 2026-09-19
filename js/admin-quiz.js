@@ -16,9 +16,26 @@
     const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
       "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
       "Éducation à la Citoyenneté", "Informatique"];
-  const DOMAINES_MATH_9E_AF = ["Algèbre", "Géométrie", "Mesures", "Applications"];
-  const DOMAINES_MATH_SECONDAIRE = ["Nombres et calculs", "Calcul algébrique", "Fonctions", "Géométrie",
-    "Probabilités", "Statistique", "Algorithmique et programmation", "Logique et raisonnement", "Matrices et graphes"];
+  const DOMAINES_STRUCTURE = {
+    "Mathématiques": {
+      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
+      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
+        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
+        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
+    },
+    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
+  };
+  function domainesPour(matiere, niveau) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return [];
+    return (table[niveau] || table["*"] || []).map(d => d[0]);
+  }
+  function couleurDomaine(matiere, niveau, domaine) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return null;
+    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
+    return trouve ? trouve[1] : null;
+  }
   const SERIES_MATIERES = {
     svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
     mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
@@ -73,10 +90,10 @@
   const qzDomaineWrap = $("qzDomaineWrap"), qzSelDomaine = $("qzDomaine");
   function majDomaine() {
     if (!qzSelDomaine || !qzDomaineWrap) return;
-    if (qzSelMatSec.value !== "Mathématiques") { qzDomaineWrap.style.display = "none"; qzSelDomaine.innerHTML = ""; return; }
+    const liste = domainesPour(qzSelMatSec.value, qzSelNiveau.value);
+    if (!liste.length) { qzDomaineWrap.style.display = "none"; qzSelDomaine.innerHTML = ""; return; }
     qzDomaineWrap.style.display = "block";
-    const liste = qzSelNiveau.value === "9e" ? DOMAINES_MATH_9E_AF : DOMAINES_MATH_SECONDAIRE;
-    qzSelDomaine.innerHTML = liste.map(d => '<option>' + esc(d) + '</option>').join("");
+    qzSelDomaine.innerHTML = '<option value="">— Aucun —</option>' + liste.map(d => '<option>' + esc(d) + '</option>').join("");
   }
   if (qzSelMatSec) qzSelMatSec.addEventListener("change", majDomaine);
   if (qzSelNiveau) qzSelNiveau.addEventListener("change", majMatieresSecondaire);
@@ -259,7 +276,7 @@
 
       const { data: qz, error: eQz } = await DB.from("quiz").insert({
         entreprise_id: ent, filiere: estSecLot ? (avecSerieLot ? qzSelSerie.value : null) : selFil.value, niveau: niveauLot,
-        matiere: matiereLot, domaine: (estSecLot && matiereLot === "Mathématiques" && qzSelDomaine.value) ? qzSelDomaine.value : null,
+        matiere: matiereLot, domaine: (estSecLot && qzSelDomaine.value.trim()) ? qzSelDomaine.value.trim() : null,
         titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
         type: typeLot, lecon_id: leconIdLot, publie: true
       }).select("id").single();
@@ -351,7 +368,7 @@
       filiere: estSecQz ? (avecSerieQz ? qzSelSerie.value : null) : selFil.value,
       niveau: niveauQz,
       matiere: matiereQz,
-      domaine: (estSecQz && matiereQz === "Mathématiques" && qzSelDomaine.value) ? qzSelDomaine.value : null,
+      domaine: (estSecQz && qzSelDomaine.value.trim()) ? qzSelDomaine.value.trim() : null,
       titre: titre,
       duree_sec: (parseInt($("qzDuree").value) || 10) * 60,
       type: typeQ,
@@ -443,7 +460,7 @@
       return '<div class="quiz-item ' + (q.filiere || "sec") + '">'
         + '<input type="checkbox" class="quiz-select-cb" data-id="' + q.id + '"' + (selection.has(q.id) ? ' checked' : '') + ' style="width:18px;height:18px;flex:0 0 auto;cursor:pointer">'
         + '<div class="qi-info"><b>' + esc(q.titre) + (estDim ? ' <span class="badge-libre">Libre</span>' : '') + (estGogo ? ' <span class="badge-libre" style="background:#8257b5">Gogo</span>' : '') + '</b>'
-        + '<span class="qi-meta"><span class="mat-dot ' + classeMatiere(q.matiere) + '"></span>' + esc(q.matiere) + (q.domaine ? ' (' + esc(q.domaine) + ')' : '') + (q.niveau ? ' · ' + esc(NIVEAUX[q.niveau] || q.niveau) + (q.filiere && NIVEAUX_AVEC_SERIE.includes(q.niveau) ? ' · ' + q.filiere.toUpperCase() : '') : '') + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
+        + '<span class="qi-meta"><span class="mat-dot ' + classeMatiere(q.matiere) + '"></span>' + esc(q.matiere) + (q.domaine ? ' <span class="domaine-badge" style="background:' + (couleurDomaine(q.matiere, q.niveau, q.domaine) || '#888') + '">' + esc(q.domaine) + '</span>' : '') + (q.niveau ? ' · ' + esc(NIVEAUX[q.niveau] || q.niveau) + (q.filiere && NIVEAUX_AVEC_SERIE.includes(q.niveau) ? ' · ' + q.filiere.toUpperCase() : '') : '') + ' · ' + nbQ + ' questions · ' + Math.round(q.duree_sec/60) + ' min</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + q.id + '">Modifier</button>'
         + '<button class="del" data-del="' + q.id + '">Supprimer</button>'

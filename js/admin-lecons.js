@@ -20,9 +20,31 @@
       "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
       "Éducation à la Citoyenneté", "Informatique"];
   // Domaines de Mathématiques — 9e AF (programme MENFP 1989, 4 sections) et Secondaire (9 unités, programme MENFP 2024)
-  const DOMAINES_MATH_9E_AF = ["Algèbre", "Géométrie", "Mesures", "Applications"];
-  const DOMAINES_MATH_SECONDAIRE = ["Nombres et calculs", "Calcul algébrique", "Fonctions", "Géométrie",
-    "Probabilités", "Statistique", "Algorithmique et programmation", "Logique et raisonnement", "Matrices et graphes"];
+  // Suggestions de domaines par matière (programme MENFP quand connu). Le champ reste
+  // libre pour toute matière : ces listes ne font que suggérer, rien n'est imposé.
+  // Structure OFFICIELLE des domaines par matière : nom + couleur, source unique.
+  // Une matière absente d'ici n'a pas de sous-catégorie (le champ Domaine reste caché) —
+  // volontaire : pas de texte libre qui pourrait driver ou créer des doublons par faute de frappe.
+  const DOMAINES_STRUCTURE = {
+    "Mathématiques": {
+      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
+      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
+        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
+        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
+    },
+    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
+  };
+  function domainesPour(matiere, niveau) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return [];
+    return (table[niveau] || table["*"] || []).map(d => d[0]);
+  }
+  function couleurDomaine(matiere, niveau, domaine) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return null;
+    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
+    return trouve ? trouve[1] : null;
+  }
   // Séries du Nouveau Secondaire (NS3/NS4), chacune avec ses matières fixes — MENFP
   const SERIES_MATIERES = {
     svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
@@ -122,10 +144,10 @@
   const domaineWrap = $("leDomaineWrap"), selDomaine = $("leDomaine");
   function majDomaine() {
     if (!selDomaine || !domaineWrap) return;
-    if (selMatSec.value !== "Mathématiques") { domaineWrap.style.display = "none"; selDomaine.innerHTML = ""; return; }
+    const liste = domainesPour(selMatSec.value, selNiveau.value);
+    if (!liste.length) { domaineWrap.style.display = "none"; selDomaine.innerHTML = ""; return; }
     domaineWrap.style.display = "block";
-    const liste = selNiveau.value === "9e" ? DOMAINES_MATH_9E_AF : DOMAINES_MATH_SECONDAIRE;
-    selDomaine.innerHTML = liste.map(d => '<option>' + esc(d) + '</option>').join("");
+    selDomaine.innerHTML = '<option value="">— Aucun —</option>' + liste.map(d => '<option>' + esc(d) + '</option>').join("");
   }
   if (selMatSec) selMatSec.addEventListener("change", majDomaine);
   if (selNiveau) selNiveau.addEventListener("change", majMatieresSecondaire);
@@ -363,7 +385,7 @@
       filiere: estSecondaire ? (avecSerie ? selSerie.value : null) : selFil.value,
       niveau: niveauChoisi,
       matiere: matiereChoisie,
-      domaine: (estSecondaire && matiereChoisie === "Mathématiques" && selDomaine.value) ? selDomaine.value : null,
+      domaine: (estSecondaire && selDomaine.value.trim()) ? selDomaine.value.trim() : null,
       titre: titre,
       chapitre: $("leChapitre").value.trim() || null,
       apercu: $("leApercu").value.trim() || null,
@@ -448,7 +470,7 @@
       + liste.map(l =>
         '<div class="lec-item ' + (l.filiere || "sec") + '">'
         + '<div class="lec-info"><b>' + esc(l.titre) + '</b>'
-        + '<span class="lec-meta"><span class="mat-dot ' + classeMatiere(l.matiere) + '"></span>' + esc(l.matiere) + (l.domaine ? ' (' + esc(l.domaine) + ')' : '') + (l.niveau ? ' · ' + esc(NIVEAUX[l.niveau] || l.niveau) + (l.filiere && NIVEAUX_AVEC_SERIE.includes(l.niveau) ? ' · ' + l.filiere.toUpperCase() : '') : '') + ' · Leçon ' + (l.ordre || 1)
+        + '<span class="lec-meta"><span class="mat-dot ' + classeMatiere(l.matiere) + '"></span>' + esc(l.matiere) + (l.domaine ? ' <span class="domaine-badge" style="background:' + (couleurDomaine(l.matiere, l.niveau, l.domaine) || '#888') + '">' + esc(l.domaine) + '</span>' : '') + (l.niveau ? ' · ' + esc(NIVEAUX[l.niveau] || l.niveau) + (l.filiere && NIVEAUX_AVEC_SERIE.includes(l.niveau) ? ' · ' + l.filiere.toUpperCase() : '') : '') + ' · Leçon ' + (l.ordre || 1)
         + (l.pdf_url ? ' · PDF joint' : '') + (l.auteur ? ' · ' + esc(l.auteur) : '') + '</span></div>'
         + '<div class="lec-act">'
         + '<button data-edit="' + l.id + '">Modifier</button>'

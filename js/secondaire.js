@@ -8,8 +8,26 @@
   const niveauBtns = document.getElementById("secNiveauBtns");
   const serieBtns = document.getElementById("secSerieBtns");
   const matBtns = document.getElementById("secMatiereBtns");
+  const domaineBtns = document.getElementById("secDomaineBtns");
   const zone = document.getElementById("secZone");
   if (!niveauBtns || !zone) return;
+
+  let domaineActuelle = null;
+  const DOMAINES_STRUCTURE = {
+    "Mathématiques": {
+      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
+      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
+        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
+        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
+    },
+    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
+  };
+  function couleurDomaine(matiere, niveau, domaine) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return "#6d5a8f";
+    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
+    return trouve ? trouve[1] : "#6d5a8f";
+  }
 
   const NIVEAUX = {
     "9e": "4e (9e Fondamentale)",
@@ -102,6 +120,39 @@
       b.classList.add("on");
       b.style.background = "var(--ocre-d)"; b.style.borderColor = "var(--ocre-d)"; b.style.color = "#fff";
       matiereActuelle = b.dataset.m;
+      majDomaineBtns();
+    }));
+    majDomaineBtns();
+  }
+
+  function majDomaineBtns() {
+    const avecSerie = NIVEAUX_AVEC_SERIE.includes(niveauActuel);
+    const lC = lecons.filter(l => l.niveau === niveauActuel && l.matiere === matiereActuelle && (!avecSerie || l.filiere === serieActuelle));
+    const qC = quiz.filter(q => q.niveau === niveauActuel && q.matiere === matiereActuelle && (!avecSerie || q.filiere === serieActuelle));
+    // Découverte dynamique : on ne montre que les domaines qui ont réellement du contenu publié,
+    // pour n'importe quelle matière (pas seulement Mathématiques).
+    const liste = [...new Set([...lC.map(l => l.domaine), ...qC.map(q => q.domaine)].filter(Boolean))].sort();
+
+    if (!liste.length) {
+      domaineBtns.style.display = "none";
+      domaineBtns.innerHTML = "";
+      domaineActuelle = null;
+      afficherContenu();
+      return;
+    }
+    domaineBtns.style.display = "flex";
+    domaineBtns.innerHTML = '<button class="filter on" data-d="" style="background:var(--ardoise-2);border-color:var(--ardoise-2);color:#fff">Tout</button>'
+      + liste.map(d => {
+        const c = couleurDomaine(matiereActuelle, niveauActuel, d);
+        return '<button class="filter" data-d="' + esc(d) + '" data-c="' + c + '"><span class="mat-dot" style="background:' + c + '"></span>' + esc(d) + '</button>';
+      }).join("");
+    domaineActuelle = null;
+    domaineBtns.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
+      domaineBtns.querySelectorAll(".filter").forEach(x => { x.classList.remove("on"); x.style.background = ""; x.style.borderColor = ""; x.style.color = ""; });
+      b.classList.add("on");
+      const c = b.dataset.c || "var(--ardoise-2)";
+      b.style.background = c; b.style.borderColor = c; b.style.color = "#fff";
+      domaineActuelle = b.dataset.d || null;
       afficherContenu();
     }));
     afficherContenu();
@@ -109,12 +160,15 @@
 
   function afficherContenu() {
     const avecSerie = NIVEAUX_AVEC_SERIE.includes(niveauActuel);
-    const lC = lecons.filter(l => l.niveau === niveauActuel && l.matiere === matiereActuelle && (!avecSerie || l.filiere === serieActuelle));
-    const qC = quiz.filter(q => q.niveau === niveauActuel && q.matiere === matiereActuelle && (!avecSerie || q.filiere === serieActuelle));
+    const filtreDomaine = l => !domaineActuelle || l.domaine === domaineActuelle;
+    const lC = lecons.filter(l => l.niveau === niveauActuel && l.matiere === matiereActuelle && (!avecSerie || l.filiere === serieActuelle) && filtreDomaine(l));
+    const qC = quiz.filter(q => q.niveau === niveauActuel && q.matiere === matiereActuelle && (!avecSerie || q.filiere === serieActuelle) && filtreDomaine(q));
+
+    const badgeDomaine = d => d ? ' <span class="domaine-badge" style="background:' + couleurDomaine(matiereActuelle, niveauActuel, d) + '">' + esc(d) + '</span>' : '';
 
     const carteLecon = l =>
       '<a class="lecon-carte" href="lecon.html?id=' + l.id + '">'
-      + '<span class="lc-num">Leçon ' + (l.ordre || 1) + '</span>'
+      + '<span class="lc-num">Leçon ' + (l.ordre || 1) + '</span>' + badgeDomaine(l.domaine)
       + '<h3>' + esc(l.titre) + '</h3>'
       + (l.apercu ? '<p>' + esc(l.apercu) + '</p>' : '')
       + '<span class="lc-go">Lire la leçon →</span></a>';
@@ -123,7 +177,7 @@
       const nbQ = (q.questions && q.questions[0]) ? q.questions[0].count : 0;
       const estDim = q.type === "dimanche";
       return '<a class="lecon-carte quiz-carte' + (estDim ? ' libre' : '') + '" href="quiz.html?id=' + q.id + '">'
-        + '<span class="lc-num">' + (estDim ? "Quiz Libre" : "Quiz") + '</span>'
+        + '<span class="lc-num">' + (estDim ? "Quiz Libre" : "Quiz") + '</span>' + badgeDomaine(q.domaine)
         + '<h3>' + esc(q.titre) + '</h3>'
         + '<p>' + nbQ + ' questions · ' + Math.round(q.duree_sec / 60) + ' min chronométrées</p>'
         + '<span class="lc-go">Relever le défi →</span></a>';
@@ -150,8 +204,8 @@
     if (typeof DB === "undefined" || !DB) { zone.innerHTML = "<p class='empty'>Indisponible pour le moment.</p>"; return; }
 
     const [{ data: leconsData }, { data: quizData }] = await Promise.all([
-      DB.from("lecons").select("id, titre, apercu, ordre, niveau, filiere, matiere").eq("publie", true).not("niveau", "is", null),
-      DB.from("quiz").select("id, titre, duree_sec, type, niveau, filiere, matiere, questions(count)").eq("publie", true).not("niveau", "is", null)
+      DB.from("lecons").select("id, titre, apercu, ordre, niveau, filiere, matiere, domaine").eq("publie", true).not("niveau", "is", null),
+      DB.from("quiz").select("id, titre, duree_sec, type, niveau, filiere, matiere, domaine, questions(count)").eq("publie", true).not("niveau", "is", null)
     ]);
     lecons = leconsData || [];
     quiz = quizData || [];

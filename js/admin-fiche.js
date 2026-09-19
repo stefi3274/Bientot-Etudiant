@@ -18,9 +18,26 @@
     const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
       "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
       "Éducation à la Citoyenneté", "Informatique"];
-  const DOMAINES_MATH_9E_AF = ["Algèbre", "Géométrie", "Mesures", "Applications"];
-  const DOMAINES_MATH_SECONDAIRE = ["Nombres et calculs", "Calcul algébrique", "Fonctions", "Géométrie",
-    "Probabilités", "Statistique", "Algorithmique et programmation", "Logique et raisonnement", "Matrices et graphes"];
+  const DOMAINES_STRUCTURE = {
+    "Mathématiques": {
+      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
+      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
+        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
+        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
+    },
+    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
+  };
+  function domainesPour(matiere, niveau) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return [];
+    return (table[niveau] || table["*"] || []).map(d => d[0]);
+  }
+  function couleurDomaine(matiere, niveau, domaine) {
+    const table = DOMAINES_STRUCTURE[matiere];
+    if (!table) return null;
+    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
+    return trouve ? trouve[1] : null;
+  }
   const SERIES_MATIERES = {
     svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
     mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
@@ -58,10 +75,10 @@
   const fiDomaineWrap = $("fiDomaineWrap"), fiSelDomaine = $("fiDomaine");
   function majDomaine() {
     if (!fiSelDomaine || !fiDomaineWrap) return;
-    if (fiSelMatSec.value !== "Mathématiques") { fiDomaineWrap.style.display = "none"; fiSelDomaine.innerHTML = ""; return; }
+    const liste = domainesPour(fiSelMatSec.value, fiSelNiveau.value);
+    if (!liste.length) { fiDomaineWrap.style.display = "none"; fiSelDomaine.innerHTML = ""; return; }
     fiDomaineWrap.style.display = "block";
-    const liste = fiSelNiveau.value === "9e" ? DOMAINES_MATH_9E_AF : DOMAINES_MATH_SECONDAIRE;
-    fiSelDomaine.innerHTML = liste.map(d => '<option>' + esc(d) + '</option>').join("");
+    fiSelDomaine.innerHTML = '<option value="">— Aucun —</option>' + liste.map(d => '<option>' + esc(d) + '</option>').join("");
   }
   if (fiSelMatSec) fiSelMatSec.addEventListener("change", majDomaine);
 
@@ -203,16 +220,18 @@
 
     const titreMatch = avant.match(/^TITRE\s*:\s*(.+)$/im);
     const chapitreMatch = avant.match(/^CHAPITRE\s*:\s*(.+)$/im);
+    const domaineMatch = avant.match(/^DOMAINE\s*:\s*(.+)$/im);
     const apercuMatch = avant.match(/^APERCU\s*:\s*(.+)$/im);
     if (!titreMatch) throw new Error("Ligne TITRE: manquante.");
 
     let contenuBrut = avant;
     const idxSep = avant.search(/^---$/m);
     if (idxSep >= 0) contenuBrut = avant.slice(idxSep + 3);
-    else contenuBrut = avant.replace(/^TITRE\s*:.*$/im, "").replace(/^CHAPITRE\s*:.*$/im, "").replace(/^APERCU\s*:.*$/im, "");
+    else contenuBrut = avant.replace(/^TITRE\s*:.*$/im, "").replace(/^CHAPITRE\s*:.*$/im, "").replace(/^DOMAINE\s*:.*$/im, "").replace(/^APERCU\s*:.*$/im, "");
 
     const titre = titreMatch[1].trim();
     const chapitre = chapitreMatch ? chapitreMatch[1].trim() : "";
+    const domaineLigne = domaineMatch ? domaineMatch[1].trim() : "";
     const groupesQuiz = detecterGroupesQuiz(apres);
     const quizzes = groupesQuiz.map(g => {
       const questions = parseQuestions(g.texte);
@@ -231,6 +250,7 @@
     return {
       titre,
       chapitre,
+      domaineLigne,
       apercu,
       contenu_html: fiches.html,
       quizzes
@@ -272,7 +292,19 @@
     const filiere = estSecFi ? (avecSerieFi ? fiSelSerie.value : null) : selFil.value;
     const matiere = estSecFi ? fiSelMatSec.value : selMat.value;
     if (estSecFi && !matiere) { statusFi("La matière est requise.", "err"); $("fiPublier").disabled = false; return; }
-    const domaine = (estSecFi && matiere === "Mathématiques" && fiSelDomaine.value) ? fiSelDomaine.value : null;
+    const domaineDefaut = (estSecFi && fiSelDomaine.value.trim()) ? fiSelDomaine.value.trim() : null;
+
+    if (estSecFi) {
+      const domainesValides = domainesPour(matiere, niveau);
+      for (const d of lecons) {
+        if (d.domaineLigne && !domainesValides.includes(d.domaineLigne)) {
+          const attendu = domainesValides.length ? domainesValides.join(", ") : "(aucun domaine n'existe pour cette matière)";
+          statusFi('Domaine invalide pour la leçon "' + d.titre + '" : "' + d.domaineLigne + '". Valeurs acceptées : ' + attendu, "err");
+          $("fiPublier").disabled = false;
+          return;
+        }
+      }
+    }
     const ent = await monEnt();
     if (!ent) { statusFi("Connexion perdue (ta session a peut-être expiré). Recharge la page et reconnecte-toi, puis réessaie.", "err"); $("fiPublier").disabled = false; return; }
 
@@ -287,6 +319,7 @@
     let ok = 0, erreurs = [], resume = [];
     for (const d of lecons) {
       try {
+        const domaine = d.domaineLigne || domaineDefaut;
         const { data: lec, error: eLec } = await DB.from("lecons").insert({
           entreprise_id: ent, filiere, niveau, matiere, domaine, titre: d.titre, chapitre: d.chapitre || null, apercu: d.apercu || null,
           contenu: d.contenu_html, publie: true, ordre: ordre
@@ -534,7 +567,7 @@
         filiere: estSec ? (avecSerie ? fiSelSerie.value : null) : selFil.value,
         niveau: estSec ? fiSelNiveau.value : null,
         matiere: estSec ? fiSelMatSec.value : selMat.value,
-        domaine: (estSec && fiSelMatSec.value === "Mathématiques" && fiSelDomaine.value) ? fiSelDomaine.value : null,
+        domaine: (estSec && fiSelDomaine.value.trim()) ? fiSelDomaine.value.trim() : null,
         titre, duree_sec: 600, type: "lecon",
         lecon_id: gererZone.dataset.leconId,
         publie: true

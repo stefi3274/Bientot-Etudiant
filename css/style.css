@@ -244,6 +244,10 @@ section{padding:88px 0}
 .mat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;
   background:var(--c,var(--ardoise))}
 
+/* Badge de domaine : la couleur vient en style inline (une couleur propre par domaine) */
+.domaine-badge{display:inline-block;color:#fff;font-size:.72rem;font-weight:600;padding:1px 8px;
+  border-radius:20px;margin-left:6px;vertical-align:middle}
+
 /* ============================================================
    BANDEAU CTA
    ============================================================ */
