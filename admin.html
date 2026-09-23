@@ -383,7 +383,25 @@ chaque groupe par une ligne comme celle-ci (le texte avant le 1er marqueur est i
 (questions du 2e quiz)
 → Renseigne d'abord le GRAND TITRE ci-dessus (ex: "Biologie Cellulaire") : chaque
 quiz sera nommé "Biologie Cellulaire — Structure et fonctions", etc., et publié
-directement (type Quiz libre). Sans texte après "QUIZ:", ils seront nommés Partie 1, 2...</pre>
+directement (type Quiz libre). Sans texte après "QUIZ:", ils seront nommés Partie 1, 2...
+
+Par défaut, TOUS les quiz du lot reprennent le niveau/la classe/la filière/la
+matière/le domaine choisis dans les menus au-dessus. Pour un lot qui MÉLANGE
+plusieurs classes ou plusieurs matières, ajoute ces lignes juste après le
+marqueur ===QUIZ:...=== (une ou plusieurs, dans n'importe quel ordre — celles
+qui manquent reprennent les menus au-dessus) :
+===QUIZ: Histoire d'Haïti===
+UNIVERS: Secondaire
+CLASSE: 9e
+MATIERE: Sciences Sociales
+DOMAINE: Histoire d'Haïti
+(questions du quiz)
+→ Chaque valeur est comparée aux catégories réelles (Secondaire/Pré-Fac, 9e/NS1/
+NS2/NS3/NS4, les vraies matières et domaines de cette classe) : une faute de
+frappe bloque ce quiz avec un message clair au lieu de publier une mauvaise
+matière. Pour le Pré-Fac, remplace CLASSE par FILIERE (ex: "Médecine, Agronomie
+& Vétérinaire" ou "f1"). Pour NS3/NS4, ajoute aussi FILIERE avec la série
+(SVT, MP, SES ou LLA).</pre>
             <textarea id="qzTexteImport" rows="8" style="width:100%;background:#fff;border:1px solid var(--craie-2);border-radius:10px;padding:14px;font-family:ui-monospace,monospace;font-size:.88rem" placeholder="1. Énoncé...
 A) ...
 B) ...
@@ -422,6 +440,9 @@ Réponse: B"></textarea>
               <option value="f3">→ Sciences humaines et sociales</option>
             </select>
             <button class="btn btn-dark" id="quizDeplacerSelectionBtn" style="padding:9px 18px;font-size:.9rem">Déplacer la sélection <span>→</span></button>
+            <span style="width:1px;align-self:stretch;background:var(--craie-2)"></span>
+            <select id="quizDestMatiere" style="padding:8px 12px;border-radius:8px;border:1px solid var(--craie-2);font-family:inherit;min-width:200px"></select>
+            <button class="btn btn-dark" id="quizChangerMatiereSelectionBtn" style="padding:9px 18px;font-size:.9rem">Changer la matière <span>→</span></button>
             <button class="btn btn-ghost" id="quizDeselectBtn" style="padding:9px 18px;font-size:.9rem;color:var(--encre);border-color:var(--craie-2)">Annuler</button>
           </div>
 
@@ -657,13 +678,14 @@ Réponse: B"></textarea>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js?v=20260811"></script>
+<script src="js/matieres-data.js?v=20260923"></script>
 <script src="js/admin.js?v=20260811"></script>
 <script src="js/admin-dashboard.js?v=20260811"></script>
-<script src="js/admin-lecons.js?v=20260811"></script>
-<script src="js/admin-quiz.js?v=20260811"></script>
+<script src="js/admin-lecons.js?v=20260923"></script>
+<script src="js/admin-quiz.js?v=20260923"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="js/admin-carousel.js?v=20260811"></script>
-<script src="js/admin-fiche.js?v=20260811"></script>
+<script src="js/admin-fiche.js?v=20260923"></script>
 <script src="js/admin-signalements.js?v=20260830"></script>
 <script src="js/passeye.js?v=20260811"></script>
 </body>

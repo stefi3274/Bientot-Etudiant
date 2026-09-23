@@ -218,27 +218,32 @@ section{padding:88px 0}
 .mat h4{font-size:1.1rem;margin-bottom:6px}
 .mat .m-meta{font-size:.82rem;color:var(--encre-2)}
 
-/* couleurs matières */
-.mat.math{--c:var(--m-math);--c-bg:rgba(59,110,165,.12)}
-.mat.phys{--c:var(--m-phys);--c-bg:rgba(224,122,60,.12)}
-.mat.chim{--c:var(--m-chim);--c-bg:rgba(201,79,79,.12)}
-.mat.bio{--c:var(--m-bio);--c-bg:rgba(63,160,106,.12)}
-.mat.fr{--c:var(--m-fr);--c-bg:rgba(167,139,218,.12)}
-.mat.philo{--c:var(--m-philo);--c-bg:rgba(91,95,199,.12)}
-.mat.hist{--c:var(--m-hist);--c-bg:rgba(156,107,66,.12)}
-.mat.cg{--c:var(--m-cg);--c-bg:rgba(58,165,176,.12)}
-.mat.creole{--c:var(--m-creole);--c-bg:rgba(217,138,75,.12)}
-.mat.eco{--c:var(--m-eco);--c-bg:rgba(184,134,59,.12)}
-.mat.bota{--c:var(--m-bota);--c-bg:rgba(90,143,60,.12)}
-.mat.droit{--c:var(--m-droit);--c-bg:rgba(109,90,143,.12)}
-.mat.angl{--c:var(--m-angl);--c-bg:rgba(47,143,122,.12)}
-.mat.esp{--c:var(--m-esp);--c-bg:rgba(199,107,138,.12)}
-.mat.info{--c:var(--m-info);--c-bg:rgba(74,127,201,.12)}
-.mat.citoy{--c:var(--m-citoy);--c-bg:rgba(138,109,63,.12)}
-.mat.social{--c:var(--m-social);--c-bg:rgba(168,125,79,.12)}
-.mat.exp{--c:var(--m-exp);--c-bg:rgba(79,157,143,.12)}
-.mat.arts{--c:var(--m-arts);--c-bg:rgba(201,127,176,.12)}
-.mat.biogeo{--c:var(--m-biogeo);--c-bg:rgba(71,138,92,.12)}
+/* couleurs matières
+   NB : ces règles s'appliquent à la fois à .mat (grandes cartes matière) et à
+   .mat-dot (petit point réutilisé dans les listes admin, badges, etc.) — avant,
+   seul .mat.xxx définissait la variable --c, donc un simple ".mat-dot xxx" ne la
+   recevait jamais et retombait toujours sur --ardoise : toutes les matières
+   semblaient avoir la même couleur dans les listes. */
+.mat.math,.mat-dot.math{--c:var(--m-math);--c-bg:rgba(59,110,165,.12)}
+.mat.phys,.mat-dot.phys{--c:var(--m-phys);--c-bg:rgba(224,122,60,.12)}
+.mat.chim,.mat-dot.chim{--c:var(--m-chim);--c-bg:rgba(201,79,79,.12)}
+.mat.bio,.mat-dot.bio{--c:var(--m-bio);--c-bg:rgba(63,160,106,.12)}
+.mat.fr,.mat-dot.fr{--c:var(--m-fr);--c-bg:rgba(167,139,218,.12)}
+.mat.philo,.mat-dot.philo{--c:var(--m-philo);--c-bg:rgba(91,95,199,.12)}
+.mat.hist,.mat-dot.hist{--c:var(--m-hist);--c-bg:rgba(156,107,66,.12)}
+.mat.cg,.mat-dot.cg{--c:var(--m-cg);--c-bg:rgba(58,165,176,.12)}
+.mat.creole,.mat-dot.creole{--c:var(--m-creole);--c-bg:rgba(217,138,75,.12)}
+.mat.eco,.mat-dot.eco{--c:var(--m-eco);--c-bg:rgba(184,134,59,.12)}
+.mat.bota,.mat-dot.bota{--c:var(--m-bota);--c-bg:rgba(90,143,60,.12)}
+.mat.droit,.mat-dot.droit{--c:var(--m-droit);--c-bg:rgba(109,90,143,.12)}
+.mat.angl,.mat-dot.angl{--c:var(--m-angl);--c-bg:rgba(47,143,122,.12)}
+.mat.esp,.mat-dot.esp{--c:var(--m-esp);--c-bg:rgba(199,107,138,.12)}
+.mat.info,.mat-dot.info{--c:var(--m-info);--c-bg:rgba(74,127,201,.12)}
+.mat.citoy,.mat-dot.citoy{--c:var(--m-citoy);--c-bg:rgba(138,109,63,.12)}
+.mat.social,.mat-dot.social{--c:var(--m-social);--c-bg:rgba(168,125,79,.12)}
+.mat.exp,.mat-dot.exp{--c:var(--m-exp);--c-bg:rgba(79,157,143,.12)}
+.mat.arts,.mat-dot.arts{--c:var(--m-arts);--c-bg:rgba(201,127,176,.12)}
+.mat.biogeo,.mat-dot.biogeo{--c:var(--m-biogeo);--c-bg:rgba(71,138,92,.12)}
 
 /* Petit point de couleur par matière, réutilisable partout (listes admin, badges...) */
 .mat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;

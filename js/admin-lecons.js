@@ -19,32 +19,9 @@
     const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
       "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
       "Éducation à la Citoyenneté", "Informatique"];
-  // Domaines de Mathématiques — 9e AF (programme MENFP 1989, 4 sections) et Secondaire (9 unités, programme MENFP 2024)
-  // Suggestions de domaines par matière (programme MENFP quand connu). Le champ reste
-  // libre pour toute matière : ces listes ne font que suggérer, rien n'est imposé.
-  // Structure OFFICIELLE des domaines par matière : nom + couleur, source unique.
-  // Une matière absente d'ici n'a pas de sous-catégorie (le champ Domaine reste caché) —
-  // volontaire : pas de texte libre qui pourrait driver ou créer des doublons par faute de frappe.
-  const DOMAINES_STRUCTURE = {
-    "Mathématiques": {
-      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
-      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
-        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
-        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
-    },
-    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
-  };
-  function domainesPour(matiere, niveau) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return [];
-    return (table[niveau] || table["*"] || []).map(d => d[0]);
-  }
-  function couleurDomaine(matiere, niveau, domaine) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return null;
-    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
-    return trouve ? trouve[1] : null;
-  }
+  // DOMAINES_STRUCTURE, domainesPour() et couleurDomaine() viennent maintenant de
+  // js/matieres-data.js (source unique, partagée avec admin-quiz.js) : couvre toutes
+  // les matières de la 9e AF, avec repli en nuance procédurale pour les autres.
   // Séries du Nouveau Secondaire (NS3/NS4), chacune avec ses matières fixes — MENFP
   const SERIES_MATIERES = {
     svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
@@ -56,20 +33,7 @@
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-  // Couleur par matière (même mapping que eleve.js, dupliqué car eleve.js n'est pas chargé dans l'admin)
-  const MATIERE_CLASSES = {
-    "Mathématiques": "math", "Physique": "phys", "Chimie": "chim",
-    "Biologie": "bio", "Biologie/Géologie": "biogeo",
-    "Français": "fr", "Créole": "creole", "Anglais": "angl", "Espagnol": "esp",
-    "Philosophie": "philo", "Histoire-Géographie": "hist",
-    "Culture générale": "cg", "Économie": "eco", "Économie et Gestion": "eco",
-    "Botanique": "bota", "Droit": "droit", "Informatique": "info",
-    "Éducation à la Citoyenneté": "citoy", "Éducation Civique": "citoy",
-    "Sciences Sociales": "social", "Sciences Expérimentales": "exp",
-    "Sciences Physiques": "phys", "Sciences de la Vie et de la Terre": "biogeo",
-    "Arts": "arts", "Art et Musique": "arts"
-  };
-  function classeMatiere(nom) { return MATIERE_CLASSES[nom] || "math"; }
+  // MATIERE_CLASSES / classeMatiere() : voir js/matieres-data.js
 
   // ---------- Navigation admin : onglets simples + univers (Pré-Fac/Secondaire) + sous-onglets ----------
   window.adminUnivers = "univ";

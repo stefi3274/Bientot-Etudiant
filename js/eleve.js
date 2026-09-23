@@ -7,43 +7,13 @@ const FILIERES = {
   f2: "Sciences administratives, Économie & Génie",
   f3: "Sciences humaines et sociales"
 };
-const NIVEAUX = { "9e": "4e (9e Fondamentale)", ns1: "3e (NS1)", ns2: "2e (NS2)", ns3: "1ère (NS3)", ns4: "Terminale (NS4)" };
 const SERIES = { svt: "SVT", mp: "MP", ses: "SES", lla: "LLA" };
-const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
-const MATIERES_PREFAC = {
-  f1: ["Mathématiques", "Biologie", "Chimie", "Physique", "Français", "Botanique"],
-  f2: ["Mathématiques", "Physique", "Chimie", "Français", "Culture générale", "Économie et Gestion"],
-  f3: ["Français", "Créole", "Culture générale", "Philosophie", "Mathématiques", "Droit"]
-};
-const MATIERES_9E_AF = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
-  "Sciences Sociales", "Sciences Expérimentales", "Éducation à la Citoyenneté"];
-// Tronc commun NS1/NS2 (S1-S2 du Nouveau Secondaire) — programme MENFP 2024
-const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
-  "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
-  "Éducation à la Citoyenneté", "Informatique"];
-const SERIES_MATIERES = {
-  svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
-  mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
-  ses: ["Mathématiques", "Économie", "Physique", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Informatique", "Anglais", "Espagnol"],
-  lla: ["Français", "Anglais", "Espagnol", "Arts", "Mathématiques", "Physique", "Histoire-Géographie", "Philosophie", "Économie"]
-};
+const MATIERES_PREFAC = MATIERES;
+// NIVEAUX, NIVEAUX_AVEC_SERIE, MATIERES_9E_AF, TRONC_COMMUN, SERIES_MATIERES,
+// MATIERE_CLASSES et classeMatiere() viennent maintenant de js/matieres-data.js
+// (chargé avant ce fichier sur toutes les pages) : source unique.
 
 // Récupère l'élève connecté (ou null)
-// Associe un nom de matière à sa classe couleur (voir .mat.xxx dans style.css)
-// Utilisable partout : matiere.html, secondaire.html, cartes admin, badges...
-const MATIERE_CLASSES = {
-  "Mathématiques": "math", "Physique": "phys", "Chimie": "chim",
-  "Biologie": "bio", "Biologie/Géologie": "biogeo",
-  "Français": "fr", "Créole": "creole", "Anglais": "angl", "Espagnol": "esp",
-  "Philosophie": "philo", "Histoire-Géographie": "hist",
-  "Culture générale": "cg", "Économie": "eco", "Économie et Gestion": "eco",
-  "Botanique": "bota", "Droit": "droit", "Informatique": "info",
-  "Éducation à la Citoyenneté": "citoy", "Éducation Civique": "citoy",
-  "Sciences Sociales": "social", "Sciences Expérimentales": "exp",
-  "Sciences Physiques": "phys", "Sciences de la Vie et de la Terre": "biogeo",
-  "Arts": "arts", "Art et Musique": "arts"
-};
-function classeMatiere(nom) { return MATIERE_CLASSES[nom] || "math"; }
 
 async function eleveActuel() {
   if (!DB) return null;

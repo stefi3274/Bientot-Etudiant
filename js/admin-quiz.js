@@ -16,26 +16,10 @@
     const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
       "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
       "Éducation à la Citoyenneté", "Informatique"];
-  const DOMAINES_STRUCTURE = {
-    "Mathématiques": {
-      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
-      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
-        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
-        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
-    },
-    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
-  };
-  function domainesPour(matiere, niveau) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return [];
-    return (table[niveau] || table["*"] || []).map(d => d[0]);
-  }
-  function couleurDomaine(matiere, niveau, domaine) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return null;
-    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
-    return trouve ? trouve[1] : null;
-  }
+  // DOMAINES_STRUCTURE, domainesPour() et couleurDomaine() viennent maintenant de
+  // js/matieres-data.js (chargé avant ce fichier sur admin.html) : source unique,
+  // couvre toutes les matières de la 9e AF, avec repli en nuance procédurale pour
+  // les matières pas encore curées.
   const SERIES_MATIERES = {
     svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
     mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
@@ -45,19 +29,7 @@
   const NIVEAUX_AVEC_SERIE = ["ns3", "ns4"];
   const esc = s => (s || "").replace(/[&<>"']/g, c => (
     { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
-  const MATIERE_CLASSES = {
-    "Mathématiques": "math", "Physique": "phys", "Chimie": "chim",
-    "Biologie": "bio", "Biologie/Géologie": "biogeo",
-    "Français": "fr", "Créole": "creole", "Anglais": "angl", "Espagnol": "esp",
-    "Philosophie": "philo", "Histoire-Géographie": "hist",
-    "Culture générale": "cg", "Économie": "eco", "Économie et Gestion": "eco",
-    "Botanique": "bota", "Droit": "droit", "Informatique": "info",
-    "Éducation à la Citoyenneté": "citoy", "Éducation Civique": "citoy",
-    "Sciences Sociales": "social", "Sciences Expérimentales": "exp",
-    "Sciences Physiques": "phys", "Sciences de la Vie et de la Terre": "biogeo",
-    "Arts": "arts", "Art et Musique": "arts"
-  };
-  function classeMatiere(nom) { return MATIERE_CLASSES[nom] || "math"; }
+  // MATIERE_CLASSES / classeMatiere() : voir js/matieres-data.js
   const statusQ = (m, t) => { const el = $("quizMsg"); if (el) { el.textContent = m; el.className = "status-msg on " + (t||"ok"); } };
 
   // Matières selon filière univ
@@ -226,15 +198,141 @@
     return groupes;
   }
 
+  // ---------- Métadonnées par groupe (UNIVERS/CLASSE/FILIERE/MATIERE/DOMAINE) ----------
+  // Chaque groupe ===QUIZ:...=== peut commencer par des lignes "CLÉ: valeur" pour lui
+  // donner SON PROPRE niveau/filière/matière/domaine (un lot peut ainsi mélanger
+  // plusieurs matières ou plusieurs classes d'un coup). Une valeur est toujours
+  // comparée à la liste réelle des niveaux/filières/matières/domaines connus (jamais
+  // de texte libre non vérifié) : une faute de frappe bloque ce quiz avec un message
+  // clair au lieu de publier une donnée fausse. Un groupe sans ces lignes garde
+  // le comportement d'avant (valeurs prises dans le formulaire au-dessus).
+  const normTxt = s => (s || "").toString().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+  function extraireMeta(texte) {
+    const lignes = texte.split("\n");
+    const meta = {};
+    let i = 0;
+    while (i < lignes.length) {
+      const l = lignes[i].trim();
+      if (!l) { i++; continue; }
+      const m = l.match(/^(UNIVERS|NIVEAU|CLASSE|FILIERE|SERIE|MATIERE|DOMAINE)\s*:\s*(.+)$/i);
+      if (!m) break;
+      meta[m[1].toUpperCase()] = m[2].trim();
+      i++;
+    }
+    return { meta, texte: lignes.slice(i).join("\n") };
+  }
+
+  function matchCode(val, labels) {
+    const n = normTxt(val);
+    for (const code in labels) if (normTxt(code) === n) return code;
+    for (const code in labels) if (normTxt(labels[code]) === n) return code;
+    for (const code in labels) if (n.length >= 3 && normTxt(labels[code]).includes(n)) return code;
+    return undefined;
+  }
+  const ALIAS_CLASSE = { "9e": "9e", "9eaf": "9e", "4e": "9e", "9efondamentale": "9e",
+    "ns1": "ns1", "3e": "ns1", "ns2": "ns2", "2e": "ns2",
+    "ns3": "ns3", "1ere": "ns3", "premiere": "ns3",
+    "ns4": "ns4", "terminale": "ns4", "tle": "ns4" };
+  function resoudreClasse(val) { return ALIAS_CLASSE[normTxt(val).replace(/\s+/g, "")]; }
+  function resoudreUnivers(val) {
+    const n = normTxt(val);
+    if (["secondaire", "sec"].includes(n)) return "sec";
+    if (["pre-fac", "prefac", "pre fac", "univ", "universitaire"].includes(n)) return "univ";
+    return undefined;
+  }
+  function resoudreMatiere(val, liste) {
+    const n = normTxt(val);
+    return (liste || []).find(m => normTxt(m) === n);
+  }
+  function resoudreDomaine(val, matiere, niveau) {
+    const liste = (typeof domainesPour === "function") ? domainesPour(matiere, niveau) : [];
+    if (!liste.length) return { ok: true, val: val.trim() }; // matière pas encore curée : texte libre accepté
+    const n = normTxt(val);
+    const trouve = liste.find(d => normTxt(d) === n);
+    return trouve ? { ok: true, val: trouve } : { ok: false, attendu: liste };
+  }
+
+  // Résout la destination (filière/niveau/matière/domaine) d'UN groupe, à partir de ses
+  // éventuelles lignes de métadonnées, en repliant sur les valeurs du formulaire (defauts)
+  // pour tout ce que le groupe ne précise pas.
+  function resoudreDestinationGroupe(meta, label, defauts) {
+    let univers = defauts.estSec ? "sec" : "univ";
+    if (meta.UNIVERS) {
+      const u = resoudreUnivers(meta.UNIVERS);
+      if (!u) return { erreur: label + " : UNIVERS \"" + meta.UNIVERS + "\" non reconnu (Secondaire ou Pré-Fac)." };
+      univers = u;
+    }
+
+    if (univers === "sec") {
+      let niveau = defauts.estSec ? defauts.niveau : null;
+      const classeBrute = meta.CLASSE || meta.NIVEAU;
+      if (classeBrute) {
+        niveau = resoudreClasse(classeBrute);
+        if (!niveau) return { erreur: label + " : CLASSE \"" + classeBrute + "\" non reconnue (9e, NS1, NS2, NS3 ou NS4)." };
+      }
+      if (!niveau) return { erreur: label + " : CLASSE requise (9e, NS1, NS2, NS3 ou NS4)." };
+
+      const avecSerie = NIVEAUX_AVEC_SERIE.includes(niveau);
+      let serie = (defauts.estSec && defauts.avecSerie && niveau === defauts.niveau) ? defauts.serie : null;
+      if (avecSerie) {
+        const serieBrute = meta.FILIERE || meta.SERIE;
+        if (serieBrute) {
+          serie = matchCode(serieBrute, SERIES_LABELS);
+          if (!serie) return { erreur: label + " : SÉRIE \"" + serieBrute + "\" non reconnue (SVT, MP, SES ou LLA)." };
+        }
+        if (!serie) return { erreur: label + " : SÉRIE requise pour " + niveau.toUpperCase() + " (SVT, MP, SES ou LLA)." };
+      } else serie = null;
+
+      const matieresValides = avecSerie ? (SERIES_MATIERES[serie] || []) : (niveau === "9e" ? MATIERES_9E_AF : TRONC_COMMUN);
+      let matiere = (defauts.estSec && niveau === defauts.niveau) ? defauts.matiere : null;
+      if (meta.MATIERE) {
+        matiere = resoudreMatiere(meta.MATIERE, matieresValides);
+        if (!matiere) return { erreur: label + " : MATIÈRE \"" + meta.MATIERE + "\" non reconnue pour " + niveau.toUpperCase() + " (" + matieresValides.join(", ") + ")." };
+      }
+      if (!matiere || !matieresValides.includes(matiere)) return { erreur: label + " : MATIÈRE requise (" + matieresValides.join(", ") + ")." };
+
+      let domaine = null;
+      if (meta.DOMAINE) {
+        const r = resoudreDomaine(meta.DOMAINE, matiere, niveau);
+        if (!r.ok) return { erreur: label + " : DOMAINE \"" + meta.DOMAINE + "\" non reconnu pour " + matiere + " (" + r.attendu.join(", ") + ")." };
+        domaine = r.val;
+      } else if (matiere === defauts.matiere && niveau === defauts.niveau && defauts.domaine) {
+        // Le groupe ne précise rien de plus : même matière/classe que le formulaire, on reprend son domaine.
+        domaine = defauts.domaine;
+      }
+      return { filiere: avecSerie ? serie : null, niveau, matiere, domaine };
+    }
+
+    // Pré-Fac
+    let filiere = (!defauts.estSec) ? defauts.filiere : null;
+    if (meta.FILIERE) {
+      filiere = matchCode(meta.FILIERE, FILIERES_PREFAC_LABELS);
+      if (!filiere) return { erreur: label + " : FILIÈRE \"" + meta.FILIERE + "\" non reconnue (Médecine/Agro/Véto, Sciences admin/Éco/Génie, ou Sciences humaines et sociales)." };
+    }
+    if (!filiere) return { erreur: label + " : FILIÈRE requise pour le Pré-Fac." };
+
+    const matieresValides = MATIERES[filiere] || [];
+    let matiere = (!defauts.estSec && filiere === defauts.filiere) ? defauts.matiere : null;
+    if (meta.MATIERE) {
+      matiere = resoudreMatiere(meta.MATIERE, matieresValides);
+      if (!matiere) return { erreur: label + " : MATIÈRE \"" + meta.MATIERE + "\" non reconnue pour cette filière (" + matieresValides.join(", ") + ")." };
+    }
+    if (!matiere || !matieresValides.includes(matiere)) return { erreur: label + " : MATIÈRE requise (" + matieresValides.join(", ") + ")." };
+
+    return { filiere, niveau: null, matiere, domaine: null };
+  }
+
   if ($("qzImporterTexte")) $("qzImporterTexte").addEventListener("click", async () => {
     const txt = ($("qzTexteImport").value || "").trim();
     if (!txt) { statusQ("Colle d'abord tes questions.", "err"); return; }
 
-    const groupes = detecterGroupes(txt);
+    const groupesBruts = detecterGroupes(txt);
 
     // Un seul groupe (ou pas de marqueur) : comportement existant, remplit le formulaire pour relecture
-    if (groupes.length <= 1) {
-      const questions = parseQuestionsTexte(groupes.length ? groupes[0].texte : txt);
+    if (groupesBruts.length <= 1) {
+      const { texte } = groupesBruts.length ? extraireMeta(groupesBruts[0].texte) : extraireMeta(txt);
+      const questions = parseQuestionsTexte(texte);
       if (!questions.length) { statusQ("Aucune question reconnue dans le texte collé.", "err"); return; }
       const incomplete = questions.findIndex(q => !q.enonce || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
       if (incomplete !== -1) { statusQ("Question " + (incomplete + 1) + " incomplète (énoncé + 4 choix requis, format \"A) ...\").", "err"); return; }
@@ -246,11 +344,36 @@
     }
 
     // Plusieurs groupes ===QUIZ:...=== détectés : publication directe de N quiz séparés
-    // (respecte le type choisi — Libre, Gogo, ou Leçon avec rattachement à la leçon sélectionnée)
+    // (respecte le type choisi — Libre, Gogo, ou Leçon avec rattachement à la leçon sélectionnée).
+    // Chaque groupe peut porter ses propres UNIVERS/CLASSE/FILIERE/MATIERE/DOMAINE (voir
+    // resoudreDestinationGroupe ci-dessus) ; à défaut, il reprend les valeurs du formulaire.
     const titreBase = ($("qzTitre").value || "").trim();
-    if (!titreBase) { statusQ(groupes.length + " groupes détectés. Renseigne d'abord le grand titre (ex: \"Biologie Cellulaire\") avant d'importer.", "err"); return; }
+    if (!titreBase) { statusQ(groupesBruts.length + " groupes détectés. Renseigne d'abord le grand titre (ex: \"Biologie Cellulaire\") avant d'importer.", "err"); return; }
     if (typeof DB === "undefined" || !DB) { statusQ("Connexion Supabase indisponible.", "err"); return; }
-    const apercuTitres = groupes.map(g => titreBase + " — " + g.sousTitre).join("\n");
+
+    const estSecLot = sectionActuelle() === "sec";
+    const niveauLot = estSecLot ? qzSelNiveau.value : null;
+    const avecSerieLot = estSecLot && NIVEAUX_AVEC_SERIE.includes(niveauLot);
+    const defauts = {
+      estSec: estSecLot, niveau: niveauLot, avecSerie: avecSerieLot,
+      serie: avecSerieLot ? qzSelSerie.value : null,
+      filiere: estSecLot ? null : selFil.value,
+      matiere: estSecLot ? qzSelMatSec.value : selMat.value,
+      domaine: (estSecLot && qzSelDomaine.value.trim()) ? qzSelDomaine.value.trim() : null
+    };
+
+    // Résolution + validation de la destination de chaque groupe AVANT toute écriture :
+    // si un groupe a une métadonnée invalide, on arrête tout (aucun quiz publié à moitié).
+    const groupes = [];
+    for (let i = 0; i < groupesBruts.length; i++) {
+      const label = groupesBruts[i].sousTitre || ("Groupe " + (i + 1));
+      const { meta, texte } = extraireMeta(groupesBruts[i].texte);
+      const dest = resoudreDestinationGroupe(meta, label, defauts);
+      if (dest.erreur) { statusQ(dest.erreur, "err"); return; }
+      groupes.push({ sousTitre: groupesBruts[i].sousTitre, texte, dest });
+    }
+
+    const apercuTitres = groupes.map(g => titreBase + " — " + g.sousTitre + "  [" + g.dest.matiere + (g.dest.domaine ? " · " + g.dest.domaine : "") + "]").join("\n");
     if (!confirm(groupes.length + " quiz détectés, publiés sous :\n" + apercuTitres + "\n\nConfirmer ?")) return;
 
     statusQ("Publication de " + groupes.length + " quiz…", "");
@@ -261,11 +384,6 @@
     const typeLot = typeChoisi === "gogo" ? "gogo" : (typeChoisi === "lecon" ? "lecon" : "dimanche");
     const leconIdLot = (typeChoisi === "lecon" && $("qzLecon") && $("qzLecon").value) ? $("qzLecon").value : null;
     if (typeChoisi === "lecon" && !leconIdLot) { statusQ("Choisis la leçon à rattacher avant d'importer (ou passe en Quiz Libre/Gogo).", "err"); return; }
-    const estSecLot = sectionActuelle() === "sec";
-    const niveauLot = estSecLot ? qzSelNiveau.value : null;
-    const avecSerieLot = estSecLot && NIVEAUX_AVEC_SERIE.includes(niveauLot);
-    const matiereLot = estSecLot ? qzSelMatSec.value : selMat.value;
-    if (estSecLot && !matiereLot) { statusQ("La matière est requise.", "err"); return; }
 
     let ok = 0, erreurs = [];
     for (let i = 0; i < groupes.length; i++) {
@@ -274,9 +392,10 @@
       const incomplete = questions.findIndex(q => !q.enonce || !q.choix_a || !q.choix_b || !q.choix_c || !q.choix_d);
       if (incomplete !== -1) { erreurs.push(groupes[i].sousTitre + ", question " + (incomplete + 1) + " incomplète."); continue; }
 
+      const d = groupes[i].dest;
       const { data: qz, error: eQz } = await DB.from("quiz").insert({
-        entreprise_id: ent, filiere: estSecLot ? (avecSerieLot ? qzSelSerie.value : null) : selFil.value, niveau: niveauLot,
-        matiere: matiereLot, domaine: (estSecLot && qzSelDomaine.value.trim()) ? qzSelDomaine.value.trim() : null,
+        entreprise_id: ent, filiere: d.filiere, niveau: d.niveau,
+        matiere: d.matiere, domaine: d.domaine,
         titre: titreBase + " — " + groupes[i].sousTitre, duree_sec: dureeSec,
         type: typeLot, lecon_id: leconIdLot, publie: true
       }).select("id").single();
@@ -505,6 +624,27 @@
     const { data, error } = await DB.from("quiz").update({ filiere: dest.value }).in("id", Array.from(selection)).select("id");
     if (error) { statusQ("Erreur : " + error.message, "err"); return; }
     statusQ((data || []).length + " quiz déplacé(s) vers " + libDest + ".", "ok");
+    selection.clear();
+    chargerQuiz();
+  });
+
+  // ---------- Bulk : changer la matière de plusieurs quiz sélectionnés d'un coup ----------
+  const quizDestMatiere = $("quizDestMatiere");
+  if (quizDestMatiere && typeof toutesLesMatieres === "function") {
+    quizDestMatiere.innerHTML = toutesLesMatieres().map(m => '<option value="' + esc(m) + '">' + esc(m) + '</option>').join("");
+  }
+
+  if ($("quizChangerMatiereSelectionBtn")) $("quizChangerMatiereSelectionBtn").addEventListener("click", async () => {
+    if (!selection.size) return;
+    const dest = $("quizDestMatiere");
+    const nouvelleMatiere = dest.value;
+    if (!nouvelleMatiere) return;
+    if (!confirm("Changer la matière de " + selection.size + " quiz sélectionné(s) vers \"" + nouvelleMatiere + "\" ?\n\nLe domaine (sous-catégorie) de ces quiz sera réinitialisé, car il est propre à l'ancienne matière.")) return;
+
+    statusQ("Changement de matière en cours…", "");
+    const { data, error } = await DB.from("quiz").update({ matiere: nouvelleMatiere, domaine: null }).in("id", Array.from(selection)).select("id");
+    if (error) { statusQ("Erreur : " + error.message, "err"); return; }
+    statusQ((data || []).length + " quiz basculé(s) vers la matière \"" + nouvelleMatiere + "\".", "ok");
     selection.clear();
     chargerQuiz();
   });

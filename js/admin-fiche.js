@@ -18,26 +18,8 @@
     const TRONC_COMMUN = ["Mathématiques", "Français", "Créole", "Anglais", "Espagnol",
       "Histoire-Géographie", "Physique", "Chimie", "Biologie", "Économie",
       "Éducation à la Citoyenneté", "Informatique"];
-  const DOMAINES_STRUCTURE = {
-    "Mathématiques": {
-      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
-      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
-        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
-        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
-    },
-    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
-  };
-  function domainesPour(matiere, niveau) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return [];
-    return (table[niveau] || table["*"] || []).map(d => d[0]);
-  }
-  function couleurDomaine(matiere, niveau, domaine) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return null;
-    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
-    return trouve ? trouve[1] : null;
-  }
+  // DOMAINES_STRUCTURE, domainesPour() et couleurDomaine() viennent maintenant de
+  // js/matieres-data.js (source unique).
   const SERIES_MATIERES = {
     svt: ["Mathématiques", "Physique", "Chimie", "Biologie/Géologie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],
     mp: ["Mathématiques", "Physique", "Chimie", "Histoire-Géographie", "Philosophie", "Économie", "Informatique", "Anglais", "Espagnol"],

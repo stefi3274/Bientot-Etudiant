@@ -13,21 +13,10 @@
   if (!niveauBtns || !zone) return;
 
   let domaineActuelle = null;
-  const DOMAINES_STRUCTURE = {
-    "Mathématiques": {
-      "9e": [["Algèbre","#27597c"],["Géométrie","#326ba1"],["Mesures","#3f7ac3"],["Applications","#648cce"]],
-      "*": [["Nombres et calculs","#27597c"],["Calcul algébrique","#2b608a"],["Fonctions","#2f6797"],["Géométrie","#346da5"],
-        ["Probabilités","#3873b3"],["Statistique","#3c78c0"],["Algorithmique et programmation","#487fc6"],
-        ["Logique et raisonnement","#5685ca"],["Matrices et graphes","#648cce"]]
-    },
-    "Français": { "*": [["Production écrite","#3b2380"],["Grammaire","#542ea5"],["Orthographe","#713ac8"],["Vocabulaire","#945fd3"]] }
-  };
-  function couleurDomaine(matiere, niveau, domaine) {
-    const table = DOMAINES_STRUCTURE[matiere];
-    if (!table) return "#6d5a8f";
-    const trouve = (table[niveau] || table["*"] || []).find(d => d[0] === domaine);
-    return trouve ? trouve[1] : "#6d5a8f";
-  }
+  // DOMAINES_STRUCTURE et couleurDomaine() viennent maintenant de js/matieres-data.js
+  // (source unique, partagée avec l'admin) : toutes les matières de la 9e AF ont leurs
+  // domaines et une nuance de la couleur de la matière, plus une matière pas encore
+  // curée retombe sur une nuance calculée au lieu d'une couleur fixe hors-sujet.
 
   const NIVEAUX = {
     "9e": "4e (9e Fondamentale)",
