@@ -1,0 +1,51 @@
+/* ============================================================
+   Quiz → vidéo : page et moteur d'export (quiz-video.html)
+   ============================================================ */
+.qv-wrap{padding-top:40px;padding-bottom:60px}
+
+.qv-intro{max-width:640px;margin:0 auto;text-align:center}
+.qv-intro .qi-kicker{display:inline-block;font-size:.8rem;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--encre-2);background:var(--craie-2);padding:5px 14px;border-radius:20px;margin-bottom:14px}
+.qv-intro h1{font-size:clamp(1.6rem,3.6vw,2.2rem);margin-bottom:10px}
+.qv-intro p.qi-note{color:var(--encre-2);font-size:.95rem;margin-bottom:28px}
+
+.qv-panel{max-width:760px;margin:0 auto;background:var(--craie);border:1px solid var(--craie-2);
+  border-radius:var(--r,16px);padding:28px}
+
+.qv-field{margin-bottom:24px}
+.qv-field > label{display:block;font-weight:600;font-size:.9rem;margin-bottom:10px;color:var(--encre)}
+.qv-field .qv-sub{color:var(--encre-2);font-size:.82rem;margin-top:8px}
+
+.qv-options{display:flex;gap:12px;flex-wrap:wrap}
+.qv-opt{flex:1;min-width:180px;border:2px solid var(--craie-2);border-radius:12px;padding:16px;
+  cursor:pointer;background:#fff;transition:border-color .15s,background .15s;text-align:left}
+.qv-opt:hover{border-color:var(--encre-2)}
+.qv-opt.on{border-color:var(--ardoise);background:var(--craie-2)}
+.qv-opt b{display:block;font-size:.95rem;margin-bottom:4px}
+.qv-opt span{display:block;font-size:.8rem;color:var(--encre-2)}
+
+.qv-temps{display:flex;align-items:center;gap:12px}
+.qv-temps input[type=number]{width:90px;padding:10px 12px;border:1px solid var(--craie-2);
+  border-radius:8px;font-size:1rem;font-family:var(--corps)}
+.qv-temps-badge{font-size:.8rem;font-weight:600;color:var(--ardoise);background:var(--craie-2);
+  padding:5px 12px;border-radius:20px}
+
+.qv-canvas-wrap{display:flex;justify-content:center;margin:24px 0;background:#0e241c;border-radius:14px;padding:18px}
+.qv-canvas-wrap canvas{max-width:100%;height:auto;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+
+.qv-progress{width:100%;height:10px;background:var(--craie-2);border-radius:20px;overflow:hidden;margin:16px 0}
+.qv-progress > div{height:100%;width:0%;background:var(--ardoise);transition:width .15s linear}
+
+.qv-note-warn{background:#fdf3e4;border:1px solid #f0d9ad;color:#7a5a1a;border-radius:10px;
+  padding:12px 16px;font-size:.85rem;margin:16px 0}
+
+.qv-result{text-align:center;margin-top:20px}
+.qv-result video{width:100%;max-width:360px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);margin-bottom:16px;background:#000}
+.qv-result.horizontal video{max-width:100%}
+
+.qv-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+
+@media (max-width:640px){
+  .qv-panel{padding:20px}
+  .qv-options{flex-direction:column}
+}

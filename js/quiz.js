@@ -256,6 +256,7 @@
       + '</div>'
       + '<p class="qi-note">Le chronomètre démarre dès que tu cliques. À la fin, tu verras ton score et les questions ratées.</p>'
       + '<button class="btn btn-dark" id="startBtn">Commencer le quiz <span>→</span></button>'
+      + ' <a class="btn btn-ghost" style="color:var(--encre);border-color:var(--craie-2)" href="quiz-video.html?id=' + quiz.id + '">Télécharger en vidéo <span>→</span></a>'
       + (eleveConnecte ? ' ' + blocClassementOuCompte : blocClassementOuCompte)
       + '</div>';
     document.getElementById("startBtn").addEventListener("click", demarrer);
