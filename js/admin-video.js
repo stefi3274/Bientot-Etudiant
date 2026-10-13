@@ -138,12 +138,26 @@
     return ACCENTS[quiz.filiere] || ACCENT_DEFAUT;
   }
 
+  function assombrir(hex, garder) {
+    // Assombrit une couleur vers le noir en conservant sa teinte (garder = fraction conservée, 0-1)
+    const n = parseInt(hex.replace("#", ""), 16);
+    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    const mix = c => Math.round(c * garder);
+    const hx = v => v.toString(16).padStart(2, "0");
+    return "#" + hx(mix(r)) + hx(mix(g)) + hx(mix(b));
+  }
+
   function dessinerFond(ctx, W, H) {
-    ctx.fillStyle = CARTE.ardoise; ctx.fillRect(0, 0, W, H);
     const accent = accentCouleur();
-    const glow = ctx.createRadialGradient(W * 0.85, H * 0.08, 0, W * 0.85, H * 0.08, Math.max(W, H) * 0.7);
-    glow.addColorStop(0, hexToRgba(accent, .22)); glow.addColorStop(1, hexToRgba(accent, 0));
+    // Fond = couleur de la matière assombrie (lisibilité du texte clair), pas une teinte fixe
+    ctx.fillStyle = assombrir(accent, 0.26); ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(W * 0.85, H * 0.08, 0, W * 0.85, H * 0.08, Math.max(W, H) * 0.8);
+    glow.addColorStop(0, hexToRgba(accent, .4)); glow.addColorStop(1, hexToRgba(accent, 0));
     ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+    // Vignette pour garder un bon contraste du texte sur tout le cadre
+    const vign = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
+    vign.addColorStop(0, "rgba(0,0,0,0)"); vign.addColorStop(1, "rgba(0,0,0,.4)");
+    ctx.fillStyle = vign; ctx.fillRect(0, 0, W, H);
   }
   function dessinerEntete(ctx, W, H, texteKicker) {
     const accent = accentCouleur();
@@ -312,7 +326,12 @@
       const stream = canvas.captureStream(30);
       const type = ["video/mp4;codecs=avc1.42E01E", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"]
         .find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
-      const rec = type ? new MediaRecorder(stream, { mimeType: type }) : new MediaRecorder(stream);
+      // Bitrate volontairement très élevé (20 Mbps) pour un rendu sans perte visible :
+      // le contenu (aplats de couleur, texte vectoriel net) encode déjà très efficacement,
+      // ce débit élimine les artefacts de compression.
+      const BITRATE = 20000000;
+      const options = type ? { mimeType: type, videoBitsPerSecond: BITRATE } : { videoBitsPerSecond: BITRATE };
+      const rec = new MediaRecorder(stream, options);
       const chunks = [];
       rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
       const fini = new Promise(resolve => { rec.onstop = resolve; });
